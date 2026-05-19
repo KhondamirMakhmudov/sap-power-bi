@@ -56,7 +56,7 @@ const sidebarItems = [
   },
 ];
 
-export default function Sidebar({ isOpen = true, onClose }) {
+export default function Sidebar({ isOpen = true, onClose, isCollapsed = false }) {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState([]);
   const [mounted, setMounted] = useState(false);
@@ -80,8 +80,8 @@ export default function Sidebar({ isOpen = true, onClose }) {
       <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-cyan-400 to-transparent opacity-50" />
 
       {/* Logo Section */}
-      <div className="relative px-6 py-8">
-        <Link href="/" className="flex items-center gap-3 group">
+      <div className={`relative px-6 py-8 ${isCollapsed ? "px-2" : ""}`}>
+        <Link href="/" className="flex items-center gap-3 group justify-center md:justify-start">
           <div className="relative w-10 h-10">
             {/* Glow effect */}
             <div className="absolute inset-0 bg-linear-to-br from-cyan-500 to-blue-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
@@ -90,12 +90,14 @@ export default function Sidebar({ isOpen = true, onClose }) {
               <BarChart3 className="w-5 h-5 text-white" />
             </div>
           </div>
-          <div>
-            <h1 className="text-base font-bold text-white tracking-tight">
-              Analytics
-            </h1>
-            <p className="text-xs text-slate-400">Dashboard Pro</p>
-          </div>
+          {!isCollapsed && (
+            <div>
+              <h1 className="text-base font-bold text-white tracking-tight">
+                Analytics
+              </h1>
+              <p className="text-xs text-slate-400">Dashboard Pro</p>
+            </div>
+          )}
         </Link>
       </div>
 
@@ -110,11 +112,14 @@ export default function Sidebar({ isOpen = true, onClose }) {
           <div key={item.label}>
             <Link
               href={item.href}
-              className={`group relative flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
+              className={`group relative flex items-center justify-center md:justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
+                isCollapsed ? "md:justify-center md:px-2" : ""
+              } ${
                 isActive(item.href)
                   ? "bg-linear-to-r from-cyan-500/20 to-blue-600/20 text-cyan-100"
                   : "text-slate-400 hover:text-slate-100"
               }`}
+              title={isCollapsed ? item.label : ""}
             >
               {/* Hover background effect */}
               {!isActive(item.href) && (
@@ -136,26 +141,28 @@ export default function Sidebar({ isOpen = true, onClose }) {
                 >
                   {item.icon}
                 </span>
-                <div className="flex-1 min-w-0">
-                  <span className="font-semibold text-sm block">
-                    {item.label}
-                  </span>
-                  {item.description && (
-                    <span
-                      className={`text-xs block mt-0.5 transition-colors duration-200 ${
-                        isActive(item.href)
-                          ? "text-cyan-300/70"
-                          : "text-slate-500 group-hover:text-slate-400"
-                      }`}
-                    >
-                      {item.description}
+                {!isCollapsed && (
+                  <div className="flex-1 min-w-0">
+                    <span className="font-semibold text-sm block">
+                      {item.label}
                     </span>
-                  )}
-                </div>
+                    {item.description && (
+                      <span
+                        className={`text-xs block mt-0.5 transition-colors duration-200 ${
+                          isActive(item.href)
+                            ? "text-cyan-300/70"
+                            : "text-slate-500 group-hover:text-slate-400"
+                        }`}
+                      >
+                        {item.description}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Badge */}
-              {item.badge && (
+              {item.badge && !isCollapsed && (
                 <span className="ml-2 shrink-0 bg-linear-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg shadow-red-500/30 group-hover:shadow-red-500/50 transition-all duration-200">
                   {item.badge}
                 </span>
@@ -175,16 +182,17 @@ export default function Sidebar({ isOpen = true, onClose }) {
         <Link
           href="/settings"
           className="group flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-slate-100 transition-all duration-200 relative"
+          title={isCollapsed ? "Параметры" : ""}
         >
           <div className="absolute inset-0 bg-linear-to-r from-slate-700 to-slate-700 rounded-lg opacity-0 group-hover:opacity-50 transition-opacity duration-200 -z-10" />
-          <Settings className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 transition-colors duration-200" />
-          <span className="text-sm font-medium">Параметры</span>
+          <Settings className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 transition-colors duration-200 shrink-0" />
+          {!isCollapsed && <span className="text-sm font-medium">Параметры</span>}
         </Link>
 
-        <button className="group w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-red-400 transition-all duration-200 relative">
+        <button className="group w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-red-400 transition-all duration-200 relative" title={isCollapsed ? "Выход" : ""}>
           <div className="absolute inset-0 bg-linear-to-r from-red-950/30 to-red-950/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
-          <LogOut className="w-5 h-5 text-slate-500 group-hover:text-red-400 transition-colors duration-200" />
-          <span className="text-sm font-medium">Выход</span>
+          <LogOut className="w-5 h-5 text-slate-500 group-hover:text-red-400 transition-colors duration-200 shrink-0" />
+          {!isCollapsed && <span className="text-sm font-medium">Выход</span>}
         </button>
       </div>
     </div>

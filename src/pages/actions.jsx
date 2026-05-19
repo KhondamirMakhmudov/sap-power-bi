@@ -35,35 +35,40 @@ const contourOptions = [
 const recommendedActions = [
   {
     title: "Стабилизировать Ангренскую ТЭС",
-    description: "5 технологических нарушений и высокий УРУТ. Нужен отдельный план по надежности и топливной эффективности.",
+    description:
+      "5 технологических нарушений и высокий УРУТ. Нужен отдельный план по надежности и топливной эффективности.",
     borderColor: "border-l-4 border-l-red-500",
     bgColor: "bg-red-50",
     icon: "alert",
   },
   {
     title: "Снизить УРУТ по старым блокам",
-    description: "Отклонение УРУТ влияет на себестоимость в EBITDA. Нужен план по котлоагрегатам и режимам.",
+    description:
+      "Отклонение УРУТ влияет на себестоимость в EBITDA. Нужен план по котлоагрегатам и режимам.",
     borderColor: "border-l-4 border-l-red-500",
     bgColor: "bg-red-50",
     icon: "alert",
   },
   {
     title: "Сохранить выполнение производственного плана",
-    description: "Выработка и доступная мощность в допустимом диапазоне. Продолжить ежемесячный мониторинг.",
+    description:
+      "Выработка и доступная мощность в допустимом диапазоне. Продолжить ежемесячный мониторинг.",
     borderColor: "border-l-4 border-l-green-500",
     bgColor: "bg-green-50",
     icon: "check",
   },
   {
     title: "Контролировать плановые ремонты без эскалации",
-    description: "Плановые ремонты идут в рабочем режиме, влияние на месячный баланс компенсировано.",
+    description:
+      "Плановые ремонты идут в рабочем режиме, влияние на месячный баланс компенсировано.",
     borderColor: "border-l-4 border-l-green-500",
     bgColor: "bg-green-50",
     icon: "check",
   },
   {
     title: "Поддержать положительную динамику EBITDA",
-    description: "EBITDA близка к плану, основной резерв — снижение УРУТ. Основной резерв — снижение топливной составляющей.",
+    description:
+      "EBITDA близка к плану, основной резерв — снижение УРУТ. Основной резерв — снижение топливной составляющей.",
     borderColor: "border-l-4 border-l-blue-500",
     bgColor: "bg-blue-50",
     icon: "trending",
@@ -80,7 +85,8 @@ const thresholdSignals = [
   },
   {
     title: "Зеленый сигнал: плановые ремонты без эскалации",
-    description: "3 блока в ремонте при плане 3; критического влияния на баланс нет.",
+    description:
+      "3 блока в ремонте при плане 3; критического влияния на баланс нет.",
     type: "success",
     borderColor: "border-l-4 border-l-green-500",
     bgColor: "bg-green-50",
@@ -110,7 +116,9 @@ export default function ActionsPage() {
     <MainLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Рекомендуемые действия</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Рекомендуемые действия
+          </h1>
           <p className="text-gray-600 mt-1">Решения ГД</p>
         </div>
 
@@ -118,7 +126,9 @@ export default function ActionsPage() {
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Месяц</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Месяц
+              </label>
               <CustomSelect
                 options={monthOptions}
                 value={selectedMonth}
@@ -126,7 +136,9 @@ export default function ActionsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Сценарий</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Сценарий
+              </label>
               <CustomSelect
                 options={scenarioOptions}
                 value={selectedScenario}
@@ -134,7 +146,9 @@ export default function ActionsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Контур</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Контур
+              </label>
               <CustomSelect
                 options={contourOptions}
                 value={selectedContour}
@@ -153,9 +167,12 @@ export default function ActionsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column - Recommended Actions */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Рекомендуемые действия</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">
+              Рекомендуемые действия
+            </h2>
             <p className="text-xs text-gray-600 mb-6">
-              События и инициативы, которые должны быть приняты на основе текущих данных и планов.
+              События и инициативы, которые должны быть приняты на основе
+              текущих данных и планов.
             </p>
 
             <div className="space-y-4">
@@ -170,11 +187,17 @@ export default function ActionsPage() {
                     ) : action.icon === "check" ? (
                       <CheckCircle className="w-5 h-5 text-green-600 mt-1 shrink-0" />
                     ) : (
-                      <div className="w-5 h-5 text-blue-600 mt-1 shrink-0">↗</div>
+                      <div className="w-5 h-5 text-blue-600 mt-1 shrink-0">
+                        ↗
+                      </div>
                     )}
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{action.title}</p>
-                      <p className="text-xs text-gray-700 mt-2">{action.description}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {action.title}
+                      </p>
+                      <p className="text-xs text-gray-700 mt-2">
+                        {action.description}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -184,7 +207,9 @@ export default function ActionsPage() {
 
           {/* Right Column - Threshold Signals */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Пороговые сигналы</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">
+              Пороговые сигналы
+            </h2>
             <p className="text-xs text-gray-600 mb-6">
               События, которые должны автоматически попадать на стартовый экран.
             </p>
@@ -204,8 +229,12 @@ export default function ActionsPage() {
                       <AlertCircle className="w-5 h-5 text-red-600 mt-1 shrink-0" />
                     )}
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{signal.title}</p>
-                      <p className="text-xs text-gray-700 mt-2">{signal.description}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {signal.title}
+                      </p>
+                      <p className="text-xs text-gray-700 mt-2">
+                        {signal.description}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -216,13 +245,22 @@ export default function ActionsPage() {
 
         {/* Summary Section */}
         <div className="bg-linear-to-r from-slate-900 to-slate-800 rounded-lg p-8 text-white shadow-sm">
-          <h2 className="text-2xl font-bold mb-4">Итоговый статус на май 2026</h2>
+          <h2 className="text-2xl font-bold mb-4">
+            Итоговый статус на май 2026
+          </h2>
           <p className="text-sm text-slate-200 mb-6">
-            Производственные показатели в целом соответствуют плану. Основной риск сосредоточен на одной старой станции (Ангренская ТЭС) с повышенным УРУТ и технологическими нарушениями. Финансовые показатели близки к плану, с резервом по снижению УРУТ и оптимизации топливной составляющей. Рекомендуется концентрация внимания на стабилизации Ангренской ТЭС в ближайший квартал.
+            Производственные показатели в целом соответствуют плану. Основной
+            риск сосредоточен на одной старой станции (Ангренская ТЭС) с
+            повышенным УРУТ и технологическими нарушениями. Финансовые
+            показатели близки к плану, с резервом по снижению УРУТ и оптимизации
+            топливной составляющей. Рекомендуется концентрация внимания на
+            стабилизации Ангренской ТЭС в ближайший квартал.
           </p>
           <div className="flex items-center gap-2">
             <CheckCircle className="w-6 h-6 text-green-400" />
-            <span className="text-lg font-semibold">Статус: Контрольный мониторинг</span>
+            <span className="text-lg font-semibold">
+              Статус: Контрольный мониторинг
+            </span>
           </div>
         </div>
       </div>

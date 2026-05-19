@@ -10,10 +10,12 @@ import {
   Sun,
   Moon,
   Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useTheme } from "@/hooks";
 
-export default function Header({ onMenuClick, isMobileMenuOpen }) {
+export default function Header({ onMenuClick, isMobileMenuOpen, onSidebarToggle, isSidebarCollapsed }) {
   const { isDark, toggle: toggleTheme } = useTheme();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -31,6 +33,19 @@ export default function Header({ onMenuClick, isMobileMenuOpen }) {
               <X className="w-6 h-6" />
             ) : (
               <Menu className="w-6 h-6" />
+            )}
+          </button>
+
+          {/* Desktop Sidebar Toggle */}
+          <button
+            onClick={onSidebarToggle}
+            className="hidden md:inline-flex p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title={isSidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+          >
+            {isSidebarCollapsed ? (
+              <ChevronRight className="w-5 h-5 text-gray-600" />
+            ) : (
+              <ChevronLeft className="w-5 h-5 text-gray-600" />
             )}
           </button>
 

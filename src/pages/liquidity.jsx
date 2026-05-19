@@ -293,9 +293,12 @@ export default function LiquidityPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Main Debtors Table */}
               <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                <h2 className="text-lg font-bold text-gray-900 mb-2">Основные должники</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-2">
+                  Основные должники
+                </h2>
                 <p className="text-xs text-gray-600 mb-6">
-                  Структура портфеля дебиторской задолженности по ключевым контрагентам.
+                  Структура портфеля дебиторской задолженности по ключевым
+                  контрагентам.
                 </p>
 
                 <div className="overflow-x-auto">
@@ -322,7 +325,8 @@ export default function LiquidityPage() {
                     <tbody>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-3 px-3 text-sm font-medium text-gray-900">
-                          АО &quot;Национальные электрические сети Узбекистана&quot;
+                          АО &quot;Национальные электрические сети
+                          Узбекистана&quot;
                         </td>
                         <td className="py-3 px-3 text-right text-sm text-gray-900">
                           780 млрд сум
@@ -334,7 +338,9 @@ export default function LiquidityPage() {
                           <div className="inline-block w-12 h-2 bg-orange-500 rounded" />
                           <span className="ml-2">38 дней</span>
                         </td>
-                        <td className="py-3 px-3 text-sm text-orange-600 font-medium">контроль</td>
+                        <td className="py-3 px-3 text-sm text-orange-600 font-medium">
+                          контроль
+                        </td>
                       </tr>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-3 px-3 text-sm font-medium text-gray-900">
@@ -350,7 +356,9 @@ export default function LiquidityPage() {
                           <div className="inline-block w-16 h-2 bg-red-600 rounded" />
                           <span className="ml-2">52 дня</span>
                         </td>
-                        <td className="py-3 px-3 text-sm text-red-600 font-medium">взысканий</td>
+                        <td className="py-3 px-3 text-sm text-red-600 font-medium">
+                          взысканий
+                        </td>
                       </tr>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-3 px-3 text-sm font-medium text-gray-900">
@@ -366,7 +374,9 @@ export default function LiquidityPage() {
                           <div className="inline-block w-20 h-2 bg-red-500 rounded" />
                           <span className="ml-2">64 дня</span>
                         </td>
-                        <td className="py-3 px-3 text-sm text-red-600 font-medium">просрочка</td>
+                        <td className="py-3 px-3 text-sm text-red-600 font-medium">
+                          просрочка
+                        </td>
                       </tr>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-3 px-3 text-sm font-medium text-gray-900">
@@ -382,7 +392,9 @@ export default function LiquidityPage() {
                           <div className="inline-block w-14 h-2 bg-orange-500 rounded" />
                           <span className="ml-2">47 дней</span>
                         </td>
-                        <td className="py-3 px-3 text-sm text-orange-600 font-medium">контроль</td>
+                        <td className="py-3 px-3 text-sm text-orange-600 font-medium">
+                          контроль
+                        </td>
                       </tr>
                       <tr className="hover:bg-gray-50">
                         <td className="py-3 px-3 text-sm font-medium text-gray-900">
@@ -398,7 +410,9 @@ export default function LiquidityPage() {
                           <div className="inline-block w-10 h-2 bg-green-500 rounded" />
                           <span className="ml-2">35 дней</span>
                         </td>
-                        <td className="py-3 px-3 text-sm text-green-600 font-medium">норма</td>
+                        <td className="py-3 px-3 text-sm text-green-600 font-medium">
+                          норма
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -417,8 +431,12 @@ export default function LiquidityPage() {
                 <div className="space-y-4">
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-medium text-gray-600">05 июня</span>
-                      <span className="text-sm font-semibold text-gray-900">180 млрд сум</span>
+                      <span className="text-xs font-medium text-gray-600">
+                        05 июня
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        180 млрд сум
+                      </span>
                     </div>
                     <p className="text-sm text-gray-900 font-medium">
                       Платеж НЭСУ по графику
@@ -427,8 +445,12 @@ export default function LiquidityPage() {
 
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-medium text-gray-600">10 июня</span>
-                      <span className="text-sm font-semibold text-gray-900">95 млрд сум</span>
+                      <span className="text-xs font-medium text-gray-600">
+                        10 июня
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        95 млрд сум
+                      </span>
                     </div>
                     <p className="text-sm text-gray-900 font-medium">
                       Погашение просрочки РЭС
@@ -437,8 +459,12 @@ export default function LiquidityPage() {
 
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-medium text-gray-600">15 июня</span>
-                      <span className="text-sm font-semibold text-gray-900">18 млрд сум</span>
+                      <span className="text-xs font-medium text-gray-600">
+                        15 июня
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        18 млрд сум
+                      </span>
                     </div>
                     <p className="text-sm text-gray-900 font-medium">
                       Платеж по тепловой энергии
@@ -447,8 +473,12 @@ export default function LiquidityPage() {
 
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-medium text-gray-600">20 июня</span>
-                      <span className="text-sm font-semibold text-gray-900">120 млрд сум</span>
+                      <span className="text-xs font-medium text-gray-600">
+                        20 июня
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        120 млрд сум
+                      </span>
                     </div>
                     <p className="text-sm text-gray-900 font-medium">
                       Очередной платеж РЭС
@@ -457,8 +487,12 @@ export default function LiquidityPage() {
 
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-medium text-gray-600">25 июня</span>
-                      <span className="text-sm font-semibold text-gray-900">24 млрд сум</span>
+                      <span className="text-xs font-medium text-gray-600">
+                        25 июня
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        24 млрд сум
+                      </span>
                     </div>
                     <p className="text-sm text-gray-900 font-medium">
                       Прочие дебиторы
@@ -476,7 +510,8 @@ export default function LiquidityPage() {
                   Рекомендуемые действия по ДЗ
                 </h2>
                 <p className="text-xs text-gray-600 mb-6">
-                  Действия для финансового блока, юридической службы и взаимодействия с контрагентами.
+                  Действия для финансового блока, юридической службы и
+                  взаимодействия с контрагентами.
                 </p>
 
                 <div className="space-y-4">
@@ -485,7 +520,8 @@ export default function LiquidityPage() {
                       РЭС: согласовать график погашения 190 млрд сум просрочки
                     </p>
                     <p className="text-xs text-gray-600 mt-2">
-                      Ответственные: финансовый директор, юридическая служба. Контролы: ежемесячно до снижения DSO ниже 45 дней.
+                      Ответственные: финансовый директор, юридическая служба.
+                      Контролы: ежемесячно до снижения DSO ниже 45 дней.
                     </p>
                   </div>
 
@@ -494,7 +530,9 @@ export default function LiquidityPage() {
                       НСЭ: удержать платежи в рамках 30-45 дней
                     </p>
                     <p className="text-xs text-gray-600 mt-2">
-                      Проверить акты свечи, исключить накопление новой просрочки, синхронизировать платежи с топливными обязательствами.
+                      Проверить акты свечи, исключить накопление новой
+                      просрочки, синхронизировать платежи с топливными
+                      обязательствами.
                     </p>
                   </div>
 
@@ -503,7 +541,8 @@ export default function LiquidityPage() {
                       Тепловые потребители: выделить портфель 90+ дней
                     </p>
                     <p className="text-xs text-gray-600 mt-2">
-                      Сформировать список с претензионной работой и отдельный график реструктуризации.
+                      Сформировать список с претензионной работой и отдельный
+                      график реструктуризации.
                     </p>
                   </div>
 
@@ -512,7 +551,8 @@ export default function LiquidityPage() {
                       FCF: сохранить положительный денежный поток
                     </p>
                     <p className="text-xs text-gray-600 mt-2">
-                      Не допустить, чтобы рост ДЗ привел к перечему ремонтных платежей и закупок топлива.
+                      Не допустить, чтобы рост ДЗ привел к перечему ремонтных
+                      платежей и закупок топлива.
                     </p>
                   </div>
                 </div>
@@ -524,19 +564,24 @@ export default function LiquidityPage() {
                   Контрольные пороги
                 </h2>
                 <p className="text-xs text-gray-600 mb-6">
-                  Правила автоматической эскалации на уровень генерального директора.
+                  Правила автоматической эскалации на уровень генерального
+                  директора.
                 </p>
 
                 <div className="space-y-4">
                   <div className="border-l-4 border-l-green-500 bg-green-50 p-4 rounded">
-                    <p className="text-sm font-semibold text-gray-900">DSO ≤ 45 дней</p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      DSO ≤ 45 дней
+                    </p>
                     <p className="text-xs text-gray-600 mt-2">
                       Норма. Контроль на уровне финансового блока.
                     </p>
                   </div>
 
                   <div className="border-l-4 border-l-orange-500 bg-orange-50 p-4 rounded">
-                    <p className="text-sm font-semibold text-gray-900">DSO 46-60 дней</p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      DSO 46-60 дней
+                    </p>
                     <p className="text-xs text-gray-600 mt-2">
                       Контроль. Требует график погашения и акт сверки.
                     </p>
@@ -547,7 +592,8 @@ export default function LiquidityPage() {
                       DSO {`>`} 60 дней или 90+ портфель растет
                     </p>
                     <p className="text-xs text-gray-600 mt-2">
-                      Эскалация. Включить юридический блок и выстав на совещание ГД.
+                      Эскалация. Включить юридический блок и выстав на совещание
+                      ГД.
                     </p>
                   </div>
 
@@ -556,7 +602,8 @@ export default function LiquidityPage() {
                       Collection Rate {`<`} 98%
                     </p>
                     <p className="text-xs text-gray-600 mt-2">
-                      Риск кассового разрыва и перечислении ремонтов / закупок топлива.
+                      Риск кассового разрыва и перечислении ремонтов / закупок
+                      топлива.
                     </p>
                   </div>
                 </div>
