@@ -15,7 +15,12 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/hooks";
 
-export default function Header({ onMenuClick, isMobileMenuOpen, onSidebarToggle, isSidebarCollapsed }) {
+export default function Header({
+  onMenuClick,
+  isMobileMenuOpen,
+  onSidebarToggle,
+  isSidebarCollapsed,
+}) {
   const { isDark, toggle: toggleTheme } = useTheme();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);

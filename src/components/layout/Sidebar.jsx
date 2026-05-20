@@ -56,7 +56,11 @@ const sidebarItems = [
   },
 ];
 
-export default function Sidebar({ isOpen = true, onClose, isCollapsed = false }) {
+export default function Sidebar({
+  isOpen = true,
+  onClose,
+  isCollapsed = false,
+}) {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState([]);
   const [mounted, setMounted] = useState(false);
@@ -81,7 +85,10 @@ export default function Sidebar({ isOpen = true, onClose, isCollapsed = false })
 
       {/* Logo Section */}
       <div className={`relative px-6 py-8 ${isCollapsed ? "px-2" : ""}`}>
-        <Link href="/" className="flex items-center gap-3 group justify-center md:justify-start">
+        <Link
+          href="/"
+          className="flex items-center gap-3 group justify-center md:justify-start"
+        >
           <div className="relative w-10 h-10">
             {/* Glow effect */}
             <div className="absolute inset-0 bg-linear-to-br from-cyan-500 to-blue-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
@@ -186,10 +193,15 @@ export default function Sidebar({ isOpen = true, onClose, isCollapsed = false })
         >
           <div className="absolute inset-0 bg-linear-to-r from-slate-700 to-slate-700 rounded-lg opacity-0 group-hover:opacity-50 transition-opacity duration-200 -z-10" />
           <Settings className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 transition-colors duration-200 shrink-0" />
-          {!isCollapsed && <span className="text-sm font-medium">Параметры</span>}
+          {!isCollapsed && (
+            <span className="text-sm font-medium">Параметры</span>
+          )}
         </Link>
 
-        <button className="group w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-red-400 transition-all duration-200 relative" title={isCollapsed ? "Выход" : ""}>
+        <button
+          className="group w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-red-400 transition-all duration-200 relative"
+          title={isCollapsed ? "Выход" : ""}
+        >
           <div className="absolute inset-0 bg-linear-to-r from-red-950/30 to-red-950/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
           <LogOut className="w-5 h-5 text-slate-500 group-hover:text-red-400 transition-colors duration-200 shrink-0" />
           {!isCollapsed && <span className="text-sm font-medium">Выход</span>}
