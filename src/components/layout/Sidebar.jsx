@@ -63,11 +63,6 @@ export default function Sidebar({
 }) {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState([]);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const toggleExpanded = (label) => {
     setExpandedItems((prev) =>
@@ -214,7 +209,7 @@ export default function Sidebar({
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex md:w-64 bg-slate-900 flex-col overflow-hidden">
-        {mounted && sidebarContent}
+        {sidebarContent}
       </aside>
 
       {/* Mobile Sidebar */}
@@ -229,7 +224,7 @@ export default function Sidebar({
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {mounted && sidebarContent}
+        {sidebarContent}
       </aside>
     </>
   );
