@@ -409,9 +409,8 @@ export default function MaterialBalancePage() {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-sm border-l-4 border-l-orange-500 flex flex-col items-center justify-center">
-            <ArrowRight className="w-8 h-8 text-orange-600 mb-2" />
-            <h3 className="text-sm font-semibold text-gray-600 text-center">
+          <div className="bg-white rounded-lg p-6 shadow-sm border-l-4 border-l-orange-500">
+            <h3 className="text-sm font-semibold text-gray-600">
               преобразование
             </h3>
             <p className="text-2xl font-bold text-gray-900 mt-3">38,4%</p>

@@ -152,10 +152,7 @@ export default function LiquidityPage() {
         {/* Filter Section */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between gap-4">
-            <div className="w-64">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Месяц
-              </label>
+            <div className="w-full">
               <CustomSelect
                 label="Месяц"
                 options={monthOptions}
