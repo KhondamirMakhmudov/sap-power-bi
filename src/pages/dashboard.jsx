@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import MainLayout from "@/components/layout/MainLayout";
 import Card from "@/components/ui/Card";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -8,9 +9,11 @@ import Loader from "@/components/ui/Loader";
 import KPICardComponent from "@/components/dashboard/KPICardComponent";
 import FacilityCardComponent from "@/components/dashboard/FacilityCardComponent";
 import { formatCurrency } from "@/utils/helpers";
+import { isAuthenticated } from "@/utils/auth";
 import { get } from "lodash";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const selectedYear = 2025;
   const monthOptions = [
     { value: `${selectedYear}-01`, label: "Январь" },
@@ -115,23 +118,50 @@ export default function DashboardPage() {
       : [];
   const showOnlyValueInKpi = filters.scenario === "Факт / план";
 
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+  };
+
   return (
     <MainLayout>
       <div className="space-y-8">
         {/* Filters Section */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
           <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={postDashboardData}
+                className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+                disabled={dashboardApiLoading}
+              >
+                {dashboardApiLoading ? "Загрузка данных..." : "Выбрать"}
+              </button>
+              {dashboardApiError && (
+                <p className="text-xs text-red-600">{dashboardApiError}</p>
+              )}
+            </div>
             <button
               type="button"
-              onClick={postDashboardData}
-              className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400"
-              disabled={dashboardApiLoading}
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
             >
-              {dashboardApiLoading ? "Загрузка данных..." : "Выбрать"}
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"
+                />
+              </svg>
+              Выйти
             </button>
-            {dashboardApiError && (
-              <p className="text-xs text-red-600">{dashboardApiError}</p>
-            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -188,7 +218,7 @@ export default function DashboardPage() {
             <p className="text-lg font-medium text-gray-700 mb-1.5">
               Нет данных
             </p>
-            <p className="text-sm text-gray-400 max-w-[260px] leading-relaxed">
+            <p className="text-sm text-gray-400 max-w-65 leading-relaxed">
               Выберите месяц в фильтре выше, чтобы загрузить данные
             </p>
           </div>
@@ -305,4 +335,11 @@ export default function DashboardPage() {
       </div>
     </MainLayout>
   );
+}
+
+export async function getServerSideProps({ req }) {
+  if (!isAuthenticated(req)) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+  return { props: {} };
 }

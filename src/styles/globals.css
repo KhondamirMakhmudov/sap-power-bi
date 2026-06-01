@@ -28,7 +28,7 @@ html {
 }
 
 body {
-  @apply bg-white text-gray-900;
+  @apply text-gray-900;
 }
 
 body.dark {
