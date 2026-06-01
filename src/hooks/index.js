@@ -158,3 +158,5 @@ export function useMediaQuery(query) {
 
   return matches;
 }
+
+export { useGetQuery, usePostQuery, useDeleteQuery } from "./all";

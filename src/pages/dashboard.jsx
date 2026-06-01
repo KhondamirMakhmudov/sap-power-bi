@@ -1,122 +1,145 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import Card from "@/components/ui/Card";
 import CustomSelect from "@/components/ui/CustomSelect";
+import Loader from "@/components/ui/Loader";
+import KPICardComponent from "@/components/dashboard/KPICardComponent";
+import FacilityCardComponent from "@/components/dashboard/FacilityCardComponent";
 import { formatCurrency } from "@/utils/helpers";
+import { get } from "lodash";
 
 export default function DashboardPage() {
+  const selectedYear = 2025;
+  const monthOptions = [
+    { value: `${selectedYear}-01`, label: "Январь" },
+    { value: `${selectedYear}-02`, label: "Февраль" },
+    { value: `${selectedYear}-03`, label: "Март" },
+    { value: `${selectedYear}-04`, label: "Апрель" },
+    { value: `${selectedYear}-05`, label: "Май" },
+    { value: `${selectedYear}-06`, label: "Июнь" },
+    { value: `${selectedYear}-07`, label: "Июль" },
+    { value: `${selectedYear}-08`, label: "Август" },
+    { value: `${selectedYear}-09`, label: "Сентябрь" },
+    { value: `${selectedYear}-10`, label: "Октябрь" },
+    { value: `${selectedYear}-11`, label: "Ноябрь" },
+    { value: `${selectedYear}-12`, label: "Декабрь" },
+  ];
+
+  const getDateRangeFromMonth = (monthValue) => {
+    const [yearText, monthText] = String(monthValue || "").split("-");
+    const year = Number(yearText);
+    const month = Number(monthText);
+
+    if (!year || !month || month < 1 || month > 12) {
+      return { dateFrom: "2025-01-01", dateTo: "2025-03-31" };
+    }
+
+    const firstDay = `${year}-${String(month).padStart(2, "0")}-01`;
+    const lastDayDate = new Date(year, month, 0);
+    const lastDay = `${year}-${String(month).padStart(2, "0")}-${String(lastDayDate.getDate()).padStart(2, "0")}`;
+
+    return { dateFrom: firstDay, dateTo: lastDay };
+  };
+
   const [filters, setFilters] = useState({
-    month: "Июнь",
-    scenario: "Факт / план",
-    control: "Вся компания",
+    month: "",
+    scenario: "",
+    control: "",
   });
+  const [dashboardApiResponse, setDashboardApiResponse] = useState(null);
+  const [dashboardApiLoading, setDashboardApiLoading] = useState(false);
+  const [dashboardApiError, setDashboardApiError] = useState(null);
 
-  const kpiData = [
-    {
-      label: "Выручка",
-      value: "2.92 трлн сум",
-      plan: "2.91 трлн сум",
-      change: "+0.3% к плану",
-      borderColor: "border-l-4 border-green-600",
-    },
-    {
-      label: "EBITDA",
-      value: "676 млрд сум",
-      plan: "685 млрд сум",
-      change: "-1.3% к плану",
-      borderColor: "border-l-4 border-orange-500",
-    },
-    {
-      label: "Чистая прибыль",
-      value: "213 млрд сум",
-      plan: "220 млрд сум",
-      change: "-3.2% к плану",
-      borderColor: "border-l-4 border-orange-500",
-    },
-    {
-      label: "Выработка",
-      value: "5.28 млрд кВтч",
-      plan: "5.32 млрд кВтч",
-      change: "-0.8% к плану",
-      borderColor: "border-l-4 border-green-600",
-    },
-    {
-      label: "Средняя доступная мощность",
-      value: "10 120 МВт",
-      plan: "10 220 МВт",
-      change: "-1.0% к плану",
-      borderColor: "border-l-4 border-green-600",
-    },
-    {
-      label: "УРУГ",
-      value: "311.5 г/кВтч",
-      plan: "305.0 г/кВтч",
-      change: "+2.1% к плану",
-      borderColor: "border-l-4 border-red-600",
-    },
-  ];
+  const postDashboardData = async () => {
+    if (!filters.month) {
+      setDashboardApiError("Выберите месяц");
+      return;
+    }
 
-  const facilities = [
-    {
-      name: "Сырдарьинская ТЭС",
-      status: "Текущий статус: Норма",
-      statusDot: "green",
-      metrics: { output: "1.07 / 1.08", power: "3 010 МВт", urug: "302" },
-      risk: "Риск: Одиночений, требующих вмешательства, нет.",
-    },
-    {
-      name: "Ангренская ТЭС",
-      status: "Текущий статус: Вмешательство",
-      statusDot: "red",
-      metrics: { output: "0.45 / 0.50", power: "430 МВт", urug: "351" },
-      risk: "Риск: Высокий УРУГ и 5 технологических нарушений требует вмешательства.",
-    },
-    {
-      name: "Ново-Ангренская ТЭС",
-      status: "Текущий статус: Контроль",
-      statusDot: "orange",
-      metrics: { output: "0.77 / 0.78", power: "1 940 МВт", urug: "326" },
-      risk: "Риск: Топливная эффективность требует контроля.",
-    },
-    {
-      name: "Ферганская ТЭЦ",
-      status: "Текущий статус: Норма",
-      statusDot: "green",
-      metrics: { output: "0.16 / 0.16", power: "112 МВт", urug: "242" },
-      risk: "Риск: Отклонений, требующих вмешательства, нет.",
-    },
-    {
-      name: "Туракурганская ТЭС",
-      status: "Текущий статус: Норма",
-      statusDot: "green",
-      metrics: { output: "0.56 / 0.56", power: "792 МВт", urug: "284" },
-      risk: "Риск: Показатели в допустимом диапазоне.",
-    },
-    {
-      name: "Ташкентская ТЭЦ",
-      status: "Текущий статус: Норма",
-      statusDot: "green",
-      metrics: { output: "0.22 / 0.22", power: "108 МВт", urug: "238" },
-      risk: "Риск: Показатели в норме, контроль теплосетевого узла в рабочем порядке.",
-    },
-  ];
+    setDashboardApiLoading(true);
+    setDashboardApiError(null);
+    const { dateFrom, dateTo } = getDateRangeFromMonth(filters.month);
+
+    try {
+      const response = await fetch("/api/dashboard/post_fi", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date_from: dateFrom,
+          date_to: dateTo,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      setDashboardApiResponse(responseData);
+
+      // You can map this responseData into KPI and facilities content when ready.
+      console.log("Dashboard POST response:", responseData);
+    } catch (error) {
+      setDashboardApiError(error?.message || "Failed to fetch dashboard data");
+      console.error("Dashboard POST error:", error);
+    } finally {
+      setDashboardApiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!filters.month) {
+      return;
+    }
+
+    postDashboardData();
+  }, [filters.month]);
+
+  const handleResetFilters = () => {
+    setFilters({ month: "", scenario: "", control: "" });
+    setDashboardApiResponse(null);
+    setDashboardApiError(null);
+  };
+
+  const apiFacilities =
+    get(dashboardApiResponse, "data") ??
+    get(dashboardApiResponse, "Data") ??
+    [];
+  const facilityList =
+    Array.isArray(apiFacilities) && apiFacilities.length > 0
+      ? apiFacilities
+      : [];
+  const showOnlyValueInKpi = filters.scenario === "Факт / план";
 
   return (
     <MainLayout>
       <div className="space-y-8">
         {/* Filters Section */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={postDashboardData}
+              className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+              disabled={dashboardApiLoading}
+            >
+              {dashboardApiLoading ? "Загрузка данных..." : "Выбрать"}
+            </button>
+            {dashboardApiError && (
+              <p className="text-xs text-red-600">{dashboardApiError}</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <CustomSelect
               label="Месяц"
-              options={[
-                { value: "Июнь", label: "Июнь" },
-                { value: "Май", label: "Май" },
-                { value: "Апрель", label: "Апрель" },
-              ]}
+              options={monthOptions}
               value={filters.month}
+              placeholder="Выберите"
               onChange={(value) => setFilters({ ...filters, month: value })}
             />
             <CustomSelect
@@ -126,6 +149,7 @@ export default function DashboardPage() {
                 { value: "Только факт", label: "Только факт" },
               ]}
               value={filters.scenario}
+              placeholder="Выберите"
               onChange={(value) => setFilters({ ...filters, scenario: value })}
             />
             <CustomSelect
@@ -135,106 +159,149 @@ export default function DashboardPage() {
                 { value: "Генерация", label: "Генерация" },
               ]}
               value={filters.control}
+              placeholder="Выберите"
               onChange={(value) => setFilters({ ...filters, control: value })}
             />
             <div className="flex items-end">
-              <button className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              >
                 Сбросить
               </button>
             </div>
           </div>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {kpiData.map((kpi, idx) => (
-            <div
-              key={idx}
-              className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${kpi.borderColor}`}
-            >
-              <p className="text-sm font-medium text-gray-600">{kpi.label}</p>
-              <h3 className="text-2xl font-bold text-gray-900 mt-2">
-                {kpi.value}
-              </h3>
-              <p className="text-xs text-gray-500 mt-2">План: {kpi.plan}</p>
-              <p
-                className={`text-xs font-medium mt-2 ${kpi.change.includes("-") ? "text-red-600" : "text-green-600"}`}
-              >
-                {kpi.change}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Stations Under Attention */}
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-1">
-            Станции в зоне внимания
-          </h2>
-          <p className="text-sm text-gray-600 mb-6">
-            Активы, влияющие на месячный результат компании.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {facilities.map((facility, idx) => (
-              <div
-                key={idx}
-                className={`bg-white rounded-lg p-6 shadow-sm border-l-4 ${
-                  facility.statusDot === "green"
-                    ? "border-l-green-600"
-                    : facility.statusDot === "red"
-                      ? "border-l-red-600"
-                      : "border-l-orange-500"
-                }`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="font-bold text-gray-900">{facility.name}</h3>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {facility.status}
-                    </p>
-                  </div>
-                  <div
-                    className={`w-3 h-3 rounded-full ${
-                      facility.statusDot === "green"
-                        ? "bg-green-600"
-                        : facility.statusDot === "red"
-                          ? "bg-red-600"
-                          : "bg-orange-500"
-                    }`}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 py-4 border-y border-gray-200">
-                  <div>
-                    <p className="text-xs text-gray-600 font-medium">
-                      Выработка
-                    </p>
-                    <p className="text-sm font-bold text-gray-900 mt-1">
-                      {facility.metrics.output}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 font-medium">
-                      Мощность
-                    </p>
-                    <p className="text-sm font-bold text-gray-900 mt-1">
-                      {facility.metrics.power}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 font-medium">УРУГ</p>
-                    <p className="text-sm font-bold text-gray-900 mt-1">
-                      {facility.metrics.urug}
-                    </p>
-                  </div>
-                </div>
-
-                <p className="text-xs text-gray-600 mt-4">{facility.risk}</p>
-              </div>
-            ))}
+        {dashboardApiLoading ? (
+          <Loader
+            label="Загрузка данных за выбранный месяц..."
+            className="min-h-105"
+          />
+        ) : !dashboardApiResponse ? (
+          <div className="flex flex-col items-center justify-center min-h-80 py-12 px-8 text-center">
+            <i
+              className="ti ti-calendar-off text-4xl text-gray-300 mb-4"
+              aria-hidden="true"
+            />
+            <p className="text-lg font-medium text-gray-700 mb-1.5">
+              Нет данных
+            </p>
+            <p className="text-sm text-gray-400 max-w-[260px] leading-relaxed">
+              Выберите месяц в фильтре выше, чтобы загрузить данные
+            </p>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <KPICardComponent
+                label={"Выручка"}
+                value={get(dashboardApiResponse, "Viruchka")}
+                plan={get(dashboardApiResponse, "P_Viruchka", 0)}
+                change={get(dashboardApiResponse, "PF_Viruchka", 0)}
+                showPlanAndChange={!showOnlyValueInKpi}
+                displayUnit="сум"
+                unit={"сум"}
+              />
+
+              <KPICardComponent
+                label={"EBITDA"}
+                value={get(dashboardApiResponse, "EBITDA")}
+                plan={get(dashboardApiResponse, "P_EBITDA", 0)}
+                change={get(dashboardApiResponse, "PF_EBITDA", 0)}
+                showPlanAndChange={!showOnlyValueInKpi}
+                displayUnit="сум"
+                unit={"сум"}
+              />
+              <KPICardComponent
+                label={"Чистая прибыль"}
+                value={get(dashboardApiResponse, "ChistiyPribil", 0)}
+                plan={get(dashboardApiResponse, "P_ChistiyPribil", 0)}
+                change={get(dashboardApiResponse, "PF_ChistiyPribil", 0)}
+                showPlanAndChange={!showOnlyValueInKpi}
+                displayUnit="сум"
+                unit={"сум"}
+              />
+              <KPICardComponent
+                label={"Выработка"}
+                value={get(dashboardApiResponse, "VirabotkaEE")}
+                plan={get(dashboardApiResponse, "P_VirabotkaEE", 0)}
+                change={get(dashboardApiResponse, "PF_VirabotkaEE", 0)}
+                showPlanAndChange={!showOnlyValueInKpi}
+                displayUnit="кВтч"
+                unit={"кВтч"}
+              />
+              <KPICardComponent
+                label={"Средняя доступная мощность"}
+                value={get(dashboardApiResponse, "VirabotkaTE")}
+                plan={get(dashboardApiResponse, "P_VirabotkaTE", 0)}
+                change={get(dashboardApiResponse, "PF_VirabotkaTE", 0)}
+                showPlanAndChange={!showOnlyValueInKpi}
+                displayUnit="МВт"
+                unit={"МВт"}
+              />
+              <KPICardComponent
+                label={"УРУГ"}
+                value={get(dashboardApiResponse, "urug")}
+                plan={get(dashboardApiResponse, "P_urug", 0)}
+                change={get(dashboardApiResponse, "PF_urug", 0)}
+                showPlanAndChange={!showOnlyValueInKpi}
+                displayUnit="г/кВтч"
+                unit={"г/кВтч"}
+              />
+            </div>
+
+            {/* Stations Under Attention */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-1">
+                Станции в зоне внимания
+              </h2>
+              <p className="text-sm text-gray-600 mb-6">
+                Активы, влияющие на месячный результат компании.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {facilityList.map((facility, idx) => (
+                  <FacilityCardComponent
+                    key={idx}
+                    name={get(facility, "BE", get(facility, "name", "-"))}
+                    status={get(facility, "status")}
+                    statusDot={get(facility, "statusDot", "orange")}
+                    metrics={{
+                      output: get(
+                        facility,
+                        "VirabotkaTE",
+                        get(facility, "metrics.output", 0),
+                      ),
+                      outputPlan: get(
+                        facility,
+                        "P_VirabotkaEE",
+                        get(
+                          facility,
+                          "metrics.outputPlan",
+                          get(facility, "metrics.outputSecondary", 0),
+                        ),
+                      ),
+                      power: get(
+                        facility,
+                        "metrics.power",
+                        get(facility, "sdm", "-"),
+                      ),
+                      urug: get(
+                        facility,
+                        "metrics.urug",
+                        get(facility, "urug", "-"),
+                      ),
+                    }}
+                    risk={get(facility, "risk", "")}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </MainLayout>
   );
