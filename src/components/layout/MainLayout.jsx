@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
-export default function MainLayout({ children }) {
+export default function MainLayout({ children, username }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -35,6 +35,7 @@ export default function MainLayout({ children }) {
           isMobileMenuOpen={isMobileMenuOpen}
           onSidebarToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           isSidebarCollapsed={isSidebarCollapsed}
+          username={username}
         />
         <main className="flex-1 overflow-y-auto">
           <div className="px-4 sm:px-6 lg:px-8 py-8">{children}</div>

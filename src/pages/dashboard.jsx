@@ -9,10 +9,10 @@ import Loader from "@/components/ui/Loader";
 import KPICardComponent from "@/components/dashboard/KPICardComponent";
 import FacilityCardComponent from "@/components/dashboard/FacilityCardComponent";
 import { formatCurrency } from "@/utils/helpers";
-import { isAuthenticated } from "@/utils/auth";
+import { isAuthenticated, getSessionUsername } from "@/utils/auth";
 import { get } from "lodash";
 
-export default function DashboardPage() {
+export default function DashboardPage({ username }) {
   const router = useRouter();
   const selectedYear = 2025;
   const monthOptions = [
@@ -124,7 +124,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <MainLayout>
+    <MainLayout username={username}>
       <div className="space-y-8">
         {/* Filters Section */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
@@ -341,5 +341,5 @@ export async function getServerSideProps({ req }) {
   if (!isAuthenticated(req)) {
     return { redirect: { destination: "/login", permanent: false } };
   }
-  return { props: {} };
+  return { props: { username: getSessionUsername(req) ?? "" } };
 }

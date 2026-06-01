@@ -3,16 +3,15 @@
 import React, { useState } from "react";
 import {
   Bell,
-  Settings,
   LogOut,
   Menu,
   X,
   Sun,
   Moon,
-  Search,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useRouter } from "next/router";
 import { useTheme } from "@/hooks";
 
 export default function Header({
@@ -20,15 +19,24 @@ export default function Header({
   isMobileMenuOpen,
   onSidebarToggle,
   isSidebarCollapsed,
+  username,
 }) {
+  const router = useRouter();
   const { isDark, toggle: toggleTheme } = useTheme();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  const initials = username ? username.slice(0, 2).toUpperCase() : "??";
+
+  const handleLogout = async () => {
+    setIsProfileOpen(false);
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+  };
+
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
       <div className="flex items-center justify-between px-6 py-4">
-        {/* Left Section */}
         <div className="flex items-center gap-4 flex-1">
           <button
             onClick={onMenuClick}
@@ -41,11 +49,14 @@ export default function Header({
             )}
           </button>
 
-          {/* Desktop Sidebar Toggle */}
           <button
             onClick={onSidebarToggle}
             className="hidden md:inline-flex p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            title={isSidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+            title={
+              isSidebarCollapsed
+                ? "Показать боковую панель"
+                : "Скрыть боковую панель"
+            }
           >
             {isSidebarCollapsed ? (
               <ChevronRight className="w-5 h-5 text-gray-600" />
@@ -54,24 +65,33 @@ export default function Header({
             )}
           </button>
 
-          {/* Search Bar */}
           <div className="hidden sm:flex flex-1 max-w-md items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg">
-            <Search className="w-4 h-4 text-gray-400" />
+            <svg
+              className="w-4 h-4 text-gray-400 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"
+              />
+            </svg>
             <input
               type="text"
-              placeholder="Search analytics..."
+              placeholder="Поиск..."
               className="flex-1 bg-transparent text-sm outline-none placeholder-gray-400"
             />
           </div>
         </div>
 
-        {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            title={isDark ? "Light mode" : "Dark mode"}
+            title={isDark ? "Светлая тема" : "Тёмная тема"}
           >
             {isDark ? (
               <Sun className="w-5 h-5 text-gray-600" />
@@ -80,7 +100,6 @@ export default function Header({
             )}
           </button>
 
-          {/* Notifications */}
           <div className="relative">
             <button
               onClick={() => {
@@ -93,43 +112,37 @@ export default function Header({
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
             </button>
 
-            {/* Notification Dropdown */}
             {isNotificationOpen && (
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
                 <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                  <h3 className="font-semibold text-gray-900">Notifications</h3>
+                  <h3 className="font-semibold text-gray-900">Уведомления</h3>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
                   {[
                     {
                       id: 1,
-                      title: "New Order",
-                      message: "Order ORD001 completed",
-                      type: "success",
+                      title: "Новый заказ",
+                      message: "Заказ ORD001 выполнен",
                     },
                     {
                       id: 2,
-                      title: "Low Stock",
-                      message: "Premium Headphones low stock",
-                      type: "warning",
+                      title: "Низкий запас",
+                      message: "Premium Headphones - мало на складе",
                     },
                     {
                       id: 3,
-                      title: "Analytics Ready",
-                      message: "Daily report is available",
-                      type: "info",
+                      title: "Аналитика готова",
+                      message: "Ежедневный отчёт доступен",
                     },
-                  ].map((notification) => (
+                  ].map((n) => (
                     <div
-                      key={notification.id}
+                      key={n.id}
                       className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                     >
                       <p className="font-medium text-sm text-gray-900">
-                        {notification.title}
+                        {n.title}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        {notification.message}
-                      </p>
+                      <p className="text-sm text-gray-600">{n.message}</p>
                     </div>
                   ))}
                 </div>
@@ -137,7 +150,6 @@ export default function Header({
             )}
           </div>
 
-          {/* User Profile */}
           <div className="relative hidden sm:block">
             <button
               onClick={() => {
@@ -146,26 +158,28 @@ export default function Header({
               }}
               className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-sm font-semibold">
-                JD
+              <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-sm font-semibold">
+                {initials}
               </div>
             </button>
 
-            {/* Profile Dropdown */}
             {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
                 <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                  <p className="font-medium text-gray-900">John Doe</p>
-                  <p className="text-xs text-gray-600">john@example.com</p>
+                  <p className="font-semibold text-gray-900">
+                    {username || "-"}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Пользователь системы
+                  </p>
                 </div>
-                <div className="py-2">
-                  <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors">
-                    <Settings className="w-4 h-4" />
-                    Settings
-                  </button>
-                  <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-200">
+                <div className="py-1">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                  >
                     <LogOut className="w-4 h-4" />
-                    Logout
+                    Выйти из системы
                   </button>
                 </div>
               </div>
