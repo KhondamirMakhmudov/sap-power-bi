@@ -5,19 +5,19 @@ import MainLayout from "@/components/layout/MainLayout";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 
-const monthOptions = [
-  { value: "january", label: "Январь" },
-  { value: "february", label: "Февраль" },
-  { value: "march", label: "Март" },
-  { value: "april", label: "Апрель" },
-  { value: "may", label: "Май" },
-  { value: "june", label: "Июнь" },
-  { value: "july", label: "Июль" },
-  { value: "august", label: "Август" },
-  { value: "september", label: "Сентябрь" },
-  { value: "october", label: "Октябрь" },
-  { value: "november", label: "Ноябрь" },
-  { value: "december", label: "Декабрь" },
+const monthNames = [
+  "Январь",
+  "Февраль",
+  "Март",
+  "Апрель",
+  "Май",
+  "Июнь",
+  "Июль",
+  "Август",
+  "Сентябрь",
+  "Октябрь",
+  "Ноябрь",
+  "Декабрь",
 ];
 
 const kpiCards = [
@@ -124,7 +124,84 @@ const ratioCards = [
 ];
 
 export default function FinancesPage() {
-  const [selectedMonth, setSelectedMonth] = useState("may");
+  const currentYear = new Date().getFullYear();
+  const yearOptions = [
+    { value: String(currentYear - 1), label: String(currentYear - 1) },
+    { value: String(currentYear), label: String(currentYear) },
+    { value: String(currentYear + 1), label: String(currentYear + 1) },
+  ];
+  const [filters, setFilters] = useState({
+    year: String(currentYear),
+    month: "",
+  });
+  const [financesApiLoading, setFinancesApiLoading] = useState(false);
+  const [financesApiError, setFinancesApiError] = useState(null);
+
+  const monthOptions = monthNames.map((label, index) => ({
+    value: `${filters.year}-${String(index + 1).padStart(2, "0")}`,
+    label,
+  }));
+
+  const getDateRangeFromMonth = (monthValue) => {
+    const [yearText, monthText] = String(monthValue || "").split("-");
+    const year = Number(yearText);
+    const month = Number(monthText);
+
+    if (!year || !month || month < 1 || month > 12) {
+      return { dateFrom: "2025-01-01", dateTo: "2025-03-31" };
+    }
+
+    const firstDay = `${year}-${String(month).padStart(2, "0")}-01`;
+    const lastDayDate = new Date(year, month, 0);
+    const lastDay = `${year}-${String(month).padStart(2, "0")}-${String(lastDayDate.getDate()).padStart(2, "0")}`;
+
+    return { dateFrom: firstDay, dateTo: lastDay };
+  };
+
+  const postFinancesData = async (selectedMonth = filters.month) => {
+    if (!selectedMonth) {
+      setFinancesApiError("Выберите месяц");
+      return;
+    }
+
+    setFinancesApiLoading(true);
+    setFinancesApiError(null);
+
+    const { dateFrom, dateTo } = getDateRangeFromMonth(selectedMonth);
+
+    try {
+      const response = await fetch("/api/dashboard/post_fi", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date_from: dateFrom,
+          date_to: dateTo,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log("Finances temporary POST response:", responseData);
+    } catch (error) {
+      setFinancesApiError(error?.message || "Failed to fetch finances data");
+      console.error("Finances temporary POST error:", error);
+    } finally {
+      setFinancesApiLoading(false);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      year: String(currentYear),
+      month: "",
+    });
+    setFinancesApiError(null);
+  };
 
   return (
     <MainLayout>
@@ -136,18 +213,48 @@ export default function FinancesPage() {
 
         {/* Filter Section */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between gap-4">
-            <div className="w-full">
-              <CustomSelect
-                label="Месяц"
-                options={monthOptions}
-                value={selectedMonth}
-                onChange={setSelectedMonth}
-              />
-            </div>
-            <button className="mt-6 px-6 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors">
-              Сбросить
+          <div className="mb-4 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => postFinancesData()}
+              className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+              disabled={financesApiLoading}
+            >
+              {financesApiLoading ? "Загрузка данных..." : "Выбрать"}
             </button>
+            {financesApiError && (
+              <p className="text-xs text-red-600">{financesApiError}</p>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <CustomSelect
+              label="Год"
+              options={yearOptions}
+              value={filters.year}
+              placeholder="Выберите"
+              onChange={(value) =>
+                setFilters({ ...filters, year: value, month: "" })
+              }
+            />
+            <CustomSelect
+              label="Месяц"
+              options={monthOptions}
+              value={filters.month}
+              placeholder="Выберите"
+              onChange={(value) => {
+                setFilters({ ...filters, month: value });
+                postFinancesData(value);
+              }}
+            />
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="w-full px-6 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors"
+              >
+                Сбросить
+              </button>
+            </div>
           </div>
         </div>
 
