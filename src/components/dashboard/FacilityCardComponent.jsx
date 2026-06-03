@@ -53,9 +53,7 @@ export default function FacilityCardComponent({
           </h3>
           <p className="text-xs text-gray-600 mt-1">{status}</p>
         </div>
-        <div
-          className={`w-3 h-3 rounded-full shrink-0 mt-1 ${dotClass}`}
-        />
+        <div className={`w-3 h-3 rounded-full shrink-0 mt-1 ${dotClass}`} />
       </div>
       <div className="grid grid-cols-3 gap-4 py-4 border-y border-gray-200">
         <div>
