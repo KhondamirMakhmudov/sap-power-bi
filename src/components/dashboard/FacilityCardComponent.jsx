@@ -20,6 +20,22 @@ export default function FacilityCardComponent({
   const outputValue = metrics?.output;
   const outputPlan =
     metrics?.outputPlan ?? metrics?.outputPLan ?? metrics?.outputSecondary;
+  const outputTooltip = [metrics?.outputKey, metrics?.outputPlanKey]
+    .filter((value) => value !== undefined && value !== null && value !== "")
+    .map(String)
+    .join(" / ");
+  const powerTooltip =
+    metrics?.powerKey !== undefined &&
+    metrics?.powerKey !== null &&
+    metrics?.powerKey !== ""
+      ? String(metrics.powerKey)
+      : "";
+  const urugTooltip =
+    metrics?.urugKey !== undefined &&
+    metrics?.urugKey !== null &&
+    metrics?.urugKey !== ""
+      ? String(metrics.urugKey)
+      : "";
   const displayOutput =
     outputValue !== undefined && outputValue !== null && outputValue !== ""
       ? outputPlan !== undefined && outputPlan !== null && outputPlan !== ""
@@ -38,25 +54,34 @@ export default function FacilityCardComponent({
           <p className="text-xs text-gray-600 mt-1">{status}</p>
         </div>
         <div
-          className={`w-3 h-3 rounded-full flex-shrink-0 mt-1 ${dotClass}`}
+          className={`w-3 h-3 rounded-full shrink-0 mt-1 ${dotClass}`}
         />
       </div>
       <div className="grid grid-cols-3 gap-4 py-4 border-y border-gray-200">
         <div>
           <p className="text-xs text-gray-600 font-medium">Выработка</p>
-          <p className="text-sm font-bold text-gray-900 mt-1">
+          <p
+            className="text-sm font-bold text-gray-900 mt-1"
+            title={outputTooltip || undefined}
+          >
             {displayOutput}
           </p>
         </div>
         <div>
           <p className="text-xs text-gray-600 font-medium">Мощность</p>
-          <p className="text-sm font-bold text-gray-900 mt-1">
+          <p
+            className="text-sm font-bold text-gray-900 mt-1"
+            title={powerTooltip || undefined}
+          >
             {metrics?.power}
           </p>
         </div>
         <div>
           <p className="text-xs text-gray-600 font-medium">УРУГ</p>
-          <p className="text-sm font-bold text-gray-900 mt-1">
+          <p
+            className="text-sm font-bold text-gray-900 mt-1"
+            title={urugTooltip || undefined}
+          >
             {metrics?.urug}
           </p>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
 import MainLayout from "@/components/layout/MainLayout";
 import Card from "@/components/ui/Card";
@@ -14,20 +14,25 @@ import { get } from "lodash";
 
 export default function DashboardPage({ username }) {
   const router = useRouter();
-  const selectedYear = 2025;
-  const monthOptions = [
-    { value: `${selectedYear}-01`, label: "Январь" },
-    { value: `${selectedYear}-02`, label: "Февраль" },
-    { value: `${selectedYear}-03`, label: "Март" },
-    { value: `${selectedYear}-04`, label: "Апрель" },
-    { value: `${selectedYear}-05`, label: "Май" },
-    { value: `${selectedYear}-06`, label: "Июнь" },
-    { value: `${selectedYear}-07`, label: "Июль" },
-    { value: `${selectedYear}-08`, label: "Август" },
-    { value: `${selectedYear}-09`, label: "Сентябрь" },
-    { value: `${selectedYear}-10`, label: "Октябрь" },
-    { value: `${selectedYear}-11`, label: "Ноябрь" },
-    { value: `${selectedYear}-12`, label: "Декабрь" },
+  const currentYear = new Date().getFullYear();
+  const yearOptions = [
+    { value: String(currentYear - 1), label: String(currentYear - 1) },
+    { value: String(currentYear), label: String(currentYear) },
+    { value: String(currentYear + 1), label: String(currentYear + 1) },
+  ];
+  const monthNames = [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
   ];
 
   const getDateRangeFromMonth = (monthValue) => {
@@ -47,23 +52,29 @@ export default function DashboardPage({ username }) {
   };
 
   const [filters, setFilters] = useState({
+    year: String(currentYear),
     month: "",
     scenario: "",
     control: "",
   });
+
+  const monthOptions = monthNames.map((label, index) => ({
+    value: `${filters.year}-${String(index + 1).padStart(2, "0")}`,
+    label,
+  }));
   const [dashboardApiResponse, setDashboardApiResponse] = useState(null);
   const [dashboardApiLoading, setDashboardApiLoading] = useState(false);
   const [dashboardApiError, setDashboardApiError] = useState(null);
 
-  const postDashboardData = async () => {
-    if (!filters.month) {
+  const postDashboardData = async (selectedMonth = filters.month) => {
+    if (!selectedMonth) {
       setDashboardApiError("Выберите месяц");
       return;
     }
 
     setDashboardApiLoading(true);
     setDashboardApiError(null);
-    const { dateFrom, dateTo } = getDateRangeFromMonth(filters.month);
+    const { dateFrom, dateTo } = getDateRangeFromMonth(selectedMonth);
 
     try {
       const response = await fetch("/api/dashboard/post_fi", {
@@ -94,16 +105,13 @@ export default function DashboardPage({ username }) {
     }
   };
 
-  useEffect(() => {
-    if (!filters.month) {
-      return;
-    }
-
-    postDashboardData();
-  }, [filters.month]);
-
   const handleResetFilters = () => {
-    setFilters({ month: "", scenario: "", control: "" });
+    setFilters({
+      year: String(currentYear),
+      month: "",
+      scenario: "",
+      control: "",
+    });
     setDashboardApiResponse(null);
     setDashboardApiError(null);
   };
@@ -116,7 +124,7 @@ export default function DashboardPage({ username }) {
     Array.isArray(apiFacilities) && apiFacilities.length > 0
       ? apiFacilities
       : [];
-  const showOnlyValueInKpi = filters.scenario === "Факт / план";
+  const showPlanAndChangeInKpi = filters.scenario === "Факт / план";
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -164,13 +172,25 @@ export default function DashboardPage({ username }) {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <CustomSelect
+              label="Год"
+              options={yearOptions}
+              value={filters.year}
+              placeholder="Выберите"
+              onChange={(value) =>
+                setFilters({ ...filters, year: value, month: "" })
+              }
+            />
             <CustomSelect
               label="Месяц"
               options={monthOptions}
               value={filters.month}
               placeholder="Выберите"
-              onChange={(value) => setFilters({ ...filters, month: value })}
+              onChange={(value) => {
+                setFilters({ ...filters, month: value });
+                postDashboardData(value);
+              }}
             />
             <CustomSelect
               label="Сценарий"
@@ -231,7 +251,7 @@ export default function DashboardPage({ username }) {
                 value={get(dashboardApiResponse, "Viruchka")}
                 plan={get(dashboardApiResponse, "P_Viruchka", 0)}
                 change={get(dashboardApiResponse, "PF_Viruchka", 0)}
-                showPlanAndChange={!showOnlyValueInKpi}
+                showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="сум"
                 unit={"сум"}
               />
@@ -241,7 +261,7 @@ export default function DashboardPage({ username }) {
                 value={get(dashboardApiResponse, "EBITDA")}
                 plan={get(dashboardApiResponse, "P_EBITDA", 0)}
                 change={get(dashboardApiResponse, "PF_EBITDA", 0)}
-                showPlanAndChange={!showOnlyValueInKpi}
+                showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="сум"
                 unit={"сум"}
               />
@@ -250,7 +270,7 @@ export default function DashboardPage({ username }) {
                 value={get(dashboardApiResponse, "ChistiyPribil", 0)}
                 plan={get(dashboardApiResponse, "P_ChistiyPribil", 0)}
                 change={get(dashboardApiResponse, "PF_ChistiyPribil", 0)}
-                showPlanAndChange={!showOnlyValueInKpi}
+                showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="сум"
                 unit={"сум"}
               />
@@ -259,7 +279,7 @@ export default function DashboardPage({ username }) {
                 value={get(dashboardApiResponse, "VirabotkaEE")}
                 plan={get(dashboardApiResponse, "P_VirabotkaEE", 0)}
                 change={get(dashboardApiResponse, "PF_VirabotkaEE", 0)}
-                showPlanAndChange={!showOnlyValueInKpi}
+                showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="кВтч"
                 unit={"кВтч"}
               />
@@ -268,7 +288,7 @@ export default function DashboardPage({ username }) {
                 value={get(dashboardApiResponse, "VirabotkaTE")}
                 plan={get(dashboardApiResponse, "P_VirabotkaTE", 0)}
                 change={get(dashboardApiResponse, "PF_VirabotkaTE", 0)}
-                showPlanAndChange={!showOnlyValueInKpi}
+                showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="МВт"
                 unit={"МВт"}
               />
@@ -277,7 +297,7 @@ export default function DashboardPage({ username }) {
                 value={get(dashboardApiResponse, "urug")}
                 plan={get(dashboardApiResponse, "P_urug", 0)}
                 change={get(dashboardApiResponse, "PF_urug", 0)}
-                showPlanAndChange={!showOnlyValueInKpi}
+                showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="г/кВтч"
                 unit={"г/кВтч"}
               />
@@ -302,9 +322,10 @@ export default function DashboardPage({ username }) {
                     metrics={{
                       output: get(
                         facility,
-                        "VirabotkaTE",
+                        "VirabotkaEE",
                         get(facility, "metrics.output", 0),
                       ),
+                      outputKey: "VirabotkaEE",
                       outputPlan: get(
                         facility,
                         "P_VirabotkaEE",
@@ -314,16 +335,19 @@ export default function DashboardPage({ username }) {
                           get(facility, "metrics.outputSecondary", 0),
                         ),
                       ),
+                      outputPlanKey: "P_VirabotkaEE",
                       power: get(
                         facility,
                         "metrics.power",
                         get(facility, "sdm", "-"),
                       ),
+                      powerKey: "sdm",
                       urug: get(
                         facility,
                         "metrics.urug",
                         get(facility, "urug", "-"),
                       ),
+                      urugKey: "urug",
                     }}
                     risk={get(facility, "risk", "")}
                   />
