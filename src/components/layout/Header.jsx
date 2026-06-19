@@ -6,13 +6,10 @@ import {
   LogOut,
   Menu,
   X,
-  Sun,
-  Moon,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { useRouter } from "next/router";
-import { useTheme } from "@/hooks";
 
 export default function Header({
   onMenuClick,
@@ -20,10 +17,8 @@ export default function Header({
   onSidebarToggle,
   isSidebarCollapsed,
   username,
-  notificationsPayload,
 }) {
   const router = useRouter();
-  const { isDark, toggle: toggleTheme } = useTheme();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -34,80 +29,6 @@ export default function Header({
     await fetch("/api/auth/logout", { method: "POST" });
     router.replace("/login");
   };
-
-  const fallbackNotifications = [
-    { id: 1, title: "Новый заказ", message: "Заказ ORD001 выполнен" },
-    {
-      id: 2,
-      title: "Низкий запас",
-      message: "Premium Headphones - мало на складе",
-    },
-    {
-      id: 3,
-      title: "Аналитика готова",
-      message: "Ежедневный отчёт доступен",
-    },
-  ];
-
-  const normalizeNotifications = (payload) => {
-    if (!payload) return fallbackNotifications;
-
-    let source = payload;
-
-    if (typeof source === "string") {
-      try {
-        source = JSON.parse(source);
-      } catch {
-        return [{ id: 1, title: "Сообщение", message: source }];
-      }
-    }
-
-    if (Array.isArray(source)) {
-      return source.map((item, idx) => ({
-        id: item?.id ?? idx + 1,
-        title: item?.title || item?.name || "Сообщение",
-        message:
-          typeof item?.message === "string"
-            ? item.message
-            : JSON.stringify(item),
-      }));
-    }
-
-    if (Array.isArray(source?.archives)) {
-      return source.archives.map((item, idx) => ({
-        id: item?.id ?? idx + 1,
-        title: item?.title || item?.name || "Архив",
-        message:
-          typeof item?.message === "string"
-            ? item.message
-            : JSON.stringify(item),
-      }));
-    }
-
-    if (Array.isArray(source?.messages)) {
-      return source.messages.map((item, idx) => ({
-        id: item?.id ?? idx + 1,
-        title: item?.title || item?.name || "Сообщение",
-        message:
-          typeof item?.message === "string"
-            ? item.message
-            : JSON.stringify(item),
-      }));
-    }
-
-    return [
-      {
-        id: source?.id ?? 1,
-        title: source?.title || source?.name || "Сообщение",
-        message:
-          typeof source?.message === "string"
-            ? source.message
-            : JSON.stringify(source),
-      },
-    ];
-  };
-
-  const notificationItems = normalizeNotifications(notificationsPayload);
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
@@ -163,18 +84,6 @@ export default function Header({
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          <button
-            onClick={toggleTheme}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            title={isDark ? "Светлая тема" : "Тёмная тема"}
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5 text-gray-600" />
-            ) : (
-              <Moon className="w-5 h-5 text-gray-600" />
-            )}
-          </button>
-
           <div className="relative">
             <button
               onClick={() => {
@@ -193,7 +102,23 @@ export default function Header({
                   <h3 className="font-semibold text-gray-900">Уведомления</h3>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {notificationItems.map((n) => (
+                  {[
+                    {
+                      id: 1,
+                      title: "Новый заказ",
+                      message: "Заказ ORD001 выполнен",
+                    },
+                    {
+                      id: 2,
+                      title: "Низкий запас",
+                      message: "Premium Headphones - мало на складе",
+                    },
+                    {
+                      id: 3,
+                      title: "Аналитика готова",
+                      message: "Ежедневный отчёт доступен",
+                    },
+                  ].map((n) => (
                     <div
                       key={n.id}
                       className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"

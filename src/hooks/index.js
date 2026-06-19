@@ -39,23 +39,6 @@ export function useMobileMenu() {
   return { isOpen, toggle, close, open };
 }
 
-export function useTheme() {
-  const [isDark, setIsDark] = useLocalStorage("theme-dark", false);
-
-  useEffect(() => {
-    const htmlElement = document.documentElement;
-    if (isDark) {
-      htmlElement.classList.add("dark");
-    } else {
-      htmlElement.classList.remove("dark");
-    }
-  }, [isDark]);
-
-  const toggle = () => setIsDark(!isDark);
-
-  return { isDark, toggle };
-}
-
 export function useDebounce(value, delay = 300) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 

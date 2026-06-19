@@ -12,13 +12,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 * {
   @apply box-border;
 }
@@ -28,11 +21,7 @@ html {
 }
 
 body {
-  @apply text-gray-900;
-}
-
-body.dark {
-  @apply bg-gray-950 text-gray-50;
+  @apply bg-white text-gray-900;
 }
 
 ::-webkit-scrollbar {
@@ -43,24 +32,12 @@ body.dark {
   @apply bg-gray-100;
 }
 
-body.dark ::-webkit-scrollbar-track {
-  @apply bg-gray-800;
-}
-
 ::-webkit-scrollbar-thumb {
   @apply bg-gray-300 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
-}
-
-body.dark ::-webkit-scrollbar-thumb {
-  @apply bg-gray-600;
-}
-
-body.dark ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500;
 }
 
 @keyframes fadeIn {
@@ -128,16 +105,8 @@ thead {
   @apply bg-gray-50;
 }
 
-body.dark thead {
-  @apply bg-gray-800;
-}
-
 tbody tr {
   @apply border-b border-gray-200;
-}
-
-body.dark tbody tr {
-  @apply border-b border-gray-700;
 }
 
 body {

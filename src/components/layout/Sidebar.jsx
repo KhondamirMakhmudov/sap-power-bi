@@ -10,6 +10,7 @@ import {
   Users,
   Package,
   Globe,
+  MapPin,
   Zap,
   Settings,
   LogOut,
@@ -27,14 +28,12 @@ const sidebarItems = [
     description: "КПЭ и EBITDA",
     href: "/finances",
     icon: <TrendingUp className="w-5 h-5" />,
-    badge: 12,
   },
   {
     label: "Ликвидность",
     description: "Дебиторская задолженность",
     href: "/liquidity",
     icon: <Users className="w-5 h-5" />,
-    badge: 8,
   },
   {
     label: "Производство",
@@ -47,6 +46,12 @@ const sidebarItems = [
     description: "Топливо — энергия",
     href: "/material-balance",
     icon: <Globe className="w-5 h-5" />,
+  },
+  {
+    label: "GPS-панель",
+    description: "Мониторинг транспорта",
+    href: "/gps-dashboard",
+    icon: <MapPin className="w-5 h-5" />,
   },
   {
     label: "Действия",
@@ -162,13 +167,6 @@ export default function Sidebar({
                   </div>
                 )}
               </div>
-
-              {/* Badge */}
-              {item.badge && !isCollapsed && (
-                <span className="ml-2 shrink-0 bg-linear-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg shadow-red-500/30 group-hover:shadow-red-500/50 transition-all duration-200">
-                  {item.badge}
-                </span>
-              )}
             </Link>
           </div>
         ))}
