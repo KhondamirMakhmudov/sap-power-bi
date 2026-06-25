@@ -2,6 +2,7 @@
 
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
+import { isAuthenticated } from '@/utils/auth';
 import Card from '@/components/ui/Card';
 import { mockForecastData } from '@/data/mockData';
 
@@ -99,4 +100,11 @@ export default function ForecastPage() {
       </div>
     </MainLayout>
   );
+}
+
+export async function getServerSideProps({ req }) {
+  if (!isAuthenticated(req)) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+  return { props: {} };
 }

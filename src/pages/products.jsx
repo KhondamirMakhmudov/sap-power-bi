@@ -2,6 +2,7 @@
 
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
+import { isAuthenticated } from '@/utils/auth';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -91,4 +92,11 @@ export default function ProductsPage() {
       </div>
     </MainLayout>
   );
+}
+
+export async function getServerSideProps({ req }) {
+  if (!isAuthenticated(req)) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+  return { props: {} };
 }

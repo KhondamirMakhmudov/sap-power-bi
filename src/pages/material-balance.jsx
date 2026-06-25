@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
+import { isAuthenticated } from "@/utils/auth";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { ArrowRight, CheckCircle, AlertCircle } from "lucide-react";
 
@@ -675,4 +676,11 @@ export default function MaterialBalancePage() {
       </div>
     </MainLayout>
   );
+}
+
+export async function getServerSideProps({ req }) {
+  if (!isAuthenticated(req)) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+  return { props: {} };
 }
