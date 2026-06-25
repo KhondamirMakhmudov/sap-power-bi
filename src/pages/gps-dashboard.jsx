@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import CustomSelect from "@/components/ui/CustomSelect";
+import Loader from "@/components/ui/Loader";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { MapPin, Search } from "lucide-react";
 import { isAuthenticated, getSessionUsername } from "@/utils/auth";
@@ -408,7 +409,7 @@ export default function GPSDashboardPage({ username }) {
 
   return (
     <MainLayout username={username}>
-      <div className="space-y-6">
+      <div className="space-y-6 min-w-0 overflow-x-hidden">
         <section className="rounded-3xl border border-slate-200 bg-slate-950 p-6 shadow-sm text-white">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
             <div className="space-y-3">
@@ -511,8 +512,15 @@ export default function GPSDashboardPage({ username }) {
           </div>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[320px_1fr_280px]">
-          <aside className="space-y-6">
+        {isLoading && (
+          <Loader
+            label="Загрузка данных GPS-панели..."
+            hint="Получаем информацию о транспортных средствах и статусах"
+          />
+        )}
+
+        <section className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)_280px]">
+          <aside className="space-y-6 min-w-0">
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -587,7 +595,7 @@ export default function GPSDashboardPage({ username }) {
             </section>
           </aside>
 
-          <main className="space-y-6">
+          <main className="space-y-6 min-w-0">
             <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -681,7 +689,7 @@ export default function GPSDashboardPage({ username }) {
             </section>
           </main>
 
-          <aside className="space-y-6">
+          <aside className="space-y-6 min-w-0">
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>

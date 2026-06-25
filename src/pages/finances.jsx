@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import CustomSelect from "@/components/ui/CustomSelect";
+import Loader from "@/components/ui/Loader";
 import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 
 const monthNames = [
@@ -257,6 +258,13 @@ export default function FinancesPage() {
             </div>
           </div>
         </div>
+
+        {financesApiLoading && (
+          <Loader
+            label="Загрузка финансовых данных..."
+            hint="Получаем КПЭ и данные EBITDA за выбранный период"
+          />
+        )}
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

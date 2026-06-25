@@ -56,7 +56,7 @@ export default function CustomSelect({
       {isOpen && (
         <div
           ref={menuRef}
-          className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden"
+          className="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden min-w-full w-max"
         >
           <div className="py-2 max-h-64 overflow-y-auto">
             {options.map((option) => (
@@ -66,7 +66,7 @@ export default function CustomSelect({
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors ${
+                className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors whitespace-nowrap ${
                   value === option.value
                     ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
                     : "text-gray-900 hover:bg-gray-50"

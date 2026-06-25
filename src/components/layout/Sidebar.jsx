@@ -14,6 +14,7 @@ import {
   Zap,
   Settings,
   LogOut,
+  UserCheck,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -58,6 +59,12 @@ const sidebarItems = [
     description: "Решения ГД",
     href: "/actions",
     icon: <Zap className="w-5 h-5" />,
+  },
+  {
+    label: "HR панель",
+    description: "Управление персоналом",
+    href: "/hr-panel",
+    icon: <UserCheck className="w-5 h-5" />,
   },
 ];
 
