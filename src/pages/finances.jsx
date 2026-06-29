@@ -170,28 +170,24 @@ export default function FinancesPage() {
     setFinancesApiError(null);
 
     const { dateFrom, dateTo } = getDateRangeFromMonth(selectedMonth);
+    const body = JSON.stringify({ date_from: dateFrom, date_to: dateTo });
+    const headers = { "Content-Type": "application/json" };
 
     try {
-      const response = await fetch("/api/dashboard/post_fi", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          date_from: dateFrom,
-          date_to: dateTo,
-        }),
-      });
+      const [res1, res2] = await Promise.all([
+        fetch("/api/dashboard/post_fi",  { method: "POST", headers, body }),
+        fetch("/api/dashboard/post_fi2", { method: "POST", headers, body }),
+      ]);
 
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
+      if (!res1.ok) throw new Error(`post_fi failed with status ${res1.status}`);
+      if (!res2.ok) throw new Error(`post_fi2 failed with status ${res2.status}`);
 
-      const responseData = await response.json();
-      console.log("Finances temporary POST response:", responseData);
+      const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
+      console.log("Finances post_fi response:", data1);
+      console.log("Finances post_fi2 response:", data2);
     } catch (error) {
       setFinancesApiError(error?.message || "Failed to fetch finances data");
-      console.error("Finances temporary POST error:", error);
+      console.error("Finances POST error:", error);
     } finally {
       setFinancesApiLoading(false);
     }
