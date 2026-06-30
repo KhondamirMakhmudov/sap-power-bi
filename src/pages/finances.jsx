@@ -22,40 +22,71 @@ const monthNames = [
   "Декабрь",
 ];
 
-const kpiCards = [
-  {
-    label: "Выручка",
-    value: "2.92 трлн сум",
-    plan: "План: 2.91 трлн сум",
-    change: "+8.3% к плану",
-    status: "positive",
-    borderColor: "border-l-4 border-l-green-500",
-  },
-  {
-    label: "EBITDA",
-    value: "676 млрд сум",
-    plan: "План: 665 млрд сум",
-    change: "-1.3% к плану",
-    status: "negative",
-    borderColor: "border-l-4 border-l-orange-500",
-  },
-  {
-    label: "Working Capital",
-    value: "-420 млрд сум",
-    plan: "Цели: не хуже -350 млрд сум",
-    change: "контроль ликвидности",
-    status: "warning",
-    borderColor: "border-l-4 border-l-red-500",
-  },
-  {
-    label: "FCF",
-    value: "+84 млрд сум",
-    plan: "Цели: положительный FCF",
-    change: "в норме",
-    status: "positive",
-    borderColor: "border-l-4 border-l-blue-500",
-  },
-];
+function formatSum(value) {
+  if (value === null || value === undefined) return "—";
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(2)} трлн сум`;
+  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(0)} млрд сум`;
+  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(0)} млн сум`;
+  return `${sign}${new Intl.NumberFormat("ru").format(abs)}`;
+}
+
+function buildKpiCards(d) {
+  if (!d) return null;
+
+  const pf = (v) => {
+    if (v === null || v === undefined) return null;
+    return `${v >= 0 ? "+" : ""}${Number(v).toFixed(1)}% к плану`;
+  };
+  const statusColor = (v) => (v >= 0 ? "positive" : "negative");
+  const borderByStatus = (status) => {
+    if (status === "positive") return "border-l-4 border-l-green-500";
+    if (status === "negative") return "border-l-4 border-l-red-500";
+    return "border-l-4 border-l-orange-500";
+  };
+  const statusByText = (text) => (text === "в норме" ? "positive" : "warning");
+
+  const virStatus = statusColor(d.PF_Viruchka);
+  const ebitStatus = statusColor(d.PF_EBITDA);
+  const wcStatus = statusByText(d.Status_WorkingCapital);
+  const fcfStatus = statusByText(d.Status_FCF);
+
+  return [
+    {
+      label: "Выручка",
+      value: formatSum(d.Viruchka),
+      plan: `План: ${formatSum(d.P_Viruchka)}`,
+      change: pf(d.PF_Viruchka),
+      status: virStatus,
+      borderColor: borderByStatus(virStatus),
+    },
+    {
+      label: "EBITDA",
+      value: formatSum(d.EBITDA),
+      plan: `План: ${formatSum(d.P_EBITDA)}`,
+      change: pf(d.PF_EBITDA),
+      status: ebitStatus,
+      borderColor: borderByStatus(ebitStatus),
+    },
+    {
+      label: "Working Capital",
+      value: formatSum(d.WorkingCapital),
+      plan: `План: ${formatSum(d.Plan_WorkingCapital)}`,
+      change: d.Status_WorkingCapital ?? "—",
+      status: wcStatus,
+      borderColor: borderByStatus(wcStatus),
+    },
+    {
+      label: "FCF",
+      value: formatSum(d.FCF),
+      plan: `План: ${formatSum(d.Plan_FCF)}`,
+      change: d.Status_FCF ?? "—",
+      status: fcfStatus,
+      borderColor: borderByStatus(fcfStatus),
+    },
+  ];
+}
 
 const ebitdaFactors = [
   {
@@ -90,40 +121,67 @@ const ebitdaFactors = [
   },
 ];
 
-const ratioCards = [
-  {
-    label: "Кредитный рейтинг",
-    value: "BB-",
-    target: "Цели: суверенный уровень РУ",
-    status: "в норме",
-    statusColor: "text-green-600",
-    borderColor: "border-l-4 border-l-green-500",
-  },
-  {
-    label: "Net Debt / EBITDA",
-    value: "3.2x",
-    target: "Пороги: 3.5x-4.0x",
-    status: "в коридоре",
-    statusColor: "text-green-600",
-    borderColor: "border-l-4 border-l-green-500",
-  },
-  {
-    label: "DSCR",
-    value: "1.18x",
-    target: "Пороги: > 1.1x-1.2x",
-    status: "контроль",
-    statusColor: "text-orange-600",
-    borderColor: "border-l-4 border-l-orange-500",
-  },
-  {
-    label: "EBITDA Margin",
-    value: "23.2%",
-    target: "Цели: 20%-25%",
-    status: "в диапазоне",
-    statusColor: "text-blue-600",
-    borderColor: "border-l-4 border-l-blue-500",
-  },
-];
+function statusToColor(text) {
+  if (!text) return "text-gray-500";
+  const t = text.toLowerCase();
+  if (t.includes("норме") || t.includes("коридоре")) return "text-green-600";
+  if (t.includes("контроль") || t.includes("диапазоне"))
+    return "text-orange-600";
+  return "text-red-600";
+}
+
+function statusToBorder(text) {
+  if (!text) return "border-l-4 border-l-gray-300";
+  const t = text.toLowerCase();
+  if (t.includes("норме") || t.includes("коридоре"))
+    return "border-l-4 border-l-green-500";
+  if (t.includes("контроль") || t.includes("диапазоне"))
+    return "border-l-4 border-l-orange-500";
+  return "border-l-4 border-l-red-500";
+}
+
+function buildRatioCards(d) {
+  const ndStatus = d?.Status_NetDebtEbitda ?? null;
+  const dscrStatus = d?.Status_DSCR ?? null;
+
+  return [
+    {
+      label: "Кредитный рейтинг",
+      value: "BB-",
+      target: "Цели: суверенный уровень РУ",
+      status: "в норме",
+      statusColor: "text-green-600",
+      borderColor: "border-l-4 border-l-green-500",
+    },
+    {
+      label: "Net Debt / EBITDA",
+      value:
+        d?.NetDebtEbitda != null
+          ? `${Number(d.NetDebtEbitda).toFixed(2)}x`
+          : "—",
+      target: "Пороги: 3.5x-4.0x",
+      status: ndStatus ?? "—",
+      statusColor: statusToColor(ndStatus),
+      borderColor: statusToBorder(ndStatus),
+    },
+    {
+      label: "DSCR",
+      value: d?.DSCR != null ? `${Number(d.DSCR).toFixed(2)}x` : "—",
+      target: "Пороги: > 1.1x-1.2x",
+      status: dscrStatus ?? "—",
+      statusColor: statusToColor(dscrStatus),
+      borderColor: statusToBorder(dscrStatus),
+    },
+    {
+      label: "EBITDA Margin",
+      value: "23.2%",
+      target: "Цели: 20%-25%",
+      status: "в диапазоне",
+      statusColor: "text-blue-600",
+      borderColor: "border-l-4 border-l-blue-500",
+    },
+  ];
+}
 
 export default function FinancesPage() {
   const currentYear = new Date().getFullYear();
@@ -138,6 +196,7 @@ export default function FinancesPage() {
   });
   const [financesApiLoading, setFinancesApiLoading] = useState(false);
   const [financesApiError, setFinancesApiError] = useState(null);
+  const [financesData, setFinancesData] = useState(null);
 
   const monthOptions = monthNames.map((label, index) => ({
     value: `${filters.year}-${String(index + 1).padStart(2, "0")}`,
@@ -170,21 +229,17 @@ export default function FinancesPage() {
     setFinancesApiError(null);
 
     const { dateFrom, dateTo } = getDateRangeFromMonth(selectedMonth);
-    const body = JSON.stringify({ date_from: dateFrom, date_to: dateTo });
-    const headers = { "Content-Type": "application/json" };
-
     try {
-      const [res1, res2] = await Promise.all([
-        fetch("/api/dashboard/post_fi",  { method: "POST", headers, body }),
-        fetch("/api/dashboard/post_fi2", { method: "POST", headers, body }),
-      ]);
+      const res = await fetch("/api/dashboard/post_fi2", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date_from: dateFrom, date_to: dateTo }),
+      });
 
-      if (!res1.ok) throw new Error(`post_fi failed with status ${res1.status}`);
-      if (!res2.ok) throw new Error(`post_fi2 failed with status ${res2.status}`);
+      if (!res.ok) throw new Error(`post_fi2 failed with status ${res.status}`);
 
-      const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
-      console.log("Finances post_fi response:", data1);
-      console.log("Finances post_fi2 response:", data2);
+      const data = await res.json();
+      setFinancesData(data);
     } catch (error) {
       setFinancesApiError(error?.message || "Failed to fetch finances data");
       console.error("Finances POST error:", error);
@@ -199,7 +254,13 @@ export default function FinancesPage() {
       month: "",
     });
     setFinancesApiError(null);
+    setFinancesData(null);
   };
+
+  console.log(financesData, "data");
+
+  const kpiCards = buildKpiCards(financesData);
+  const ratioCards = buildRatioCards(financesData);
 
   return (
     <MainLayout>
@@ -211,19 +272,6 @@ export default function FinancesPage() {
 
         {/* Filter Section */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <div className="mb-4 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => postFinancesData()}
-              className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400"
-              disabled={financesApiLoading}
-            >
-              {financesApiLoading ? "Загрузка данных..." : "Выбрать"}
-            </button>
-            {financesApiError && (
-              <p className="text-xs text-red-600">{financesApiError}</p>
-            )}
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <CustomSelect
               label="Год"
@@ -239,21 +287,31 @@ export default function FinancesPage() {
               options={monthOptions}
               value={filters.month}
               placeholder="Выберите"
-              onChange={(value) => {
-                setFilters({ ...filters, month: value });
-                postFinancesData(value);
-              }}
+              onChange={(value) => setFilters({ ...filters, month: value })}
             />
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
               <button
                 type="button"
-                onClick={handleResetFilters}
-                className="w-full px-6 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors"
+                onClick={() => postFinancesData()}
+                disabled={financesApiLoading}
+                className="flex-1 px-6 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:bg-gray-400"
               >
-                Сбросить
+                {financesApiLoading ? "Загрузка..." : "Применить"}
               </button>
+              {financesData && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm"
+                >
+                  Сбросить
+                </button>
+              )}
             </div>
           </div>
+          {financesApiError && (
+            <p className="text-xs text-red-600 mt-3">{financesApiError}</p>
+          )}
         </div>
 
         {financesApiLoading && (
@@ -264,34 +322,38 @@ export default function FinancesPage() {
         )}
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {kpiCards.map((card, index) => (
-            <div
-              key={index}
-              className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${card.borderColor}`}
-            >
-              <p className="text-sm font-medium text-gray-600">{card.label}</p>
-              <p className="text-2xl font-bold text-gray-900 mt-2">
-                {card.value}
-              </p>
-              <p className="text-xs text-gray-500 mt-3">{card.plan}</p>
-              <p
-                className={`text-sm font-semibold mt-2 ${
-                  card.status === "positive"
-                    ? "text-green-600"
-                    : card.status === "negative"
-                      ? "text-red-600"
-                      : "text-orange-600"
-                }`}
+        {kpiCards && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {kpiCards.map((card, index) => (
+              <div
+                key={index}
+                className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${card.borderColor}`}
               >
-                {card.change}
-              </p>
-            </div>
-          ))}
-        </div>
+                <p className="text-sm font-medium text-gray-600">
+                  {card.label}
+                </p>
+                <p className="text-2xl font-bold text-gray-900 mt-2">
+                  {card.value}
+                </p>
+                <p className="text-xs text-gray-500 mt-3">{card.plan}</p>
+                <p
+                  className={`text-sm font-semibold mt-2 ${
+                    card.status === "positive"
+                      ? "text-green-600"
+                      : card.status === "negative"
+                        ? "text-red-600"
+                        : "text-orange-600"
+                  }`}
+                >
+                  {card.change}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* EBITDA Impact Section */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        {/* <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
           <h2 className="text-lg font-bold text-gray-900 mb-6">
             Влияние на EBITDA
           </h2>
@@ -299,7 +361,7 @@ export default function FinancesPage() {
             Демонстрация финансового отклонения за месяц
           </p>
 
-          {/* Summary Banner */}
+
           <div className="bg-red-50 border-l-4 border-l-red-500 p-6 mb-6 rounded">
             <div className="flex items-start gap-4">
               <AlertCircle className="w-6 h-6 text-red-600 mt-1 shrink-0" />
@@ -318,7 +380,7 @@ export default function FinancesPage() {
             </div>
           </div>
 
-          {/* Factors Table */}
+    
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -360,7 +422,7 @@ export default function FinancesPage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </div> */}
 
         {/* Financial Ratios Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -406,11 +468,19 @@ export default function FinancesPage() {
                   <h4 className="font-semibold text-gray-900">
                     Чистый долг / EBITDA
                   </h4>
-                  <span className="text-2xl font-bold text-gray-900">3.2x</span>
+                  <span className="text-2xl font-bold text-gray-900">
+                    {financesData?.NetDebtEbitda != null
+                      ? `${Number(financesData.NetDebtEbitda).toFixed(2)}x`
+                      : "—"}
+                  </span>
                 </div>
                 <p className="text-xs text-gray-600 mt-1">Цели: 3.5x-4.0x</p>
-                <p className="text-xs text-green-600 font-medium mt-1">
-                  Статус: в коридоре
+                <p
+                  className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_NetDebtEbitda)}`}
+                >
+                  {financesData?.Status_NetDebtEbitda
+                    ? `Статус: ${financesData.Status_NetDebtEbitda}`
+                    : "Статус: —"}
                 </p>
                 <p className="text-xs text-gray-600 mt-2">
                   Рост выше порога блокирует новые транши от Минфина и
@@ -424,14 +494,20 @@ export default function FinancesPage() {
                     DSCR — коэффициент покрытия обслуживания долга
                   </h4>
                   <span className="text-2xl font-bold text-gray-900">
-                    1.18x
+                    {financesData?.DSCR != null
+                      ? `${Number(financesData.DSCR).toFixed(2)}x`
+                      : "—"}
                   </span>
                 </div>
                 <p className="text-xs text-gray-600 mt-1">
                   Цели: строго {`>`} 1.1x-1.2x
                 </p>
-                <p className="text-xs text-orange-600 font-medium mt-1">
-                  Статус: контроль
+                <p
+                  className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_DSCR)}`}
+                >
+                  {financesData?.Status_DSCR
+                    ? `Статус: ${financesData.Status_DSCR}`
+                    : "Статус: —"}
                 </p>
                 <p className="text-xs text-gray-600 mt-2">
                   Показывает способность компании обслуживать кредиты
@@ -464,8 +540,12 @@ export default function FinancesPage() {
                   <h4 className="font-semibold text-gray-900">
                     Свободный денежный поток, FCF
                   </h4>
-                  <span className="text-2xl font-bold text-green-600">
-                    +84 млрд сум
+                  <span
+                    className={`text-2xl font-bold ${financesData?.FCF != null && financesData.FCF >= 0 ? "text-green-600" : "text-red-600"}`}
+                  >
+                    {financesData?.FCF != null
+                      ? formatSum(financesData.FCF)
+                      : "—"}
                   </span>
                 </div>
                 <p className="text-xs text-gray-600 mt-1">
@@ -486,7 +566,9 @@ export default function FinancesPage() {
                     Collection Rate
                   </h4>
                   <span className="text-2xl font-bold text-gray-900">
-                    98.4%
+                    {financesData?.CollectionRate != null
+                      ? `${Number(financesData.CollectionRate).toFixed(2)}%`
+                      : "—"}
                   </span>
                 </div>
                 <p className="text-xs text-gray-600 mt-1">Цели: ≥ 98-99%</p>
@@ -505,12 +587,16 @@ export default function FinancesPage() {
                     DSO просроченной дебиторской задолженности
                   </h4>
                   <span className="text-2xl font-bold text-gray-900">
-                    42 дня
+                    {financesData?.DSO != null
+                      ? `${Number(financesData.DSO)} дней`
+                      : "—"}
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">Цели: 30-45 дней</p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Цели: {financesData?.Plan_DSO ?? "—"}
+                </p>
                 <p className="text-xs text-green-600 font-medium mt-1">
-                  Статус: в норме
+                  Статус: {financesData?.Status_DSO ?? "—"}
                 </p>
                 <p className="text-xs text-gray-600 mt-2">
                   Снижение коммерческих потерь и удержание оборачиваемости в

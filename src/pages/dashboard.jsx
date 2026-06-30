@@ -136,37 +136,15 @@ export default function DashboardPage({ username }) {
       <div className="space-y-8">
         {/* Filters Section */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={postDashboardData}
-                className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400"
-                disabled={dashboardApiLoading}
-              >
-                {dashboardApiLoading ? "Загрузка данных..." : "Выбрать"}
-              </button>
-              {dashboardApiError && (
-                <p className="text-xs text-red-600">{dashboardApiError}</p>
-              )}
-            </div>
+          <div className="flex justify-end mb-4">
             <button
               type="button"
               onClick={handleLogout}
               className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"
-                />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
               </svg>
               Выйти
             </button>
@@ -187,10 +165,7 @@ export default function DashboardPage({ username }) {
               options={monthOptions}
               value={filters.month}
               placeholder="Выберите"
-              onChange={(value) => {
-                setFilters({ ...filters, month: value });
-                postDashboardData(value);
-              }}
+              onChange={(value) => setFilters({ ...filters, month: value })}
             />
             <CustomSelect
               label="Сценарий"
@@ -212,16 +187,29 @@ export default function DashboardPage({ username }) {
               placeholder="Выберите"
               onChange={(value) => setFilters({ ...filters, control: value })}
             />
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
               <button
                 type="button"
-                onClick={handleResetFilters}
-                className="w-full bg-gray-900 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                onClick={() => postDashboardData()}
+                disabled={dashboardApiLoading}
+                className="flex-1 bg-slate-900 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:bg-gray-400"
               >
-                Сбросить
+                {dashboardApiLoading ? "Загрузка..." : "Применить"}
               </button>
+              {dashboardApiResponse && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="px-4 py-2.5 border border-gray-300 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm"
+                >
+                  Сбросить
+                </button>
+              )}
             </div>
           </div>
+          {dashboardApiError && (
+            <p className="text-xs text-red-600 mt-3">{dashboardApiError}</p>
+          )}
         </div>
 
         {dashboardApiLoading ? (
