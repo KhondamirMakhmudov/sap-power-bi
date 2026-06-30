@@ -15,6 +15,7 @@ import {
   Settings,
   LogOut,
   UserCheck,
+  Landmark,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -65,6 +66,12 @@ const sidebarItems = [
     description: "Управление персоналом",
     href: "/hr-panel",
     icon: <UserCheck className="w-5 h-5" />,
+  },
+  {
+    label: "Дебиторы / Кредиторы",
+    description: "Задолженность ФИ",
+    href: "/fi-debtor-creditor",
+    icon: <Landmark className="w-5 h-5" />,
   },
 ];
 

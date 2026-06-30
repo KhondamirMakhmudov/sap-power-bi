@@ -314,46 +314,59 @@ export default function FinancesPage() {
           )}
         </div>
 
-        {financesApiLoading && (
+        {financesApiLoading ? (
           <Loader
             label="Загрузка финансовых данных..."
             hint="Получаем КПЭ и данные EBITDA за выбранный период"
           />
-        )}
-
-        {/* KPI Cards */}
-        {kpiCards && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {kpiCards.map((card, index) => (
-              <div
-                key={index}
-                className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${card.borderColor}`}
-              >
-                <p className="text-sm font-medium text-gray-600">
-                  {card.label}
-                </p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">
-                  {card.value}
-                </p>
-                <p className="text-xs text-gray-500 mt-3">{card.plan}</p>
-                <p
-                  className={`text-sm font-semibold mt-2 ${
-                    card.status === "positive"
-                      ? "text-green-600"
-                      : card.status === "negative"
-                        ? "text-red-600"
-                        : "text-orange-600"
-                  }`}
-                >
-                  {card.change}
-                </p>
-              </div>
-            ))}
+        ) : !financesData ? (
+          <div className="flex flex-col items-center justify-center min-h-80 py-12 px-8 text-center">
+            <i
+              className="ti ti-calendar-off text-4xl text-gray-300 mb-4"
+              aria-hidden="true"
+            />
+            <p className="text-lg font-medium text-gray-700 mb-1.5">
+              Нет данных
+            </p>
+            <p className="text-sm text-gray-400 max-w-65 leading-relaxed">
+              Выберите месяц в фильтре выше, чтобы загрузить данные
+            </p>
           </div>
-        )}
+        ) : (
+          <div className="space-y-8">
+            {/* KPI Cards */}
+            {kpiCards && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {kpiCards.map((card, index) => (
+                  <div
+                    key={index}
+                    className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${card.borderColor}`}
+                  >
+                    <p className="text-sm font-medium text-gray-600">
+                      {card.label}
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">
+                      {card.value}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-3">{card.plan}</p>
+                    <p
+                      className={`text-sm font-semibold mt-2 ${
+                        card.status === "positive"
+                          ? "text-green-600"
+                          : card.status === "negative"
+                            ? "text-red-600"
+                            : "text-orange-600"
+                      }`}
+                    >
+                      {card.change}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
 
-        {/* EBITDA Impact Section */}
-        {/* <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            {/* EBITDA Impact Section */}
+            {/* <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
           <h2 className="text-lg font-bold text-gray-900 mb-6">
             Влияние на EBITDA
           </h2>
@@ -424,270 +437,286 @@ export default function FinancesPage() {
           </div>
         </div> */}
 
-        {/* Financial Ratios Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {ratioCards.map((card, index) => (
-            <div
-              key={index}
-              className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${card.borderColor}`}
-            >
-              <p className="text-sm font-medium text-gray-600">{card.label}</p>
-              <p className="text-3xl font-bold text-gray-900 mt-3">
-                {card.value}
-              </p>
-              <p className="text-xs text-gray-500 mt-3">{card.target}</p>
-              <p className={`text-sm font-semibold mt-3 ${card.statusColor}`}>
-                {card.status}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Strategic Sections Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 1. Financial Stability */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 border-l-4 border-l-green-500">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  1. Финансовая устойчивость холдинга
-                </h3>
-                <p className="text-xs text-gray-600 mt-1">
-                  Цель — уровень суверенного кредитного рейтинга на суверенном
-                  уровне РУ, чтобы сохранить доступ к дешевым зарубежным займам.
-                </p>
-              </div>
-              <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
-                Комплекс
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-baseline justify-between">
-                  <h4 className="font-semibold text-gray-900">
-                    Чистый долг / EBITDA
-                  </h4>
-                  <span className="text-2xl font-bold text-gray-900">
-                    {financesData?.NetDebtEbitda != null
-                      ? `${Number(financesData.NetDebtEbitda).toFixed(2)}x`
-                      : "—"}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600 mt-1">Цели: 3.5x-4.0x</p>
-                <p
-                  className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_NetDebtEbitda)}`}
+            {/* Financial Ratios Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {ratioCards.map((card, index) => (
+                <div
+                  key={index}
+                  className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${card.borderColor}`}
                 >
-                  {financesData?.Status_NetDebtEbitda
-                    ? `Статус: ${financesData.Status_NetDebtEbitda}`
-                    : "Статус: —"}
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  Рост выше порога блокирует новые транши от Минфина и
-                  международных банков.
-                </p>
-              </div>
-
-              <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-baseline justify-between">
-                  <h4 className="font-semibold text-gray-900">
-                    DSCR — коэффициент покрытия обслуживания долга
-                  </h4>
-                  <span className="text-2xl font-bold text-gray-900">
-                    {financesData?.DSCR != null
-                      ? `${Number(financesData.DSCR).toFixed(2)}x`
-                      : "—"}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600 mt-1">
-                  Цели: строго {`>`} 1.1x-1.2x
-                </p>
-                <p
-                  className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_DSCR)}`}
-                >
-                  {financesData?.Status_DSCR
-                    ? `Статус: ${financesData.Status_DSCR}`
-                    : "Статус: —"}
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  Показывает способность компании обслуживать кредиты
-                  модернизации ТСС без средств государства.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Liquidity */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 border-l-4 border-l-orange-500">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  2. Ликвидность и платежная дисциплина
-                </h3>
-                <p className="text-xs text-gray-600 mt-1">
-                  Контроль кассовых разрывов из-за задержек оплат и дисциплины
-                  расчетов НСЭ / РЭС.
-                </p>
-              </div>
-              <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded">
-                Контроль
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-baseline justify-between">
-                  <h4 className="font-semibold text-gray-900">
-                    Свободный денежный поток, FCF
-                  </h4>
-                  <span
-                    className={`text-2xl font-bold ${financesData?.FCF != null && financesData.FCF >= 0 ? "text-green-600" : "text-red-600"}`}
+                  <p className="text-sm font-medium text-gray-600">
+                    {card.label}
+                  </p>
+                  <p className="text-3xl font-bold text-gray-900 mt-3">
+                    {card.value}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-3">{card.target}</p>
+                  <p
+                    className={`text-sm font-semibold mt-3 ${card.statusColor}`}
                   >
-                    {financesData?.FCF != null
-                      ? formatSum(financesData.FCF)
-                      : "—"}
-                  </span>
+                    {card.status}
+                  </p>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">
-                  Цели: положительный FCF
-                </p>
-                <p className="text-xs text-gray-600 mt-1">
-                  Горизонт: год / YTD
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  Маркер способности финансировать текущие ремонты станций за
-                  счет собственных источников.
-                </p>
-              </div>
-
-              <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-baseline justify-between">
-                  <h4 className="font-semibold text-gray-900">
-                    Collection Rate
-                  </h4>
-                  <span className="text-2xl font-bold text-gray-900">
-                    {financesData?.CollectionRate != null
-                      ? `${Number(financesData.CollectionRate).toFixed(2)}%`
-                      : "—"}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600 mt-1">Цели: ≥ 98-99%</p>
-                <p className="text-xs text-gray-600 mt-1">
-                  Контрагенты: НЭУ / РЭС
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  Показывает уровень собираемости выручки от ключевых участников
-                  энергосистемы.
-                </p>
-              </div>
-
-              <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-baseline justify-between">
-                  <h4 className="font-semibold text-gray-900">
-                    DSO просроченной дебиторской задолженности
-                  </h4>
-                  <span className="text-2xl font-bold text-gray-900">
-                    {financesData?.DSO != null
-                      ? `${Number(financesData.DSO)} дней`
-                      : "—"}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600 mt-1">
-                  Цели: {financesData?.Plan_DSO ?? "—"}
-                </p>
-                <p className="text-xs text-green-600 font-medium mt-1">
-                  Статус: {financesData?.Status_DSO ?? "—"}
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  Снижение коммерческих потерь и удержание оборачиваемости в
-                  рамках нормативов Минэнерго.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 3. Operational Efficiency */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 border-l-4 border-l-green-500">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  3. Операционная эффективность и маржинальность
-                </h3>
-                <p className="text-xs text-gray-600 mt-1">
-                  Контроль эффективности производства операций и динамики
-                  электроэнергии при действующих тарифах.
-                </p>
-              </div>
-              <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
-                В норме
-              </span>
+              ))}
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-baseline justify-between">
-                  <h4 className="font-semibold text-gray-900">
-                    Рентабельность по EBITDA
-                  </h4>
-                  <span className="text-2xl font-bold text-gray-900">
-                    23.2%
+            {/* Strategic Sections Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 1. Financial Stability */}
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 border-l-4 border-l-green-500">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      1. Финансовая устойчивость холдинга
+                    </h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Цель — уровень суверенного кредитного рейтинга на
+                      суверенном уровне РУ, чтобы сохранить доступ к дешевым
+                      зарубежным займам.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                    Комплекс
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">Цели: 20-25%</p>
-                <p className="text-xs text-blue-600 font-medium mt-1">
-                  Статус: в целевом диапазоне
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  Запас прочности до вычета процентов по валидным кредитам.
-                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="font-semibold text-gray-900">
+                        Чистый долг / EBITDA
+                      </h4>
+                      <span className="text-2xl font-bold text-gray-900">
+                        {financesData?.NetDebtEbitda != null
+                          ? `${Number(financesData.NetDebtEbitda).toFixed(2)}x`
+                          : "—"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Цели: 3.5x-4.0x
+                    </p>
+                    <p
+                      className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_NetDebtEbitda)}`}
+                    >
+                      {financesData?.Status_NetDebtEbitda
+                        ? `Статус: ${financesData.Status_NetDebtEbitda}`
+                        : "Статус: —"}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Рост выше порога блокирует новые транши от Минфина и
+                      международных банков.
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="font-semibold text-gray-900">
+                        DSCR — коэффициент покрытия обслуживания долга
+                      </h4>
+                      <span className="text-2xl font-bold text-gray-900">
+                        {financesData?.DSCR != null
+                          ? `${Number(financesData.DSCR).toFixed(2)}x`
+                          : "—"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Цели: строго {`>`} 1.1x-1.2x
+                    </p>
+                    <p
+                      className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_DSCR)}`}
+                    >
+                      {financesData?.Status_DSCR
+                        ? `Статус: ${financesData.Status_DSCR}`
+                        : "Статус: —"}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Показывает способность компании обслуживать кредиты
+                      модернизации ТСС без средств государства.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-baseline justify-between">
-                  <h4 className="font-semibold text-gray-900">
-                    Удельный расход условного топлива, УРУТ
-                  </h4>
-                  <span className="text-2xl font-bold text-gray-900">
-                    311.5 г/кВт∙ч
+              {/* 2. Liquidity */}
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 border-l-4 border-l-orange-500">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      2. Ликвидность и платежная дисциплина
+                    </h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Контроль кассовых разрывов из-за задержек оплат и
+                      дисциплины расчетов НСЭ / РЭС.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded">
+                    Контроль
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">
-                  План: 305.0 г/кВт∙ч
-                </p>
-                <p className="text-xs text-orange-600 font-medium mt-1">
-                  Отклонение: +2.1%
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  Сквозной KPI всех станций: финансовый эквивалент — Fuel Cost
-                  Variance.
-                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="font-semibold text-gray-900">
+                        Свободный денежный поток, FCF
+                      </h4>
+                      <span
+                        className={`text-2xl font-bold ${financesData?.FCF != null && financesData.FCF >= 0 ? "text-green-600" : "text-red-600"}`}
+                      >
+                        {financesData?.FCF != null
+                          ? formatSum(financesData.FCF)
+                          : "—"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Цели: положительный FCF
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Горизонт: год / YTD
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Маркер способности финансировать текущие ремонты станций
+                      за счет собственных источников.
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="font-semibold text-gray-900">
+                        Collection Rate
+                      </h4>
+                      <span className="text-2xl font-bold text-gray-900">
+                        {financesData?.CollectionRate != null
+                          ? `${Number(financesData.CollectionRate).toFixed(2)}%`
+                          : "—"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">Цели: ≥ 98-99%</p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Контрагенты: НЭУ / РЭС
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Показывает уровень собираемости выручки от ключевых
+                      участников энергосистемы.
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="font-semibold text-gray-900">
+                        DSO просроченной дебиторской задолженности
+                      </h4>
+                      <span className="text-2xl font-bold text-gray-900">
+                        {financesData?.DSO != null
+                          ? `${Number(financesData.DSO)} дней`
+                          : "—"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Цели: {financesData?.Plan_DSO ?? "—"}
+                    </p>
+                    <p className="text-xs text-green-600 font-medium mt-1">
+                      Статус: {financesData?.Status_DSO ?? "—"}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Снижение коммерческих потерь и удержание оборачиваемости в
+                      рамках нормативов Минэнерго.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-baseline justify-between">
-                  <h4 className="font-semibold text-gray-900">
-                    Fuel Cost Variance
-                  </h4>
-                  <span className="text-2xl font-bold text-red-600">
-                    -21 млрд сум
+              {/* 3. Operational Efficiency */}
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 border-l-4 border-l-green-500">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      3. Операционная эффективность и маржинальность
+                    </h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Контроль эффективности производства операций и динамики
+                      электроэнергии при действующих тарифах.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                    В норме
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">
-                  Причина: газ / уголь выше нормы
-                </p>
-                <p className="text-xs text-gray-600 mt-1">
-                  Ответственный: производство + финансы
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  Отклонение фактических затрат на топливо от утвержденного
-                  тарифного уровня.
-                </p>
-              </div>
-            </div>
-          </div>
 
-          {/* 4. Investments & Reforms */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 border-l-4 border-l-orange-500">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="font-semibold text-gray-900">
+                        Рентабельность по EBITDA
+                      </h4>
+                      <span className="text-2xl font-bold text-gray-900">
+                        23.2%
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">Цели: 20-25%</p>
+                    <p className="text-xs text-blue-600 font-medium mt-1">
+                      Статус: в целевом диапазоне
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Запас прочности до вычета процентов по валидным кредитам.
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="font-semibold text-gray-900">
+                        Удельный расход условного топлива, УРУТ
+                      </h4>
+                      <span className="text-2xl font-bold text-gray-900">
+                        {financesData?.URUT != null
+                          ? `${Number(financesData.URUT)} г/кВт∙ч`
+                          : "—"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      План:{" "}
+                      {financesData?.Plan_URUT != null
+                        ? `${Number(financesData.Plan_URUT)} г/кВт∙ч`
+                        : "—"}
+                    </p>
+                    <p className="text-xs text-orange-600 font-medium mt-1">
+                      {financesData?.PlanFakt_URUT
+                        ? `Статус: ${financesData.PlanFakt_URUT}`
+                        : "Статус: —"}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Сквозной KPI всех станций: финансовый эквивалент — Fuel
+                      Cost Variance.
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="font-semibold text-gray-900">
+                        Fuel Cost Variance
+                      </h4>
+                      <span className="text-2xl font-bold text-red-600">
+                        {financesData?.FuelCostVariance != null
+                          ? `${Number(financesData.FuelCostVariance)} млрд сум`
+                          : "—"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Причина: газ / уголь выше нормы
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Ответственный: производство + финансы
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Отклонение фактических затрат на топливо от утвержденного
+                      тарифного уровня.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Investments & Reforms */}
+              {/* <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 border-l-4 border-l-orange-500">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h3 className="text-lg font-bold text-gray-900">
@@ -759,8 +788,10 @@ export default function FinancesPage() {
                 </p>
               </div>
             </div>
+          </div> */}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </MainLayout>
   );
