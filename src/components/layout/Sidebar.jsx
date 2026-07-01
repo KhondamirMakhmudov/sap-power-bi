@@ -16,6 +16,7 @@ import {
   LogOut,
   UserCheck,
   Landmark,
+  Truck,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -72,6 +73,12 @@ const sidebarItems = [
     description: "Задолженность ФИ",
     href: "/fi-debtor-creditor",
     icon: <Landmark className="w-5 h-5" />,
+  },
+  {
+    label: "Логистика",
+    description: "Задолженность логистики",
+    href: "/logistics",
+    icon: <Truck className="w-5 h-5" />,
   },
 ];
 
