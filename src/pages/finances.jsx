@@ -125,8 +125,8 @@ function statusToColor(text) {
   if (!text) return "text-gray-500";
   const t = text.toLowerCase();
   if (t.includes("норме") || t.includes("коридоре")) return "text-green-600";
-  if (t.includes("контроль") || t.includes("диапазоне"))
-    return "text-orange-600";
+  if (t.includes("диапазоне")) return "text-orange-600";
+  if (t.includes("контроль")) return "text-red-600";
   return "text-red-600";
 }
 
@@ -135,8 +135,8 @@ function statusToBorder(text) {
   const t = text.toLowerCase();
   if (t.includes("норме") || t.includes("коридоре"))
     return "border-l-4 border-l-green-500";
-  if (t.includes("контроль") || t.includes("диапазоне"))
-    return "border-l-4 border-l-orange-500";
+  if (t.includes("диапазоне")) return "border-l-4 border-l-orange-500";
+  if (t.includes("контроль")) return "border-l-4 border-l-red-500";
   return "border-l-4 border-l-red-500";
 }
 
@@ -174,11 +174,11 @@ function buildRatioCards(d) {
     },
     {
       label: "EBITDA Margin",
-      value: "23.2%",
-      target: "Цели: 20%-25%",
-      status: "в диапазоне",
-      statusColor: "text-blue-600",
-      borderColor: "border-l-4 border-l-blue-500",
+      value: d?.EBITDAMargin != null ? `${Number(d.EBITDAMargin)}%` : "—",
+      target: `Цели: ${d?.Plan_EBITDAMargin != null ? `${Number(d.Plan_EBITDAMargin).toFixed(1)}%` : "20%-25%"}`,
+      status: d?.Status_EBITDAMargin ?? "—",
+      statusColor: statusToColor(d?.Status_EBITDAMargin),
+      borderColor: statusToBorder(d?.Status_EBITDAMargin),
     },
   ];
 }
@@ -615,7 +615,9 @@ export default function FinancesPage() {
                     <p className="text-xs text-gray-600 mt-1">
                       Цели: {financesData?.Plan_DSO ?? "—"}
                     </p>
-                    <p className="text-xs text-green-600 font-medium mt-1">
+                    <p
+                      className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_DSO)}`}
+                    >
                       Статус: {financesData?.Status_DSO ?? "—"}
                     </p>
                     <p className="text-xs text-gray-600 mt-2">
@@ -650,12 +652,23 @@ export default function FinancesPage() {
                         Рентабельность по EBITDA
                       </h4>
                       <span className="text-2xl font-bold text-gray-900">
-                        23.2%
+                        {financesData?.EBITDAMargin != null
+                          ? `${Number(financesData.EBITDAMargin).toFixed(1)}%`
+                          : "—"}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600 mt-1">Цели: 20-25%</p>
-                    <p className="text-xs text-blue-600 font-medium mt-1">
-                      Статус: в целевом диапазоне
+                    <p className="text-xs text-gray-600 mt-1">
+                      Цели:{" "}
+                      {financesData?.Plan_EBITDAMargin != null
+                        ? `${Number(financesData.Plan_EBITDAMargin).toFixed(1)}%`
+                        : "20-25%"}
+                    </p>
+                    <p
+                      className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_EBITDAMargin)}`}
+                    >
+                      {financesData?.Status_EBITDAMargin
+                        ? `Статус: ${financesData.Status_EBITDAMargin}`
+                        : "Статус: —"}
                     </p>
                     <p className="text-xs text-gray-600 mt-2">
                       Запас прочности до вычета процентов по валидным кредитам.
