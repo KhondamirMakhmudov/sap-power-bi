@@ -1,8 +1,8 @@
 import https from "https";
 
-const SAP_HOST = "s4qtsdapp.tpp.uz";
+const SAP_HOST = "10.20.6.144";
 const SAP_PORT = 44300;
-const AUTH = Buffer.from("Dashboard:Integration2026").toString("base64");
+const AUTH = Buffer.from("DASHBOARD:Integration2026").toString("base64");
 
 const ENTITY_PATHS = {
   pr: "/sap/opu/odata4/sap/zsc_api_purreqitem_o4/srvd_a2x/sap/zsc_purreqitem_api/0001/PurReqItemAPI",
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid or missing entity" });
   }
 
-  const params = new URLSearchParams({ "sap-client": "500", $format: "json", ...query });
+  const params = new URLSearchParams({ "sap-client": "610", "sap-language": "RU", $format: "json", ...query });
   const path = `${ENTITY_PATHS[entity]}?${params.toString()}`;
 
   try {

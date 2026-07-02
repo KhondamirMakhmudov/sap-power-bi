@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { isAuthenticated } from "@/utils/auth";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -147,6 +147,11 @@ export default function HrPanelPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const get  = (key) => metrics?.[key]?.value;
   const cats = (key) => metrics?.[key]?.cats ?? {};
