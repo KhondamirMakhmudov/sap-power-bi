@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import MainLayout from "@/components/layout/MainLayout";
 import Card from "@/components/ui/Card";
@@ -14,7 +14,9 @@ import { get } from "lodash";
 
 export default function DashboardPage({ username }) {
   const router = useRouter();
-  const currentYear = new Date().getFullYear();
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonthValue = `${currentYear}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const yearOptions = [
     { value: String(currentYear - 1), label: String(currentYear - 1) },
     { value: String(currentYear), label: String(currentYear) },
@@ -53,7 +55,7 @@ export default function DashboardPage({ username }) {
 
   const [filters, setFilters] = useState({
     year: String(currentYear),
-    month: "",
+    month: currentMonthValue,
     scenario: "",
     control: "",
   });
@@ -105,10 +107,15 @@ export default function DashboardPage({ username }) {
     }
   };
 
+  useEffect(() => {
+    postDashboardData(currentMonthValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleResetFilters = () => {
     setFilters({
       year: String(currentYear),
-      month: "",
+      month: currentMonthValue,
       scenario: "",
       control: "",
     });

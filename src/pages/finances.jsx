@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { isAuthenticated } from "@/utils/auth";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -184,7 +184,9 @@ function buildRatioCards(d) {
 }
 
 export default function FinancesPage() {
-  const currentYear = new Date().getFullYear();
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonthValue = `${currentYear}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const yearOptions = [
     { value: String(currentYear - 1), label: String(currentYear - 1) },
     { value: String(currentYear), label: String(currentYear) },
@@ -192,7 +194,7 @@ export default function FinancesPage() {
   ];
   const [filters, setFilters] = useState({
     year: String(currentYear),
-    month: "",
+    month: currentMonthValue,
   });
   const [financesApiLoading, setFinancesApiLoading] = useState(false);
   const [financesApiError, setFinancesApiError] = useState(null);
@@ -248,10 +250,15 @@ export default function FinancesPage() {
     }
   };
 
+  useEffect(() => {
+    postFinancesData(currentMonthValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleResetFilters = () => {
     setFilters({
       year: String(currentYear),
-      month: "",
+      month: currentMonthValue,
     });
     setFinancesApiError(null);
     setFinancesData(null);
