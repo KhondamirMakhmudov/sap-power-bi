@@ -304,11 +304,11 @@ export default function ProductionPage() {
   const getStatusBadge = (status) => {
     switch (status) {
       case "control":
-        return "border-l-4 border-l-orange-500 bg-orange-50";
+        return "border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-950/30";
       case "normal":
-        return "border-l-4 border-l-green-500 bg-green-50";
+        return "border-l-4 border-l-green-500 bg-green-50 dark:bg-green-950/30";
       case "warning":
-        return "border-l-4 border-l-red-500 bg-red-50";
+        return "border-l-4 border-l-red-500 bg-red-50 dark:bg-red-950/30";
       default:
         return "border-l-4 border-l-gray-500";
     }
@@ -317,35 +317,35 @@ export default function ProductionPage() {
   const getStatusColor = (status) => {
     switch (status) {
       case "Норма":
-        return "bg-green-100 text-green-700";
+        return "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300";
       case "Контроль":
-        return "bg-orange-100 text-orange-700";
+        return "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300";
       case "Вмешательство":
-        return "bg-red-100 text-red-700";
+        return "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300";
     }
   };
 
   const getIssueColor = (status) => {
     return status === "error"
-      ? "border-l-red-500 bg-red-50"
-      : "border-l-orange-500 bg-orange-50";
+      ? "border-l-red-500 bg-red-50 dark:bg-red-950/30"
+      : "border-l-orange-500 bg-orange-50 dark:bg-orange-950/30";
   };
 
   return (
     <MainLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Производство</h1>
-          <p className="text-gray-600 mt-1">Показатели работы активов</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Производство</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Показатели работы активов</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Месяц
               </label>
               <CustomSelect
@@ -355,7 +355,7 @@ export default function ProductionPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Тип актива
               </label>
               <CustomSelect
@@ -365,7 +365,7 @@ export default function ProductionPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Статус
               </label>
               <CustomSelect
@@ -387,16 +387,16 @@ export default function ProductionPage() {
           {productionKpis.map((kpi, index) => (
             <div
               key={index}
-              className={`bg-white rounded-lg p-4 shadow-sm border border-gray-200 ${kpi.borderColor}`}
+              className={`bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 ${kpi.borderColor}`}
             >
-              <p className="text-xs font-medium text-gray-600">{kpi.label}</p>
-              <p className="text-xl font-bold text-gray-900 mt-2">
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">{kpi.label}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-2">
                 {kpi.value}{" "}
-                <span className="text-sm text-gray-600">{kpi.unit}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{kpi.unit}</span>
               </p>
-              <p className="text-xs text-gray-500 mt-2">{kpi.plan}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{kpi.plan}</p>
               <p
-                className={`text-xs font-semibold mt-2 ${kpi.statusType === "positive" ? "text-green-600" : "text-red-600"}`}
+                className={`text-xs font-semibold mt-2 ${kpi.statusType === "positive" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
               >
                 {kpi.status}
               </p>
@@ -406,57 +406,57 @@ export default function ProductionPage() {
 
         {/* Power Plants Grid */}
         <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-4">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
             Основные тепловые электростанции
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {powerPlants.map((plant, index) => (
               <div
                 key={index}
-                className={`rounded-lg p-6 shadow-sm border border-gray-200 ${getStatusBadge(plant.status)}`}
+                className={`rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 ${getStatusBadge(plant.status)}`}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-sm font-bold text-gray-900">
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
                       {plant.type}
                     </h3>
-                    <h2 className="text-lg font-bold text-gray-900 mt-1">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">
                       {plant.name}
                     </h2>
-                    <p className="text-xs text-gray-600 mt-1">{plant.region}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{plant.region}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     {plant.status === "normal" ? (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                     ) : plant.status === "warning" ? (
-                      <AlertCircle className="w-5 h-5 text-red-600" />
+                      <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                     ) : (
-                      <TrendingUp className="w-5 h-5 text-orange-600" />
+                      <TrendingUp className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                     )}
                     <span className="text-xs font-medium">Текущий статус</span>
                   </div>
                 </div>
 
                 <div className="border-t border-current border-opacity-10 pt-4">
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {plant.output}
                   </p>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                     факт / план за месяц
                   </p>
                   <p
-                    className={`text-sm font-semibold mt-2 ${plant.planStatus.includes("-") ? "text-red-600" : "text-green-600"}`}
+                    className={`text-sm font-semibold mt-2 ${plant.planStatus.includes("-") ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}
                   >
                     {plant.planStatus}
                   </p>
 
-                  <div className="mt-4 p-3 bg-white bg-opacity-50 rounded">
-                    <p className="text-xs text-gray-700">
+                  <div className="mt-4 p-3 bg-white dark:bg-gray-800 bg-opacity-50 rounded">
+                    <p className="text-xs text-gray-700 dark:text-gray-300">
                       {plant.operatingCapacity}
                     </p>
                   </div>
 
-                  <p className="text-xs text-gray-600 mt-3">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
                     <span className="font-medium">
                       {plant.availableCapacity}
                     </span>{" "}
@@ -464,7 +464,7 @@ export default function ProductionPage() {
                   </p>
                 </div>
 
-                <button className="mt-4 text-sm text-blue-600 font-medium hover:underline">
+                <button className="mt-4 text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline">
                   Детали →
                 </button>
               </div>
@@ -475,11 +475,11 @@ export default function ProductionPage() {
         {/* Comparative Table and Critical Issues */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Comparative Assets Table */}
-          <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
               Сравнительная таблица активов
             </h2>
-            <p className="text-xs text-gray-600 mb-6">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-6">
               Бойтай рейтинг для ежемесячного совещания выработку, готовность,
               эффективность и ремонтная дисциплина.
             </p>
@@ -487,29 +487,29 @@ export default function ProductionPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700">
+                  <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       #
                     </th>
-                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       СТАНЦИЯ
                     </th>
-                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       ТИП
                     </th>
-                    <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                    <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       ВЫРАБОТКА
                     </th>
-                    <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                    <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       ГОТОВНОСТЬ
                     </th>
-                    <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                    <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       УРУТ
                     </th>
-                    <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                    <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       РЕМОНТ
                     </th>
-                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       СТАТУС
                     </th>
                   </tr>
@@ -518,27 +518,27 @@ export default function ProductionPage() {
                   {powerStations.map((station, index) => (
                     <tr
                       key={index}
-                      className="border-b border-gray-100 hover:bg-gray-50"
+                      className="border-b border-gray-100 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-900/40"
                     >
-                      <td className="py-3 px-3 text-gray-900 font-medium">
+                      <td className="py-3 px-3 text-gray-900 dark:text-gray-100 font-medium">
                         {station.num}
                       </td>
-                      <td className="py-3 px-3 text-gray-900">
+                      <td className="py-3 px-3 text-gray-900 dark:text-gray-100">
                         {station.name}
                       </td>
-                      <td className="py-3 px-3 text-gray-600 text-xs">
+                      <td className="py-3 px-3 text-gray-600 dark:text-gray-400 text-xs">
                         {station.type}
                       </td>
-                      <td className="py-3 px-3 text-right text-gray-900">
+                      <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                         {station.output}
                       </td>
-                      <td className="py-3 px-3 text-right text-gray-900">
+                      <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                         {station.availability}
                       </td>
-                      <td className="py-3 px-3 text-right text-gray-900">
+                      <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                         {station.urut}
                       </td>
-                      <td className="py-3 px-3 text-right text-gray-900">
+                      <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                         {station.repair}
                       </td>
                       <td className="py-3 px-3">
@@ -556,11 +556,11 @@ export default function ProductionPage() {
           </div>
 
           {/* Critical Issues */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
               Критические вопросы
             </h2>
-            <p className="text-xs text-gray-600 mb-6">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-6">
               Проблемы, которые должны иметь мероприятия, срок и ответственного.
             </p>
 
@@ -570,10 +570,10 @@ export default function ProductionPage() {
                   key={index}
                   className={`border-l-4 p-4 rounded ${getIssueColor(issue.status)}`}
                 >
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {issue.name}
                   </p>
-                  <p className="text-xs text-gray-700 mt-2">{issue.issue}</p>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 mt-2">{issue.issue}</p>
                 </div>
               ))}
             </div>

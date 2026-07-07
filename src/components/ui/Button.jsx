@@ -27,10 +27,10 @@ const Button = React.forwardRef(
     const variants = {
       primary: "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400",
       secondary:
-        "bg-gray-200 text-gray-900 hover:bg-gray-300 disabled:bg-gray-100",
+        "bg-gray-200 text-gray-900 hover:bg-gray-300 disabled:bg-gray-100 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600 dark:disabled:bg-gray-800",
       outline:
-        "border border-gray-300 text-gray-900 hover:bg-gray-50 disabled:opacity-50",
-      ghost: "text-gray-900 hover:bg-gray-100 disabled:opacity-50",
+        "border border-gray-300 text-gray-900 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700",
+      ghost: "text-gray-900 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-100 dark:hover:bg-gray-700",
       danger: "bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400",
     };
 

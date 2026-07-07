@@ -4,7 +4,7 @@ export default function KPICard({
   plan,
   change,
   showPlanAndChange = true,
-  borderColor = "border-l-4 border-gray-200",
+  borderColor = "border-l-4 border-gray-200 dark:border-gray-700",
   displayUnit = "сум",
   unit,
   decimals = 2,
@@ -60,22 +60,22 @@ export default function KPICard({
         ? "border-l-4 border-red-600"
         : parsedNumericValue > 0
           ? "border-l-4 border-green-600"
-          : "border-l-4 border-gray-400";
+          : "border-l-4 border-gray-400 dark:border-gray-500";
 
   return (
     <div
-      className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${resolvedBorderColor}`}
+      className={`bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 ${resolvedBorderColor}`}
     >
-      <p className="text-sm font-medium text-gray-600 min-h-[2.5rem] leading-5">
+      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 min-h-[2.5rem] leading-5">
         {label}
       </p>
-      <h3 className="text-2xl font-bold text-gray-900 mt-2">{displayValue}</h3>
+      <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">{displayValue}</h3>
       {showPlanAndChange && (
         <>
-          <p className="text-xs text-gray-500 mt-2">План: {displayPlan}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">План: {displayPlan}</p>
           <p
             className={`text-xs font-medium mt-2 ${
-              isNegativeChange ? "text-red-600" : "text-green-600"
+              isNegativeChange ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}
           >
             {change}% к плану

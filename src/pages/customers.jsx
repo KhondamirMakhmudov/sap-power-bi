@@ -22,26 +22,26 @@ export default function CustomersPage() {
     <MainLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
-          <p className="text-gray-600 mt-1">Manage and analyze your customer base</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Customers</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and analyze your customer base</p>
         </div>
 
         <Card>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-              <p className="text-sm text-gray-600 font-medium">Total Customers</p>
-              <h3 className="text-3xl font-bold text-gray-900 mt-2">2,840</h3>
-              <p className="text-sm text-green-600 mt-2">+15.3% growth</p>
+            <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-100 dark:border-blue-800">
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Customers</p>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">2,840</h3>
+              <p className="text-sm text-green-600 dark:text-green-400 mt-2">+15.3% growth</p>
             </div>
-            <div className="p-4 bg-green-50 rounded-lg border border-green-100">
-              <p className="text-sm text-gray-600 font-medium">Active Users</p>
-              <h3 className="text-3xl font-bold text-gray-900 mt-2">2,125</h3>
-              <p className="text-sm text-green-600 mt-2">74.8% active rate</p>
+            <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-100 dark:border-green-800">
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Active Users</p>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">2,125</h3>
+              <p className="text-sm text-green-600 dark:text-green-400 mt-2">74.8% active rate</p>
             </div>
-            <div className="p-4 bg-amber-50 rounded-lg border border-amber-100">
-              <p className="text-sm text-gray-600 font-medium">At Risk</p>
-              <h3 className="text-3xl font-bold text-gray-900 mt-2">142</h3>
-              <p className="text-sm text-red-600 mt-2">5.0% churn risk</p>
+            <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-100 dark:border-amber-800">
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">At Risk</p>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">142</h3>
+              <p className="text-sm text-red-600 dark:text-red-400 mt-2">5.0% churn risk</p>
             </div>
           </div>
 
@@ -54,21 +54,21 @@ export default function CustomersPage() {
         </Card>
 
         <Card>
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Customer Directory</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Customer Directory</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCustomers.map((customer) => (
               <div
                 key={customer.id}
-                className="p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-all cursor-pointer bg-white"
+                className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-lg transition-all cursor-pointer bg-white dark:bg-gray-800"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-2xl">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-2xl">
                       {customer.avatar}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{customer.name}</h3>
-                      <p className="text-xs text-gray-600 mt-1">{customer.email}</p>
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">{customer.name}</h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{customer.email}</p>
                     </div>
                   </div>
                   <Badge
@@ -85,18 +85,18 @@ export default function CustomersPage() {
                   </Badge>
                 </div>
 
-                <div className="space-y-2 pt-4 border-t border-gray-100">
+                <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-gray-700/60">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total Spent</span>
-                    <span className="font-semibold text-gray-900">${customer.totalSpent.toLocaleString()}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Total Spent</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">${customer.totalSpent.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Orders</span>
-                    <span className="font-semibold text-gray-900">{customer.orders}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Orders</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{customer.orders}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Joined</span>
-                    <span className="font-semibold text-gray-900">{customer.joinDate}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Joined</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{customer.joinDate}</span>
                   </div>
                 </div>
 

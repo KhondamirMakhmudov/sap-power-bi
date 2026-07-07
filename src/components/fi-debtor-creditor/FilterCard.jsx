@@ -36,7 +36,7 @@ export default function FilterCard({
   onReset,
 }) {
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
       {/* Mode Toggle */}
       <div className="flex gap-2 mb-5">
         {[
@@ -50,7 +50,7 @@ export default function FilterCard({
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               mode === key
                 ? "bg-slate-900 text-white"
-                : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+                : "border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/40"
             }`}
           >
             {label}
@@ -61,14 +61,14 @@ export default function FilterCard({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {mode === "date" ? (
           <div className="flex flex-col gap-1 md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Дата отчёта
             </label>
             <input
               type="date"
               value={dateInput}
               onChange={(e) => setDateInput(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
             />
           </div>
         ) : (
@@ -95,7 +95,7 @@ export default function FilterCard({
             type="button"
             onClick={onApply}
             disabled={loading}
-            className="flex-1 px-6 py-2.5 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:bg-gray-400"
+            className="flex-1 px-6 py-2.5 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-500"
           >
             {loading ? "Загрузка..." : "Применить"}
           </button>
@@ -103,7 +103,7 @@ export default function FilterCard({
             <button
               type="button"
               onClick={onReset}
-              className="px-4 py-2.5 border border-gray-300 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm"
+              className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-900/40 transition-colors text-sm"
             >
               Сбросить
             </button>
@@ -111,7 +111,7 @@ export default function FilterCard({
         </div>
       </div>
 
-      {error && <p className="text-xs text-red-600 mt-3">{error}</p>}
+      {error && <p className="text-xs text-red-600 dark:text-red-400 mt-3">{error}</p>}
     </div>
   );
 }

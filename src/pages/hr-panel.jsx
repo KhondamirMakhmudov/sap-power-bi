@@ -72,8 +72,8 @@ const TOOLTIP_FN = (v, name) => [num(v), name];
 function DonutCenter({ value, label }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-      <span className="text-lg font-bold text-gray-900 leading-tight">{num(value)}</span>
-      {label && <span className="text-[10px] text-gray-500 mt-0.5">{label}</span>}
+      <span className="text-lg font-bold text-gray-900 dark:text-gray-100 leading-tight">{num(value)}</span>
+      {label && <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{label}</span>}
     </div>
   );
 }
@@ -292,26 +292,26 @@ export default function HrPanelPage() {
             hint="Получаем кадровые показатели из SAP HCM за выбранный период"
           />
         ) : !metrics ? (
-          <div className="rounded-xl border border-gray-200 bg-white p-20 flex items-center justify-center text-gray-400">
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-20 flex items-center justify-center text-gray-400 dark:text-gray-500">
             Выберите период и нажмите «Применить»
           </div>
         ) : (
           <>
             {/* ── KPI strip ─────────────────────────────────────────────── */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-px bg-gray-200 rounded-xl overflow-hidden border border-gray-200">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-px bg-gray-200 dark:bg-gray-600 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
               {[
                 { label: "Общая численность",    value: num(getF("all_count")),      sub: null,                             subColor: "" },
-                { label: "Принято с нач. года",  value: num(getF("all_hire")),        sub: `▲ ${num(getF("all_hire"))}`,    subColor: "text-green-600" },
+                { label: "Принято с нач. года",  value: num(getF("all_hire")),        sub: `▲ ${num(getF("all_hire"))}`,    subColor: "text-green-600 dark:text-green-400" },
                 { label: "Уволено с нач. года",  value: num(getF("all_dismissed")),   sub: `▼ ${num(getF("all_dismissed"))}`, subColor: "text-red-500" },
                 { label: "Текучесть кадров %",   value: `${Number(get("all_ternoved") ?? 0).toFixed(2)}`, sub: null,       subColor: "" },
                 { label: "Кол-во вакансий",      value: num(getF("all_vacant")),      sub: `▼ ${num(getF("all_vacant"))}`, subColor: "text-red-500" },
-                { label: "Пенсионеры",           value: num(getF("pens")),            sub: "— чел.",                        subColor: "text-gray-400" },
+                { label: "Пенсионеры",           value: num(getF("pens")),            sub: "— чел.",                        subColor: "text-gray-400 dark:text-gray-500" },
                 { label: "Инвалиды II гр.",      value: num(getF("disability_2")),    sub: null,                            subColor: "" },
                 { label: "По ГПХ / совм.",       value: num((getF("gph_work") ?? 0) + (getF("by_work") ?? 0)), sub: null, subColor: "" },
               ].map(({ label, value, sub, subColor }) => (
-                <div key={label} className="bg-white px-4 py-3">
-                  <p className="text-[11px] text-gray-500 leading-tight">{label}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1 leading-none">{value}</p>
+                <div key={label} className="bg-white dark:bg-gray-800 px-4 py-3">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">{label}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1 leading-none">{value}</p>
                   {sub && <p className={`text-xs mt-1 ${subColor}`}>{sub}</p>}
                 </div>
               ))}
@@ -321,8 +321,8 @@ export default function HrPanelPage() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
 
               {/* Gender */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Количество (Муж/Жен)</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Количество (Муж/Жен)</p>
                 {gender && (
                   <div className="flex items-center justify-around">
                     <div className="flex flex-col items-center gap-1">
@@ -334,7 +334,7 @@ export default function HrPanelPage() {
                         centerValue={gender.men}
                         size={110} innerRadius={32} outerRadius={50}
                       />
-                      <p className="text-xs font-semibold text-blue-700">Мужчины</p>
+                      <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Мужчины</p>
                     </div>
                     <div className="flex flex-col items-center gap-1">
                       <MiniDonut
@@ -352,26 +352,26 @@ export default function HrPanelPage() {
               </div>
 
               {/* Hired / Dismissed grid */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm lg:col-span-2">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm lg:col-span-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
                   Принято / Уволено с нач. года
                 </p>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   {CAT_KEYS.map((k) => (
                     <div key={k} className="space-y-0.5">
-                      <p className="text-[11px] text-gray-500">{CAT_LABELS[k]}</p>
-                      <p className="text-xl font-bold text-blue-700 leading-none">{num(hireCats[k]?.all)}</p>
-                      <p className="text-[10px] text-gray-400">принято</p>
-                      <p className="text-xl font-bold text-red-600 leading-none">{num(dismissCats[k]?.all)}</p>
-                      <p className="text-[10px] text-gray-400">уволено</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">{CAT_LABELS[k]}</p>
+                      <p className="text-xl font-bold text-blue-700 dark:text-blue-300 leading-none">{num(hireCats[k]?.all)}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500">принято</p>
+                      <p className="text-xl font-bold text-red-600 dark:text-red-400 leading-none">{num(dismissCats[k]?.all)}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500">уволено</p>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Dismissal reasons */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Причины увольнений</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Причины увольнений</p>
                 <div className="space-y-2">
                   {[
                     { label: "Сокращение штата",  key: "dismissed_st" },
@@ -384,11 +384,11 @@ export default function HrPanelPage() {
                     const pct = Math.round((val / total) * 100);
                     return (
                       <div key={key}>
-                        <div className="flex justify-between text-xs text-gray-600 mb-0.5">
+                        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-0.5">
                           <span>{label}</span>
                           <span className="font-semibold">{num(val)}</span>
                         </div>
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                           <div className="h-full rounded-full bg-red-500" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
@@ -402,17 +402,17 @@ export default function HrPanelPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
               {/* Pensioners donut */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Пенсионеры</p>
-                <p className="text-3xl font-bold text-gray-900 mb-3">{num(getF("pens"))}</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Пенсионеры</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">{num(getF("pens"))}</p>
                 <div className="flex gap-4 items-center">
                   <MiniDonut data={pensData} centerValue={getF("pens")} size={120} innerRadius={34} outerRadius={52} />
                   <div className="space-y-1.5 flex-1 min-w-0">
                     {pensData.map((d) => (
                       <div key={d.name} className="flex items-center gap-1.5 text-xs">
                         <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
-                        <span className="text-gray-600 flex-1 truncate">{d.name}</span>
-                        <span className="font-semibold text-gray-900">{num(d.value)}</span>
+                        <span className="text-gray-600 dark:text-gray-400 flex-1 truncate">{d.name}</span>
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{num(d.value)}</span>
                       </div>
                     ))}
                   </div>
@@ -420,8 +420,8 @@ export default function HrPanelPage() {
               </div>
 
               {/* Age distribution bar */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Возрастные группы</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Возрастные группы</p>
                 <ResponsiveContainer width="100%" height={160}>
                   <BarChart data={ageData} margin={{ left: -20, right: 8, top: 8, bottom: 0 }}>
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} axisLine={false} tickLine={false} />
@@ -437,16 +437,16 @@ export default function HrPanelPage() {
                 <div className="grid grid-cols-5 gap-1 mt-2 text-center">
                   {ageData.map((d) => (
                     <div key={d.name}>
-                      <p className="text-xs font-bold text-gray-900">{num(d.value)}</p>
-                      <p className="text-[10px] text-gray-400">{d.name}</p>
+                      <p className="text-xs font-bold text-gray-900 dark:text-gray-100">{num(d.value)}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500">{d.name}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Education donut */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Образование</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Образование</p>
                 <div className="flex gap-4 items-center">
                   <MiniDonut
                     data={eduData}
@@ -460,9 +460,9 @@ export default function HrPanelPage() {
                       return (
                         <div key={d.name} className="flex items-center gap-1.5 text-xs">
                           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
-                          <span className="text-gray-600 flex-1 truncate">{d.name}</span>
-                          <span className="text-gray-400 mr-1">{p}%</span>
-                          <span className="font-semibold text-gray-900">{num(d.value)}</span>
+                          <span className="text-gray-600 dark:text-gray-400 flex-1 truncate">{d.name}</span>
+                          <span className="text-gray-400 dark:text-gray-500 mr-1">{p}%</span>
+                          <span className="font-semibold text-gray-900 dark:text-gray-100">{num(d.value)}</span>
                         </div>
                       );
                     })}
@@ -475,8 +475,8 @@ export default function HrPanelPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
               {/* Composition donut */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Состав работающих</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Состав работающих</p>
                 <div className="flex gap-4 items-center">
                   <MiniDonut
                     data={compositionData}
@@ -487,8 +487,8 @@ export default function HrPanelPage() {
                     {compositionData.map((d) => (
                       <div key={d.name} className="flex items-center gap-1.5 text-xs">
                         <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
-                        <span className="text-gray-600 flex-1 truncate">{d.name}</span>
-                        <span className="font-semibold text-gray-900">{num(d.value)}</span>
+                        <span className="text-gray-600 dark:text-gray-400 flex-1 truncate">{d.name}</span>
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{num(d.value)}</span>
                       </div>
                     ))}
                   </div>
@@ -496,8 +496,8 @@ export default function HrPanelPage() {
               </div>
 
               {/* Training */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
                   Повышение квалификации (КПК)
                 </p>
                 <div className="space-y-2">
@@ -513,11 +513,11 @@ export default function HrPanelPage() {
                     const pct = Math.round((val / total) * 100);
                     return (
                       <div key={key}>
-                        <div className="flex justify-between text-xs text-gray-600 mb-0.5">
+                        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-0.5">
                           <span>{label}</span>
-                          <span className="font-bold text-gray-900">{num(val)}</span>
+                          <span className="font-bold text-gray-900 dark:text-gray-100">{num(val)}</span>
                         </div>
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                           <div className="h-full rounded-full bg-blue-500" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
@@ -527,8 +527,8 @@ export default function HrPanelPage() {
               </div>
 
               {/* Special statuses */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Особые статусы</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Особые статусы</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: "Отпуск по уходу", key: "leave_child" },
@@ -538,9 +538,9 @@ export default function HrPanelPage() {
                     { label: "Новые должности", key: "new_position" },
                     { label: "Вакансии",        key: "all_vacant" },
                   ].map(({ label, key }) => (
-                    <div key={key} className="bg-slate-50 rounded-lg p-3">
-                      <p className="text-[10px] text-gray-500">{label}</p>
-                      <p className="text-xl font-bold text-gray-900 mt-0.5">{num(getF(key))}</p>
+                    <div key={key} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">{label}</p>
+                      <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-0.5">{num(getF(key))}</p>
                     </div>
                   ))}
                 </div>

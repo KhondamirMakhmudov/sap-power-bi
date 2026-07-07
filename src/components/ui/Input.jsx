@@ -7,7 +7,7 @@ const Input = React.forwardRef(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-900 mb-2">
+          <label className="block text-sm font-medium text-gray-900 mb-2 dark:text-gray-100">
             {label}
           </label>
         )}
@@ -19,7 +19,7 @@ const Input = React.forwardRef(
           )}
           <input
             ref={ref}
-            className={`w-full px-4 py-2 ${icon ? "pl-10" : ""} rounded-lg border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500 ${
+            className={`w-full px-4 py-2 ${icon ? "pl-10" : ""} rounded-lg border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-500 dark:disabled:bg-gray-800 ${
               error ? "border-red-500 focus:ring-red-500" : ""
             } ${className || ""}`}
             {...props}

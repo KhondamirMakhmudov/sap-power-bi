@@ -25,12 +25,12 @@ export const MONTH_NAMES = [
 
 export const ACCENT_COLORS = {
   blue: {
-    badge: "bg-blue-100 text-blue-700",
+    badge: "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300",
     border: "border-l-blue-500",
     borderLight: "border-l-blue-300",
   },
   orange: {
-    badge: "bg-orange-100 text-orange-700",
+    badge: "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300",
     border: "border-l-orange-500",
     borderLight: "border-l-orange-300",
   },
@@ -45,8 +45,8 @@ export function fmtMln(value) {
 
 export function changeClass(value) {
   const n = Number(value);
-  if (isNaN(n) || n === 0) return "text-gray-500";
-  return n > 0 ? "text-green-600" : "text-red-600";
+  if (isNaN(n) || n === 0) return "text-gray-500 dark:text-gray-400";
+  return n > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
 }
 
 export function signedFmt(value) {

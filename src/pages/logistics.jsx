@@ -54,14 +54,14 @@ export default function LogisticsPage() {
     <MainLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Логистика</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Логистика</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             MM Dashboard — Закупки, Контракты, Заказы, Поступления, Счета
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit flex-wrap">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg w-fit flex-wrap">
           {ENTITY_KEYS.map((key) => {
             const hasData = !!tabs[key].data;
             return (
@@ -71,8 +71,8 @@ export default function LogisticsPage() {
                 onClick={() => setActiveTab(key)}
                 className={`px-5 py-2.5 rounded-md text-sm font-semibold transition-all ${
                   activeTab === key
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-white dark:bg-gray-800 text-slate-900 dark:text-slate-100 shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 {ENTITIES[key].label}

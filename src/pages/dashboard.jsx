@@ -135,12 +135,12 @@ export default function DashboardPage({ username }) {
     <MainLayout username={username}>
       <div className="space-y-8">
         {/* Filters Section */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex justify-end mb-4">
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -192,7 +192,7 @@ export default function DashboardPage({ username }) {
                 type="button"
                 onClick={() => postDashboardData()}
                 disabled={dashboardApiLoading}
-                className="flex-1 bg-slate-900 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:bg-gray-400"
+                className="flex-1 bg-slate-900 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-500"
               >
                 {dashboardApiLoading ? "Загрузка..." : "Применить"}
               </button>
@@ -200,7 +200,7 @@ export default function DashboardPage({ username }) {
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="px-4 py-2.5 border border-gray-300 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm"
+                  className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-900/40 transition-colors text-sm"
                 >
                   Сбросить
                 </button>
@@ -208,7 +208,7 @@ export default function DashboardPage({ username }) {
             </div>
           </div>
           {dashboardApiError && (
-            <p className="text-xs text-red-600 mt-3">{dashboardApiError}</p>
+            <p className="text-xs text-red-600 dark:text-red-400 mt-3">{dashboardApiError}</p>
           )}
         </div>
 
@@ -220,13 +220,13 @@ export default function DashboardPage({ username }) {
         ) : !dashboardApiResponse ? (
           <div className="flex flex-col items-center justify-center min-h-80 py-12 px-8 text-center">
             <i
-              className="ti ti-calendar-off text-4xl text-gray-300 mb-4"
+              className="ti ti-calendar-off text-4xl text-gray-300 dark:text-gray-400 mb-4"
               aria-hidden="true"
             />
-            <p className="text-lg font-medium text-gray-700 mb-1.5">
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               Нет данных
             </p>
-            <p className="text-sm text-gray-400 max-w-65 leading-relaxed">
+            <p className="text-sm text-gray-400 dark:text-gray-500 max-w-65 leading-relaxed">
               Выберите месяц в фильтре выше, чтобы загрузить данные
             </p>
           </div>
@@ -293,10 +293,10 @@ export default function DashboardPage({ username }) {
 
             {/* Stations Under Attention */}
             <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
                 Станции в зоне внимания
               </h2>
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                 Активы, влияющие на месячный результат компании.
               </p>
 

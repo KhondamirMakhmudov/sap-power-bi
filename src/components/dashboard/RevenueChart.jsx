@@ -25,7 +25,7 @@ export default function RevenueChart({
   return (
     <Card>
       {title && (
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>
       )}
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart

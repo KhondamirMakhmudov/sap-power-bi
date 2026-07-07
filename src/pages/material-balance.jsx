@@ -264,13 +264,13 @@ const recommendedActions = [
 const getStatusColor = (status) => {
   switch (status) {
     case "Норма":
-      return "bg-green-100 text-green-700";
+      return "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300";
     case "Контроль":
-      return "bg-orange-100 text-orange-700";
+      return "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300";
     case "Вмешательство":
-      return "bg-red-100 text-red-700";
+      return "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300";
   }
 };
 
@@ -286,17 +286,17 @@ export default function MaterialBalancePage() {
     <MainLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Материальный баланс
           </h1>
-          <p className="text-gray-600 mt-1">Топливо — энергия</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Топливо — энергия</p>
         </div>
 
         {/* First Filter Row */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Месяц
               </label>
               <CustomSelect
@@ -306,7 +306,7 @@ export default function MaterialBalancePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Сценарий
               </label>
               <CustomSelect
@@ -316,7 +316,7 @@ export default function MaterialBalancePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Контур
               </label>
               <CustomSelect
@@ -334,10 +334,10 @@ export default function MaterialBalancePage() {
         </div>
 
         {/* Second Filter Row */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Станция
               </label>
               <CustomSelect
@@ -347,7 +347,7 @@ export default function MaterialBalancePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Тип баланса
               </label>
               <CustomSelect
@@ -357,7 +357,7 @@ export default function MaterialBalancePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Единицы
               </label>
               <CustomSelect
@@ -379,16 +379,16 @@ export default function MaterialBalancePage() {
           {materialKpis.map((kpi, index) => (
             <div
               key={index}
-              className={`bg-white rounded-lg p-4 shadow-sm border border-gray-200 ${kpi.borderColor}`}
+              className={`bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 ${kpi.borderColor}`}
             >
-              <p className="text-xs font-medium text-gray-600">{kpi.label}</p>
-              <p className="text-lg font-bold text-gray-900 mt-2">
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">{kpi.label}</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-2">
                 {kpi.value}{" "}
-                <span className="text-sm text-gray-600">{kpi.unit}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{kpi.unit}</span>
               </p>
-              <p className="text-xs text-gray-500 mt-2">{kpi.plan}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{kpi.plan}</p>
               <p
-                className={`text-xs font-semibold mt-2 ${kpi.statusType === "success" ? "text-green-600" : "text-orange-600"}`}
+                className={`text-xs font-semibold mt-2 ${kpi.statusType === "success" ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}`}
               >
                 {kpi.status}
               </p>
@@ -398,36 +398,36 @@ export default function MaterialBalancePage() {
 
         {/* Energy Flow Process */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg p-6 shadow-sm border-l-4 border-l-green-500">
-            <h3 className="text-sm font-semibold text-gray-600">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border-l-4 border-l-green-500">
+            <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
               входящее топливо
             </h3>
-            <p className="text-2xl font-bold text-gray-900 mt-3">1 610</p>
-            <p className="text-xs text-gray-600 mt-1">тыс. т.у.т.</p>
-            <p className="text-xs text-gray-600 mt-3">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-3">1 610</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">тыс. т.у.т.</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
               Газ, уголь, мазут в пересчете на условное топливо за выбранный
               месяц.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-sm border-l-4 border-l-orange-500">
-            <h3 className="text-sm font-semibold text-gray-600">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border-l-4 border-l-orange-500">
+            <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
               преобразование
             </h3>
-            <p className="text-2xl font-bold text-gray-900 mt-3">38,4%</p>
-            <p className="text-xs text-gray-600 mt-1">КПД нетто</p>
-            <p className="text-xs text-gray-600 mt-3">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-3">38,4%</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">КПД нетто</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
               Контроль УРУТ, собственных нужд и тепловых потерь.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-sm border-l-4 border-l-green-500">
-            <h3 className="text-sm font-semibold text-gray-600">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border-l-4 border-l-green-500">
+            <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
               полезный отпуск
             </h3>
-            <p className="text-2xl font-bold text-gray-900 mt-3">5</p>
-            <p className="text-xs text-gray-600 mt-1">млрд кВт∙ч</p>
-            <p className="text-xs text-gray-600 mt-3">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-3">5</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">млрд кВт∙ч</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
               Отпуск с шин плюс полезный отпуск тепловой энергии для ТЭЦ.
             </p>
           </div>
@@ -436,77 +436,77 @@ export default function MaterialBalancePage() {
         {/* Balance Analysis - Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Balance Table */}
-          <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                   Баланс топлива и энергии
                 </h2>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   Проверка сходимости: поступление топлива, расход, выработка,
                   собственные нужды, потери и остатки.
                 </p>
               </div>
-              <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
+              <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-xs font-semibold rounded">
                 баланс сходится
               </span>
             </div>
 
-            <div className="grid grid-cols-5 gap-2 mb-6 p-4 bg-gray-50 rounded">
+            <div className="grid grid-cols-5 gap-2 mb-6 p-4 bg-gray-50 dark:bg-gray-900/40 rounded">
               <div className="text-center">
-                <p className="text-xs font-semibold text-gray-600">
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">
                   Поступление
                 </p>
-                <p className="text-lg font-bold text-gray-900 mt-1">1 610</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">1 610</p>
               </div>
               <div className="text-center">
-                <p className="text-xs font-semibold text-gray-600">Расход</p>
-                <p className="text-lg font-bold text-gray-900 mt-1">1 497,3</p>
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Расход</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">1 497,3</p>
               </div>
               <div className="text-center">
-                <p className="text-xs font-semibold text-gray-600">Остатки</p>
-                <p className="text-lg font-bold text-gray-900 mt-1">96,6</p>
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Остатки</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">96,6</p>
               </div>
               <div className="text-center">
-                <p className="text-xs font-semibold text-gray-600">
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">
                   Потери / небаланс
                 </p>
-                <p className="text-lg font-bold text-gray-900 mt-1">0,6%</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">0,6%</p>
               </div>
               <div className="text-center">
-                <p className="text-xs font-semibold text-gray-600">КПД нетто</p>
-                <p className="text-lg font-bold text-gray-900 mt-1">38,4%</p>
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">КПД нетто</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">38,4%</p>
               </div>
             </div>
 
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-6">
-              <p className="text-sm text-green-800 font-medium">
+            <div className="p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg mb-6">
+              <p className="text-sm text-green-800 dark:text-green-300 font-medium">
                 Расхождение материального баланса составляет 0,6% — в допустимом
                 диапазоне.
               </p>
             </div>
 
             <div>
-              <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4 uppercase">
                 компонент баланса
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700">
+                    <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
+                      <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                         Компонент
                       </th>
-                      <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                      <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                         Факт
                       </th>
-                      <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                      <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                         План
                       </th>
-                      <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                      <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                         Отклонение
                       </th>
-                      <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700">
+                      <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                         Статус
                       </th>
                     </tr>
@@ -515,18 +515,18 @@ export default function MaterialBalancePage() {
                     {balanceComponents.map((item, index) => (
                       <tr
                         key={index}
-                        className="border-b border-gray-100 hover:bg-gray-50"
+                        className="border-b border-gray-100 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-900/40"
                       >
-                        <td className="py-3 px-3 text-gray-900">
+                        <td className="py-3 px-3 text-gray-900 dark:text-gray-100">
                           {item.component}
                         </td>
-                        <td className="py-3 px-3 text-right text-gray-900">
+                        <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                           {item.fact}
                         </td>
-                        <td className="py-3 px-3 text-right text-gray-900">
+                        <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                           {item.plan}
                         </td>
-                        <td className="py-3 px-3 text-right text-gray-900">
+                        <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                           {item.deviation}
                         </td>
                         <td className="py-3 px-3">
@@ -545,11 +545,11 @@ export default function MaterialBalancePage() {
           </div>
 
           {/* Right Column - Fuel Reserves */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
               Остатки топлива
             </h2>
-            <p className="text-xs text-gray-600 mb-6">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-6">
               Контроль запасов, достаточности и риска ограничения генерации.
             </p>
 
@@ -557,14 +557,14 @@ export default function MaterialBalancePage() {
               {fuelReserves.map((item, index) => (
                 <div key={index}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                       {item.fuel}
                     </span>
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                       {item.amount}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                     <div
                       className={`${item.bar} bg-green-500 h-2 rounded-full`}
                     />
@@ -576,11 +576,11 @@ export default function MaterialBalancePage() {
         </div>
 
         {/* Material Balance by Stations */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900 mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
             Материальный баланс по станциям
           </h2>
-          <p className="text-xs text-gray-600 mb-6">
+          <p className="text-xs text-gray-600 dark:text-gray-400 mb-6">
             Сравнение станций по входящему топливу, отпуску с шин и удельным
             показателям.
           </p>
@@ -588,50 +588,50 @@ export default function MaterialBalancePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700">
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
+                  <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     станция
                   </th>
-                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     топливо
                   </th>
-                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     выработка
                   </th>
-                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     отпуск с шин
                   </th>
-                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     собств. нужды
                   </th>
-                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700">
+                  <th className="text-right py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     урут
                   </th>
-                  <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700"></th>
+                  <th className="text-left py-3 px-3 text-xs font-semibold text-gray-700 dark:text-gray-300"></th>
                 </tr>
               </thead>
               <tbody>
                 {stationBalance.map((item, index) => (
                   <tr
                     key={index}
-                    className="border-b border-gray-100 hover:bg-gray-50"
+                    className="border-b border-gray-100 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-900/40"
                   >
-                    <td className="py-3 px-3 text-gray-900 font-medium">
+                    <td className="py-3 px-3 text-gray-900 dark:text-gray-100 font-medium">
                       {item.station}
                     </td>
-                    <td className="py-3 px-3 text-right text-gray-900">
+                    <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                       {item.fuel}
                     </td>
-                    <td className="py-3 px-3 text-right text-gray-900">
+                    <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                       {item.output}
                     </td>
-                    <td className="py-3 px-3 text-right text-gray-900">
+                    <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                       {item.delivery}
                     </td>
-                    <td className="py-3 px-3 text-right text-gray-900">
+                    <td className="py-3 px-3 text-right text-gray-900 dark:text-gray-100">
                       {item.ownNeeds}
                     </td>
-                    <td className="py-3 px-3 text-right text-blue-600 font-medium">
+                    <td className="py-3 px-3 text-right text-blue-600 dark:text-blue-400 font-medium">
                       {item.urut}
                     </td>
                     <td className="py-3 px-3">
@@ -649,11 +649,11 @@ export default function MaterialBalancePage() {
         </div>
 
         {/* Recommended Actions */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900 mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
             Рекомендуемые действия
           </h2>
-          <p className="text-xs text-gray-600 mb-6">
+          <p className="text-xs text-gray-600 dark:text-gray-400 mb-6">
             Автоматические подсказки по управлению топливом и потерями.
           </p>
 
@@ -661,12 +661,12 @@ export default function MaterialBalancePage() {
             {recommendedActions.map((action, index) => (
               <div
                 key={index}
-                className={`border-l-4 p-4 rounded ${action.icon === "check" ? "border-l-green-500 bg-green-50" : "border-l-orange-500 bg-orange-50"}`}
+                className={`border-l-4 p-4 rounded ${action.icon === "check" ? "border-l-green-500 bg-green-50 dark:bg-green-950/30" : "border-l-orange-500 bg-orange-50 dark:bg-orange-950/30"}`}
               >
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   {action.title}
                 </p>
-                <p className="text-xs text-gray-700 mt-2">
+                <p className="text-xs text-gray-700 dark:text-gray-300 mt-2">
                   {action.description}
                 </p>
               </div>

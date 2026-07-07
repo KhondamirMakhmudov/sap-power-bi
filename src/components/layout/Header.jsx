@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  Bell,
   LogOut,
   Menu,
   X,
@@ -19,7 +18,8 @@ export default function Header({
   username,
 }) {
   const router = useRouter();
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  // Notifications are demo-only data with no backend yet — disabled until there's a real feed.
+  // const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const initials = username ? username.slice(0, 2).toUpperCase() : "??";
@@ -31,23 +31,23 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
+    <header className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4 flex-1">
           <button
             onClick={onMenuClick}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
+              <X className="w-6 h-6 dark:text-gray-200" />
             ) : (
-              <Menu className="w-6 h-6" />
+              <Menu className="w-6 h-6 dark:text-gray-200" />
             )}
           </button>
 
           <button
             onClick={onSidebarToggle}
-            className="hidden md:inline-flex p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="hidden md:inline-flex p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             title={
               isSidebarCollapsed
                 ? "Показать боковую панель"
@@ -55,13 +55,13 @@ export default function Header({
             }
           >
             {isSidebarCollapsed ? (
-              <ChevronRight className="w-5 h-5 text-gray-600" />
+              <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             ) : (
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
+              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             )}
           </button>
 
-          <div className="hidden sm:flex flex-1 max-w-md items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg">
+          <div className="hidden sm:flex flex-1 max-w-md items-center gap-2 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg">
             <svg
               className="w-4 h-4 text-gray-400 shrink-0"
               fill="none"
@@ -78,28 +78,29 @@ export default function Header({
             <input
               type="text"
               placeholder="Поиск..."
-              className="flex-1 bg-transparent text-sm outline-none placeholder-gray-400"
+              className="flex-1 bg-transparent text-sm outline-none placeholder-gray-400 dark:text-gray-100"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* Notifications bell — demo-only data, no real backend yet. Re-enable once there's an actual feed.
           <div className="relative">
             <button
               onClick={() => {
                 setIsNotificationOpen(!isNotificationOpen);
                 setIsProfileOpen(false);
               }}
-              className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <Bell className="w-5 h-5 text-gray-600" />
+              <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
             </button>
 
             {isNotificationOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                  <h3 className="font-semibold text-gray-900">Уведомления</h3>
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">Уведомления</h3>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
                   {[
@@ -121,26 +122,24 @@ export default function Header({
                   ].map((n) => (
                     <div
                       key={n.id}
-                      className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors dark:border-gray-700 dark:hover:bg-gray-700/50"
                     >
-                      <p className="font-medium text-sm text-gray-900">
+                      <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
                         {n.title}
                       </p>
-                      <p className="text-sm text-gray-600">{n.message}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{n.message}</p>
                     </div>
                   ))}
                 </div>
               </div>
             )}
           </div>
+          */}
 
           <div className="relative hidden sm:block">
             <button
-              onClick={() => {
-                setIsProfileOpen(!isProfileOpen);
-                setIsNotificationOpen(false);
-              }}
-              className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-sm font-semibold">
                 {initials}
@@ -148,19 +147,19 @@ export default function Header({
             </button>
 
             {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                  <p className="font-semibold text-gray-900">
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-900/50 dark:border-gray-700">
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">
                     {username || "-"}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">
                     Пользователь системы
                   </p>
                 </div>
                 <div className="py-1">
                   <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors dark:hover:bg-red-950/30"
                   >
                     <LogOut className="w-4 h-4" />
                     Выйти из системы

@@ -15,9 +15,9 @@ const Card = React.forwardRef(
     ref,
   ) => {
     const variants = {
-      default: "bg-white border border-gray-200",
-      elevated: "bg-white shadow-lg",
-      outlined: "bg-gray-50 border border-gray-300",
+      default: "bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700",
+      elevated: "bg-white shadow-lg dark:bg-gray-800",
+      outlined: "bg-gray-50 border border-gray-300 dark:bg-gray-900 dark:border-gray-600",
     };
 
     const paddings = {

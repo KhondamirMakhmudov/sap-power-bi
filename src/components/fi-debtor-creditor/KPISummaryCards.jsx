@@ -24,15 +24,15 @@ export default function KPISummaryCards({ debtorSection, creditorSection }) {
         return (
           <div
             key={label}
-            className={`bg-white rounded-lg p-5 shadow-sm border border-gray-200 border-l-4 ${borderColor}`}
+            className={`bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-gray-200 dark:border-gray-700 border-l-4 ${borderColor}`}
           >
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               {label}
             </p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">
               {fmtMln(current)}
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               Нач.: {fmtMln(opening)} млн
             </p>
             <p className={`text-sm font-semibold mt-1 ${changeClass(change)}`}>

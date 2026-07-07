@@ -27,9 +27,9 @@ export default function KPICard({
   };
 
   const getChangeColor = () => {
-    if (trend === "up") return "text-green-600";
-    if (trend === "down") return "text-red-600";
-    return "text-gray-600";
+    if (trend === "up") return "text-green-600 dark:text-green-400";
+    if (trend === "down") return "text-red-600 dark:text-red-400";
+    return "text-gray-600 dark:text-gray-400";
   };
 
   return (
@@ -40,8 +40,8 @@ export default function KPICard({
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <p className="text-sm text-gray-600 font-medium">{label}</p>
-          <h3 className="text-3xl font-bold text-gray-900 mt-2">
+          <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{label}</p>
+          <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
             {currency}
             {typeof value === "number" ? value.toLocaleString() : value}
           </h3>
@@ -49,13 +49,13 @@ export default function KPICard({
         {icon && <div className="text-2xl ml-4">{icon}</div>}
       </div>
 
-      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+      <div className="flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-gray-700/60">
         <Badge variant={getTrendColor()} size="sm" icon={getTrendIcon()}>
           <span className={getChangeColor()}>
             {Math.abs(change).toFixed(1)}%
           </span>
         </Badge>
-        <span className="text-sm text-gray-600">vs last month</span>
+        <span className="text-sm text-gray-600 dark:text-gray-400">vs last month</span>
       </div>
     </Card>
   );

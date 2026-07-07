@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: toggling `.dark` on <html> flips every `dark:` variant. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+.dark {
+  --background: #111827;
+  --foreground: #f3f4f6;
 }
 
 @theme inline {
@@ -23,6 +31,9 @@ html {
 body {
   @apply bg-white text-gray-900;
 }
+.dark body {
+  @apply bg-gray-900 text-gray-100;
+}
 
 ::-webkit-scrollbar {
   @apply w-2 h-2;
@@ -31,13 +42,22 @@ body {
 ::-webkit-scrollbar-track {
   @apply bg-gray-100;
 }
+.dark ::-webkit-scrollbar-track {
+  @apply bg-gray-800;
+}
 
 ::-webkit-scrollbar-thumb {
   @apply bg-gray-300 rounded-full;
 }
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-gray-600;
+}
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
 }
 
 @keyframes fadeIn {
@@ -99,14 +119,6 @@ body {
 
 .gradient-success {
   @apply bg-linear-to-br from-green-500 to-green-700;
-}
-
-thead {
-  @apply bg-gray-50;
-}
-
-tbody tr {
-  @apply border-b border-gray-200;
 }
 
 body {

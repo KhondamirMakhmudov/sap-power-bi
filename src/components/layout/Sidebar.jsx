@@ -17,6 +17,7 @@ import {
   UserCheck,
   Landmark,
   Truck,
+  Wallet,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -73,6 +74,12 @@ const sidebarItems = [
     description: "Задолженность ФИ",
     href: "/fi-debtor-creditor",
     icon: <Landmark className="w-5 h-5" />,
+  },
+  {
+    label: "Бюджетирование",
+    description: "БДР, БДДС, Баланс",
+    href: "/budgeting",
+    icon: <Wallet className="w-5 h-5" />,
   },
   {
     label: "Логистика",

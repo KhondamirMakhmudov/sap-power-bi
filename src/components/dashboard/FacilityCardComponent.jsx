@@ -44,47 +44,47 @@ export default function FacilityCardComponent({
       : "-";
   return (
     <div
-      className={`bg-white rounded-lg p-6 shadow-sm border-l-4 ${borderClass} flex flex-col h-full`}
+      className={`bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border-l-4 ${borderClass} flex flex-col h-full`}
     >
       <div className="flex items-start justify-between mb-4 flex-1">
         <div className="flex-1 pr-3">
-          <h3 className="font-bold text-gray-900 leading-snug line-clamp-2">
+          <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-snug line-clamp-2">
             {name}
           </h3>
-          <p className="text-xs text-gray-600 mt-1">{status}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{status}</p>
         </div>
         <div className={`w-3 h-3 rounded-full shrink-0 mt-1 ${dotClass}`} />
       </div>
-      <div className="grid grid-cols-3 gap-4 py-4 border-y border-gray-200">
+      <div className="grid grid-cols-3 gap-4 py-4 border-y border-gray-200 dark:border-gray-700">
         <div>
-          <p className="text-xs text-gray-600 font-medium">Выработка</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Выработка</p>
           <p
-            className="text-sm font-bold text-gray-900 mt-1"
+            className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1"
             title={outputTooltip || undefined}
           >
             {displayOutput}
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-600 font-medium">Мощность</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Мощность</p>
           <p
-            className="text-sm font-bold text-gray-900 mt-1"
+            className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1"
             title={powerTooltip || undefined}
           >
             {metrics?.power}
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-600 font-medium">УРУГ</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">УРУГ</p>
           <p
-            className="text-sm font-bold text-gray-900 mt-1"
+            className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1"
             title={urugTooltip || undefined}
           >
             {metrics?.urug}
           </p>
         </div>
       </div>
-      <p className="text-xs text-gray-600 mt-4">{risk}</p>
+      <p className="text-xs text-gray-600 dark:text-gray-400 mt-4">{risk}</p>
     </div>
   );
 }

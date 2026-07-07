@@ -87,7 +87,7 @@ function normalizeFuel(fuelType) {
 function StatusBadge({ status }) {
   const data = STATUS_BADGE[status] || STATUS_BADGE.unknown;
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
       <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: data.dot }} />
       {data.label}
     </span>
@@ -410,7 +410,7 @@ export default function GPSDashboardPage({ username }) {
   return (
     <MainLayout username={username}>
       <div className="space-y-6 min-w-0 overflow-x-hidden">
-        <section className="rounded-3xl border border-slate-200 bg-slate-950 p-6 shadow-sm text-white">
+        <section className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-slate-950 p-6 shadow-sm text-white">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -428,40 +428,40 @@ export default function GPSDashboardPage({ username }) {
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-3xl border border-slate-800 bg-slate-900 p-5 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Всего ТС</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Всего ТС</p>
                 <p className="mt-3 text-3xl font-semibold text-white">{fmt(displaySummary.total)}</p>
               </div>
               <div className="rounded-3xl border border-slate-800 bg-slate-900 p-5 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Онлайн</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Онлайн</p>
                 <p className="mt-3 text-3xl font-semibold text-emerald-400">{fmt(displaySummary.online)}</p>
               </div>
               <div className="rounded-3xl border border-slate-800 bg-slate-900 p-5 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Офлайн</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Офлайн</p>
                 <p className="mt-3 text-3xl font-semibold text-rose-400">{fmt(displaySummary.offline)}</p>
               </div>
               <div className="rounded-3xl border border-slate-800 bg-slate-900 p-5 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">На стоянке</p>
-                <p className="mt-3 text-3xl font-semibold text-slate-400">{fmt(displaySummary.stopped)}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">На стоянке</p>
+                <p className="mt-3 text-3xl font-semibold text-slate-400 dark:text-slate-500">{fmt(displaySummary.stopped)}</p>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 p-5 shadow-sm">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-              <label className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Поиск</label>
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2">
+              <label className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Поиск</label>
               <div className="mt-2 flex items-center gap-2">
-                <Search className="h-4 w-4 text-slate-400" />
+                <Search className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Марка, номер, компания"
-                  className="w-full bg-transparent text-sm text-slate-900 outline-none"
+                  className="w-full bg-transparent text-sm text-slate-900 dark:text-slate-100 outline-none"
                 />
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2">
               <CustomSelect
                 label="Компания"
                 value={filterCompany}
@@ -470,7 +470,7 @@ export default function GPSDashboardPage({ username }) {
                 options={[{ value: "", label: "Все" }, ...companies.map((company) => ({ value: company, label: company }))]}
               />
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2">
               <CustomSelect
                 label="Категория"
                 value={filterCategory}
@@ -479,7 +479,7 @@ export default function GPSDashboardPage({ username }) {
                 options={[{ value: "", label: "Все" }, ...categories.map((category) => ({ value: category, label: category }))]}
               />
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2">
               <CustomSelect
                 label="Статус"
                 value={filterStatus}
@@ -493,7 +493,7 @@ export default function GPSDashboardPage({ username }) {
                 ]}
               />
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2">
               <CustomSelect
                 label="Топливо"
                 value={filterFuel}
@@ -521,13 +521,13 @@ export default function GPSDashboardPage({ username }) {
 
         <section className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)_280px]">
           <aside className="space-y-6 min-w-0">
-            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-slate-900">По годам выпуска</h2>
-                  <p className="text-sm text-slate-500">Распределение автопарка</p>
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">По годам выпуска</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Распределение автопарка</p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{fmt(displaySummary.total)} ТС</span>
+                <span className="rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">{fmt(displaySummary.total)} ТС</span>
               </div>
               <div className="mt-5 h-56">
                 {!isLoading && !hasError ? (
@@ -542,12 +542,12 @@ export default function GPSDashboardPage({ username }) {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-slate-500">Загрузка...</div>
+                  <div className="flex h-full items-center justify-center text-sm text-slate-500 dark:text-slate-400">Загрузка...</div>
                 )}
               </div>
               <div className="mt-4 space-y-2">
                 {decadeData.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between text-sm text-slate-700">
+                  <div key={item.name} className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
                     <div className="flex items-center gap-2">
                       <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                       <span>{item.name}</span>
@@ -558,13 +558,13 @@ export default function GPSDashboardPage({ username }) {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-slate-900">По категориям</h2>
-                  <p className="text-sm text-slate-500">Топовые типы ТС</p>
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">По категориям</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Топовые типы ТС</p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{categoryData.length} категорий</span>
+                <span className="rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">{categoryData.length} категорий</span>
               </div>
               <div className="mt-5 h-56">
                 {!isLoading && !hasError ? (
@@ -589,29 +589,29 @@ export default function GPSDashboardPage({ username }) {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-slate-500">Загрузка...</div>
+                  <div className="flex h-full items-center justify-center text-sm text-slate-500 dark:text-slate-400">Загрузка...</div>
                 )}
               </div>
             </section>
           </aside>
 
           <main className="space-y-6 min-w-0">
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">Транспортные средства</h2>
-                  <p className="text-sm text-slate-500">Фильтруйте, ищите и просматривайте список.</p>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Транспортные средства</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Фильтруйте, ищите и просматривайте список.</p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                  <div className="text-sm text-slate-500">
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
                     Показано {paginatedVehicles.length} из {filteredVehicles.length}
                   </div>
-                  <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-                    <span className="text-sm text-slate-500">Строк на страницу:</span>
+                  <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Строк на страницу:</span>
                     <select
                       value={pageSize}
                       onChange={(e) => setPageSize(Number(e.target.value))}
-                      className="min-w-[72px] bg-transparent text-sm text-slate-900 outline-none"
+                      className="min-w-[72px] bg-transparent text-sm text-slate-900 dark:text-slate-100 outline-none"
                     >
                       {[10, 20, 50, 100].map((size) => (
                         <option key={size} value={size}>
@@ -638,16 +638,16 @@ export default function GPSDashboardPage({ username }) {
                       <th className="sticky top-0 bg-slate-950 whitespace-nowrap px-4 py-3 text-left font-semibold">Статус</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 bg-white">
+                  <tbody className="divide-y divide-slate-200 bg-white dark:bg-gray-800">
                     {filteredVehicles.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="px-4 py-8 text-center text-sm text-slate-500">
+                        <td colSpan={8} className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
                           Нет транспортных средств по текущим фильтрам.
                         </td>
                       </tr>
                     ) : (
                       paginatedVehicles.map((vehicle, index) => (
-                        <tr key={`${vehicle.id || vehicle.plateNumber || index}`} className="hover:bg-slate-50">
+                        <tr key={`${vehicle.id || vehicle.plateNumber || index}`} className="hover:bg-slate-50 dark:hover:bg-slate-800">
                           <td className="whitespace-nowrap px-4 py-3">{vehicle.company || "—"}</td>
                           <td className="whitespace-nowrap px-4 py-3">{vehicle.category || "—"}</td>
                           <td className="whitespace-nowrap px-4 py-3">{vehicle.model || "—"}</td>
@@ -663,7 +663,7 @@ export default function GPSDashboardPage({ username }) {
                 </table>
               </div>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-sm text-slate-500">
+                <div className="text-sm text-slate-500 dark:text-slate-400">
                   Страница {page} из {pageCount}
                 </div>
                 <div className="flex items-center gap-2">
@@ -671,7 +671,7 @@ export default function GPSDashboardPage({ username }) {
                     type="button"
                     disabled={page <= 1}
                     onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Назад
                   </button>
@@ -679,7 +679,7 @@ export default function GPSDashboardPage({ username }) {
                     type="button"
                     disabled={page >= pageCount}
                     onClick={() => setPage((prev) => Math.min(pageCount, prev + 1))}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Вперед
                   </button>
@@ -690,36 +690,36 @@ export default function GPSDashboardPage({ username }) {
           </main>
 
           <aside className="space-y-6 min-w-0">
-            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-slate-900">GPS / связь</h2>
-                  <p className="text-sm text-slate-500">Статус трекеров</p>
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">GPS / связь</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Статус трекеров</p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{fmt(displaySummary.online)} онлайн</span>
+                <span className="rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">{fmt(displaySummary.online)} онлайн</span>
               </div>
               <div className="mt-6 flex justify-center">
                 <HalfGauge online={displaySummary.online} offline={displaySummary.offline} unknown={displaySummary.unknown} total={displaySummary.total} />
               </div>
               <div className="mt-6 grid gap-3">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                  <div className="text-xs text-slate-500">В движении</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{fmt(displaySummary.moving)}</div>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-4">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">В движении</div>
+                  <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{fmt(displaySummary.moving)}</div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                  <div className="text-xs text-slate-500">На стоянке</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{fmt(displaySummary.stopped)}</div>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-4">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">На стоянке</div>
+                  <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{fmt(displaySummary.stopped)}</div>
                 </div>
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-slate-900">По топливу</h2>
-                  <p className="text-sm text-slate-500">Состав парка по типам</p>
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">По топливу</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Состав парка по типам</p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{fuelData.length} типа</span>
+                <span className="rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">{fuelData.length} типа</span>
               </div>
               <div className="mt-4 h-56">
                 {!isLoading && !hasError ? (
@@ -743,7 +743,7 @@ export default function GPSDashboardPage({ username }) {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-slate-500">Загрузка...</div>
+                  <div className="flex h-full items-center justify-center text-sm text-slate-500 dark:text-slate-400">Загрузка...</div>
                 )}
               </div>
             </section>

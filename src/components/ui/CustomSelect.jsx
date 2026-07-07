@@ -35,7 +35,7 @@ export default function CustomSelect({
   return (
     <div className="relative w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
           {label}
         </label>
       )}
@@ -43,20 +43,20 @@ export default function CustomSelect({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-left text-gray-900 font-medium flex items-center justify-between hover:border-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-left text-gray-900 font-medium flex items-center justify-between hover:border-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100 dark:hover:border-gray-500"
       >
-        <span className={selectedLabel === placeholder ? "text-gray-500" : ""}>
+        <span className={selectedLabel === placeholder ? "text-gray-500 dark:text-gray-400" : ""}>
           {selectedLabel}
         </span>
         <ChevronDown
-          className={`w-5 h-5 text-gray-600 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
       {isOpen && (
         <div
           ref={menuRef}
-          className="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden min-w-full w-max"
+          className="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden min-w-full w-max dark:bg-gray-800 dark:border-gray-600"
         >
           <div className="py-2 max-h-64 overflow-y-auto">
             {options.map((option) => (
@@ -68,8 +68,8 @@ export default function CustomSelect({
                 }}
                 className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors whitespace-nowrap ${
                   value === option.value
-                    ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                    : "text-gray-900 hover:bg-gray-50"
+                    ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+                    : "text-gray-900 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
                 {option.label}

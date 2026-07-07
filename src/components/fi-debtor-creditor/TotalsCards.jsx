@@ -31,10 +31,10 @@ export default function TotalsCards({ activeSection, activeTab }) {
         return (
           <div
             key={key}
-            className="bg-white rounded-lg p-5 shadow-sm border border-gray-200"
+            className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-gray-200 dark:border-gray-700"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-gray-900 text-sm">{label}</h3>
+              <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm">{label}</h3>
               <span className={`text-xs px-2 py-0.5 rounded font-semibold ${badgeClass}`}>
                 {roleLabel}
               </span>
@@ -47,10 +47,10 @@ export default function TotalsCards({ activeSection, activeTab }) {
                 { label: "Изменение", val: total?.change, signed: true },
               ].map(({ label: l, val, signed }) => (
                 <div key={l}>
-                  <p className="text-xs text-gray-500">{l}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{l}</p>
                   <p
                     className={`font-bold mt-0.5 ${
-                      signed ? changeClass(val) : "text-gray-900"
+                      signed ? changeClass(val) : "text-gray-900 dark:text-gray-100"
                     }`}
                   >
                     {signed ? signedFmt(val) : fmtMln(val)}
@@ -60,11 +60,11 @@ export default function TotalsCards({ activeSection, activeTab }) {
             </div>
 
             {nonZeroCats.length > 0 && (
-              <div className="border-t border-gray-100 pt-3 grid grid-cols-2 gap-x-6 gap-y-1.5">
+              <div className="border-t border-gray-100 dark:border-gray-700/60 pt-3 grid grid-cols-2 gap-x-6 gap-y-1.5">
                 {nonZeroCats.map((k) => (
                   <div key={k} className="flex justify-between text-xs">
-                    <span className="text-gray-500">{CATEGORY_LABELS[k]}</span>
-                    <span className="font-medium text-gray-700">
+                    <span className="text-gray-500 dark:text-gray-400">{CATEGORY_LABELS[k]}</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">
                       {fmtMln(cats[k])}
                     </span>
                   </div>
