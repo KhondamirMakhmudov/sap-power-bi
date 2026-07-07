@@ -25,6 +25,25 @@ const MONTHS = [
   "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь",
 ];
 
+const ORG_OPTIONS = [
+  { value: "",     label: "Все организации" },
+  { value: "1010", label: "1010 — ТЭС ЦА (Ташкент)" },
+  { value: "1020", label: "1020 — Филиал Сырдарьинская ТЭС (Ширин)" },
+  { value: "1030", label: "1030 — АО «Ташкентская ТЭС» (Ташкент)" },
+  { value: "1040", label: "1040 — АО «Навоийская ТЭС» (Навои)" },
+  { value: "1050", label: "1050 — АО «Тахиаташская ТЭС» (Тахиаташ)" },
+  { value: "1060", label: "1060 — АО «Талимарджанская ТЭС» (Талимарджан)" },
+  { value: "1070", label: "1070 — Филиал Туракурганская ТЭС (Туракурган)" },
+  { value: "1080", label: "1080 — Филиал Мубарекская ТЭЦ (Мубарек)" },
+  { value: "1090", label: "1090 — Филиал Ферганская ТЭЦ (Фергана)" },
+  { value: "1100", label: "1100 — Филиал Ташкентская ТЭЦ (Ташкент)" },
+  { value: "1110", label: "1110 — ООО «Узэнергосозлаш»" },
+  { value: "1120", label: "1120 — АО «Узбекэнерготаъмир»" },
+  { value: "1130", label: "1130 — АО «Узэнерготаъминлаш» (Ташкент)" },
+  { value: "1140", label: "1140 — АО «Ангренская ТЭС»" },
+  { value: "1150", label: "1150 — ООО «Ташкентская тепловая» (Ташкент)" },
+];
+
 const CAT_KEYS = ["directors","specialists","technical_staff","service_staff","production_staff"];
 const CAT_LABELS = {
   directors:       "Руководители",
@@ -114,6 +133,7 @@ export default function HrPanelPage() {
     year: String(currentYear),
     month: String(currentMonth),
     category: "",
+    orgin: "",
   });
   const [metrics, setMetrics]   = useState(null);
   const [loading, setLoading]   = useState(false);
@@ -133,7 +153,7 @@ export default function HrPanelPage() {
       const res = await fetch("/api/hcm/dashboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orgin: "", begda, endda }),
+        body: JSON.stringify({ orgin: filters.orgin, begda, endda }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -255,6 +275,15 @@ export default function HrPanelPage() {
                   value={filters.category}
                   placeholder="Все"
                   onChange={(v) => setFilters({ ...filters, category: v })}
+                />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-blue-300 mb-1">Организация</p>
+                <CustomSelect
+                  options={ORG_OPTIONS}
+                  value={filters.orgin}
+                  placeholder="Все организации"
+                  onChange={(v) => setFilters({ ...filters, orgin: v })}
                 />
               </div>
               <button

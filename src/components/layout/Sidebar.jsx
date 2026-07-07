@@ -117,20 +117,17 @@ export default function Sidebar({
           href="/"
           className="flex items-center gap-3 group justify-center md:justify-start"
         >
-          <div className="relative w-10 h-10">
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-linear-to-br from-cyan-500 to-blue-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
-            {/* Icon */}
-            <div className="relative w-10 h-10 bg-linear-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-white" />
-            </div>
-          </div>
+          <img
+            src="/images/sap-logo-vector.png"
+            alt="SAP"
+            className="w-10 h-10 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
+          />
           {!isCollapsed && (
             <div>
               <h1 className="text-base font-bold text-white tracking-tight">
-                Analytics
+                Аналитика
               </h1>
-              <p className="text-xs text-slate-400">Dashboard Pro</p>
+              <p className="text-xs text-slate-400">Дашборд</p>
             </div>
           )}
         </Link>
