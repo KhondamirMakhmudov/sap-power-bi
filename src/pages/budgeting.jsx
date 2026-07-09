@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { isAuthenticated } from "@/utils/auth";
 import Loader from "@/components/ui/Loader";
@@ -26,7 +26,7 @@ export default function BudgetingPage() {
   const [version, setVersion] = useState("EDU");
   const [compInput, setCompInput] = useState("");
   const [monthFrom, setMonthFrom] = useState("01");
-  const [monthTo, setMonthTo] = useState("12");
+  const [monthTo, setMonthTo] = useState(String(new Date().getMonth() + 1).padStart(2, "0"));
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -74,6 +74,11 @@ export default function BudgetingPage() {
     setData(null);
     setError(null);
   };
+
+  useEffect(() => {
+    handleApply();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const costsMap = sumByKey(data?.costs);
   const revenueMap = sumByKey(data?.revenue);

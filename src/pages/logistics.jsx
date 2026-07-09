@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { isAuthenticated } from "@/utils/auth";
 import Loader from "@/components/ui/Loader";
@@ -9,8 +9,25 @@ import { ENTITIES, ENTITY_KEYS, buildODataFilter } from "@/components/logistics/
 
 const INITIAL_TAB_STATE = { filter: {}, top: "50", data: null, loading: false, error: null };
 
+function currentMonthRange() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const pad = (n) => String(n).padStart(2, "0");
+  const lastDay = new Date(y, m, 0).getDate();
+  return { from: `${y}-${pad(m)}-01`, to: `${y}-${pad(m)}-${pad(lastDay)}` };
+}
+
 const initState = () =>
-  Object.fromEntries(ENTITY_KEYS.map((k) => [k, { ...INITIAL_TAB_STATE, filter: {} }]));
+  Object.fromEntries(
+    ENTITY_KEYS.map((k) => [
+      k,
+      {
+        ...INITIAL_TAB_STATE,
+        filter: ENTITIES[k].filter?.type === "dateRange" ? currentMonthRange() : {},
+      },
+    ]),
+  );
 
 export default function LogisticsPage() {
   const [activeTab, setActiveTab] = useState("pr");
@@ -45,8 +62,16 @@ export default function LogisticsPage() {
   };
 
   const handleReset = (entity) => {
-    updateTab(entity, { ...INITIAL_TAB_STATE, filter: {} });
+    updateTab(entity, {
+      ...INITIAL_TAB_STATE,
+      filter: ENTITIES[entity].filter?.type === "dateRange" ? currentMonthRange() : {},
+    });
   };
+
+  useEffect(() => {
+    handleApply("pr");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const current = tabs[activeTab];
 

@@ -1,7 +1,7 @@
 import https from "https";
 
 const SAP_URL =
-  "https://10.20.6.150:44300/sap/bc/zbdt_dashboard?sap-client=200";
+  "https://10.20.6.154:44300/sap/bc/zbdt_dashboard?sap-client=200";
 const SAP_AUTH = Buffer.from("DASHBOARD:Integration2026").toString("base64");
 
 export default async function handler(req, res) {
