@@ -169,7 +169,7 @@ export default function HrPanelPage() {
   }
 
   useEffect(() => {
-    loadData();
+    queueMicrotask(() => loadData());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

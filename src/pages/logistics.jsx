@@ -9,13 +9,8 @@ import { ENTITIES, ENTITY_KEYS, buildODataFilter } from "@/components/logistics/
 
 const INITIAL_TAB_STATE = { filter: {}, top: "50", data: null, loading: false, error: null };
 
-function currentMonthRange() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth() + 1;
-  const pad = (n) => String(n).padStart(2, "0");
-  const lastDay = new Date(y, m, 0).getDate();
-  return { from: `${y}-${pad(m)}-01`, to: `${y}-${pad(m)}-${pad(lastDay)}` };
+function defaultDateRange() {
+  return { from: "2025-01-01", to: "2025-12-31" };
 }
 
 const initState = () =>
@@ -24,7 +19,7 @@ const initState = () =>
       k,
       {
         ...INITIAL_TAB_STATE,
-        filter: ENTITIES[k].filter?.type === "dateRange" ? currentMonthRange() : {},
+        filter: ENTITIES[k].filter?.type === "dateRange" ? defaultDateRange() : {},
       },
     ]),
   );
@@ -64,12 +59,12 @@ export default function LogisticsPage() {
   const handleReset = (entity) => {
     updateTab(entity, {
       ...INITIAL_TAB_STATE,
-      filter: ENTITIES[entity].filter?.type === "dateRange" ? currentMonthRange() : {},
+      filter: ENTITIES[entity].filter?.type === "dateRange" ? defaultDateRange() : {},
     });
   };
 
   useEffect(() => {
-    handleApply("pr");
+    queueMicrotask(() => handleApply("pr"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -163,7 +163,11 @@ export default function Sidebar({
                 <div className="absolute left-0 top-2 bottom-2 w-1 bg-linear-to-b from-cyan-400 to-blue-600 rounded-full" />
               )}
 
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                className={`flex items-center gap-3 min-w-0 flex-1 ${
+                  isCollapsed ? "md:flex-none md:justify-center" : ""
+                }`}
+              >
                 <span
                   className={`shrink-0 transition-colors duration-200 ${
                     isActive(item.href)

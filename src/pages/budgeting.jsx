@@ -76,7 +76,7 @@ export default function BudgetingPage() {
   };
 
   useEffect(() => {
-    handleApply();
+    queueMicrotask(() => handleApply());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

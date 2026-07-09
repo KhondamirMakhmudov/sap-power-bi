@@ -61,6 +61,7 @@ export default function Header({
             )}
           </button>
 
+          {/* Search — no real search backend yet. Re-enable once there's something to query.
           <div className="hidden sm:flex flex-1 max-w-md items-center gap-2 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg">
             <svg
               className="w-4 h-4 text-gray-400 shrink-0"
@@ -81,6 +82,7 @@ export default function Header({
               className="flex-1 bg-transparent text-sm outline-none placeholder-gray-400 dark:text-gray-100"
             />
           </div>
+          */}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">

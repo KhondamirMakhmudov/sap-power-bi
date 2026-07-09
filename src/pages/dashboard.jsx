@@ -108,7 +108,7 @@ export default function DashboardPage({ username }) {
   };
 
   useEffect(() => {
-    postDashboardData(currentMonthValue);
+    queueMicrotask(() => postDashboardData(currentMonthValue));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
