@@ -321,7 +321,7 @@ export default function HrPanelPage() {
             hint="Получаем кадровые показатели из SAP HCM за выбранный период"
           />
         ) : !metrics ? (
-          <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-20 flex items-center justify-center text-gray-400 dark:text-gray-500">
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-20 flex items-center justify-center text-gray-500 dark:text-gray-400">
             Выберите период и нажмите «Применить»
           </div>
         ) : (
@@ -334,7 +334,7 @@ export default function HrPanelPage() {
                 { label: "Уволено с нач. года",  value: num(getF("all_dismissed")),   sub: `▼ ${num(getF("all_dismissed"))}`, subColor: "text-red-500" },
                 { label: "Текучесть кадров %",   value: `${Number(get("all_ternoved") ?? 0).toFixed(2)}`, sub: null,       subColor: "" },
                 { label: "Кол-во вакансий",      value: num(getF("all_vacant")),      sub: `▼ ${num(getF("all_vacant"))}`, subColor: "text-red-500" },
-                { label: "Пенсионеры",           value: num(getF("pens")),            sub: "— чел.",                        subColor: "text-gray-400 dark:text-gray-500" },
+                { label: "Пенсионеры",           value: num(getF("pens")),            sub: "— чел.",                        subColor: "text-gray-500 dark:text-gray-400" },
                 { label: "Инвалиды II гр.",      value: num(getF("disability_2")),    sub: null,                            subColor: "" },
                 { label: "По ГПХ / совм.",       value: num((getF("gph_work") ?? 0) + (getF("by_work") ?? 0)), sub: null, subColor: "" },
               ].map(({ label, value, sub, subColor }) => (
@@ -389,9 +389,9 @@ export default function HrPanelPage() {
                     <div key={k} className="space-y-0.5">
                       <p className="text-[11px] text-gray-500 dark:text-gray-400">{CAT_LABELS[k]}</p>
                       <p className="text-xl font-bold text-blue-700 dark:text-blue-300 leading-none">{num(hireCats[k]?.all)}</p>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500">принято</p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">принято</p>
                       <p className="text-xl font-bold text-red-600 dark:text-red-400 leading-none">{num(dismissCats[k]?.all)}</p>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500">уволено</p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">уволено</p>
                     </div>
                   ))}
                 </div>
@@ -452,7 +452,7 @@ export default function HrPanelPage() {
                 <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Возрастные группы</p>
                 <ResponsiveContainer width="100%" height={160}>
                   <BarChart data={ageData} margin={{ left: -20, right: 8, top: 8, bottom: 0 }}>
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                     <YAxis hide />
                     <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => [num(v), "чел."]} />
                     <Bar dataKey="value" radius={[4,4,0,0]} barSize={28}>
@@ -466,7 +466,7 @@ export default function HrPanelPage() {
                   {ageData.map((d) => (
                     <div key={d.name}>
                       <p className="text-xs font-bold text-gray-900 dark:text-gray-100">{num(d.value)}</p>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500">{d.name}</p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">{d.name}</p>
                     </div>
                   ))}
                 </div>
@@ -489,7 +489,7 @@ export default function HrPanelPage() {
                         <div key={d.name} className="flex items-center gap-1.5 text-xs">
                           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
                           <span className="text-gray-600 dark:text-gray-400 flex-1 truncate">{d.name}</span>
-                          <span className="text-gray-400 dark:text-gray-500 mr-1">{p}%</span>
+                          <span className="text-gray-500 dark:text-gray-400 mr-1">{p}%</span>
                           <span className="font-semibold text-gray-900 dark:text-gray-100">{num(d.value)}</span>
                         </div>
                       );
