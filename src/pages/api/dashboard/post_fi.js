@@ -19,20 +19,17 @@ export default async function handler(req, res) {
     }
 
     // Call the external API from server-side (no CORS issues)
-    const response = await fetch(
-      "http://10.20.7.6/tes_temp/hs/dashboard/post_fi",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Basic YnBtczoyMjExMjAyMw==",
-        },
-        body: JSON.stringify({
-          date_from,
-          date_to,
-        }),
+    const response = await fetch("http://10.20.7.6/tes/hs/dashboard/post_fi", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Basic YnBtczoyMjExMjAyMw==",
       },
-    );
+      body: JSON.stringify({
+        date_from,
+        date_to,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(

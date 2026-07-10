@@ -12,17 +12,14 @@ export default async function handler(req, res) {
         .json({ error: "date_from and date_to are required" });
     }
 
-    const response = await fetch(
-      "http://10.20.7.6/tes_temp/hs/dashboard/post_fi2",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Basic YnBtczoyMjExMjAyMw==",
-        },
-        body: JSON.stringify({ date_from, date_to }),
+    const response = await fetch("http://10.20.7.6/tes/hs/dashboard/post_fi2", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Basic YnBtczoyMjExMjAyMw==",
       },
-    );
+      body: JSON.stringify({ date_from, date_to }),
+    });
 
     if (!response.ok) {
       throw new Error(

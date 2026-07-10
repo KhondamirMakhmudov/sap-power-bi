@@ -121,8 +121,59 @@ const ebitdaFactors = [
   },
 ];
 
-function statusToColor(text) {
+// `value != null` treats NaN as present (NaN != null is true), so a 0/0 upstream
+// calculation renders as "NaNx" instead of a no-data state — guard with isFinite.
+function formatRatio(value, suffix = "x", digits = 2) {
+  const n = Number(value);
+  if (value == null || !Number.isFinite(n)) return "н/д";
+  return `${n.toFixed(digits)}${suffix}`;
+}
+
+const TONE_TEXT_CLASS = {
+  green: "text-green-600 dark:text-green-400",
+  orange: "text-orange-600 dark:text-orange-400",
+  red: "text-red-600 dark:text-red-400",
+  gray: "text-gray-500 dark:text-gray-400",
+};
+
+const TONE_BORDER_CLASS = {
+  green: "border-l-4 border-l-green-500",
+  orange: "border-l-4 border-l-orange-500",
+  red: "border-l-4 border-l-red-500",
+  gray: "border-l-4 border-l-gray-300",
+};
+
+// Status_NetDebtEbitda from SAP is a fixed descriptive sentence, not a generic
+// "in range"/"out of range" phrase — map each known sentence to its tone explicitly.
+// "Рассчитать не удалось" means the calc itself failed (e.g. 0/0 upstream) —
+// that's a neutral no-data state, not a risk severity, so it gets gray, not red.
+const NET_DEBT_EBITDA_STATUS_TONE = {
+  "очень низкая долговая нагрузка": "green",
+  "долговая нагрузка низкая, комфортная": "green",
+  "умеренная долговая нагрузка, обычно приемлемая": "orange",
+  "повышенная долговая нагрузка, требует внимания": "orange",
+  "высокая долговая нагрузка, повышенный риск": "red",
+  "очень высокая, возможны проблемы с обслуживанием долга": "red",
+  "рассчитать не удалось": "gray",
+};
+
+// Same for Status_DSCR — both hyphen variants covered since SAP text may use "—" or "-".
+const DSCR_STATUS_TONE = {
+  "критично — денежных средств недостаточно для обслуживания долга": "red",
+  "критично - денежных средств недостаточно для обслуживания долга": "red",
+  "очень слабое покрытие, высокий риск": "red",
+  "приемлемо, но запас прочности небольшой": "orange",
+  "хороший уровень": "green",
+  "отлично (низкий кредитный риск)": "green",
+  "рассчитать не удалось": "gray",
+};
+
+function statusToColor(text, toneMap) {
   if (!text) return "text-gray-500 dark:text-gray-400";
+  if (toneMap) {
+    const tone = toneMap[text.trim().toLowerCase()];
+    if (tone) return TONE_TEXT_CLASS[tone];
+  }
   const t = text.toLowerCase();
   if (t.includes("норме") || t.includes("коридоре")) return "text-green-600 dark:text-green-400";
   if (t.includes("диапазоне")) return "text-orange-600 dark:text-orange-400";
@@ -130,8 +181,12 @@ function statusToColor(text) {
   return "text-red-600 dark:text-red-400";
 }
 
-function statusToBorder(text) {
+function statusToBorder(text, toneMap) {
   if (!text) return "border-l-4 border-l-gray-300";
+  if (toneMap) {
+    const tone = toneMap[text.trim().toLowerCase()];
+    if (tone) return TONE_BORDER_CLASS[tone];
+  }
   const t = text.toLowerCase();
   if (t.includes("норме") || t.includes("коридоре"))
     return "border-l-4 border-l-green-500";
@@ -155,26 +210,23 @@ function buildRatioCards(d) {
     },
     {
       label: "Net Debt / EBITDA",
-      value:
-        d?.NetDebtEbitda != null
-          ? `${Number(d.NetDebtEbitda).toFixed(2)}x`
-          : "—",
+      value: formatRatio(d?.NetDebtEbitda),
       target: "Пороги: 3.5x-4.0x",
       status: ndStatus ?? "—",
-      statusColor: statusToColor(ndStatus),
-      borderColor: statusToBorder(ndStatus),
+      statusColor: statusToColor(ndStatus, NET_DEBT_EBITDA_STATUS_TONE),
+      borderColor: statusToBorder(ndStatus, NET_DEBT_EBITDA_STATUS_TONE),
     },
     {
       label: "DSCR",
-      value: d?.DSCR != null ? `${Number(d.DSCR).toFixed(2)}x` : "—",
+      value: formatRatio(d?.DSCR),
       target: "Пороги: > 1.1x-1.2x",
       status: dscrStatus ?? "—",
-      statusColor: statusToColor(dscrStatus),
-      borderColor: statusToBorder(dscrStatus),
+      statusColor: statusToColor(dscrStatus, DSCR_STATUS_TONE),
+      borderColor: statusToBorder(dscrStatus, DSCR_STATUS_TONE),
     },
     {
       label: "EBITDA Margin",
-      value: d?.EBITDAMargin != null ? `${Number(d.EBITDAMargin)}%` : "—",
+      value: formatRatio(d?.EBITDAMargin, "%", 1),
       target: `Цели: ${d?.Plan_EBITDAMargin != null ? `${Number(d.Plan_EBITDAMargin).toFixed(1)}%` : "20%-25%"}`,
       status: d?.Status_EBITDAMargin ?? "—",
       statusColor: statusToColor(d?.Status_EBITDAMargin),
@@ -494,16 +546,14 @@ export default function FinancesPage() {
                         Чистый долг / EBITDA
                       </h4>
                       <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {financesData?.NetDebtEbitda != null
-                          ? `${Number(financesData.NetDebtEbitda).toFixed(2)}x`
-                          : "—"}
+                        {formatRatio(financesData?.NetDebtEbitda)}
                       </span>
                     </div>
                     <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                       Цели: 3.5x-4.0x
                     </p>
                     <p
-                      className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_NetDebtEbitda)}`}
+                      className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_NetDebtEbitda, NET_DEBT_EBITDA_STATUS_TONE)}`}
                     >
                       {financesData?.Status_NetDebtEbitda
                         ? `Статус: ${financesData.Status_NetDebtEbitda}`
@@ -521,16 +571,14 @@ export default function FinancesPage() {
                         DSCR — коэффициент покрытия обслуживания долга
                       </h4>
                       <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {financesData?.DSCR != null
-                          ? `${Number(financesData.DSCR).toFixed(2)}x`
-                          : "—"}
+                        {formatRatio(financesData?.DSCR)}
                       </span>
                     </div>
                     <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                       Цели: строго {`>`} 1.1x-1.2x
                     </p>
                     <p
-                      className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_DSCR)}`}
+                      className={`text-xs font-medium mt-1 ${statusToColor(financesData?.Status_DSCR, DSCR_STATUS_TONE)}`}
                     >
                       {financesData?.Status_DSCR
                         ? `Статус: ${financesData.Status_DSCR}`
@@ -659,9 +707,7 @@ export default function FinancesPage() {
                         Рентабельность по EBITDA
                       </h4>
                       <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {financesData?.EBITDAMargin != null
-                          ? `${Number(financesData.EBITDAMargin).toFixed(1)}%`
-                          : "—"}
+                        {formatRatio(financesData?.EBITDAMargin, "%", 1)}
                       </span>
                     </div>
                     <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">

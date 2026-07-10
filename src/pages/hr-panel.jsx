@@ -353,28 +353,27 @@ export default function HrPanelPage() {
               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Количество (Муж/Жен)</p>
                 {gender && (
-                  <div className="flex items-center justify-around">
-                    <div className="flex flex-col items-center gap-1">
-                      <MiniDonut
-                        data={[
-                          { name: "Мужчины", value: gender.men,   color: "#2563EB" },
-                          { name: "Женщины", value: gender.women, color: "#e5e7eb" },
-                        ]}
-                        centerValue={gender.men}
-                        size={110} innerRadius={32} outerRadius={50}
-                      />
-                      <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Мужчины</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <MiniDonut
-                        data={[
-                          { name: "Женщины", value: gender.women, color: "#EC4899" },
-                          { name: "Мужчины", value: gender.men,   color: "#e5e7eb" },
-                        ]}
-                        centerValue={gender.women}
-                        size={110} innerRadius={32} outerRadius={50}
-                      />
-                      <p className="text-xs font-semibold text-pink-600">Женщины</p>
+                  <div className="flex flex-col items-center gap-3">
+                    <MiniDonut
+                      data={[
+                        { name: "Мужчины", value: gender.men,   color: "#2563EB" },
+                        { name: "Женщины", value: gender.women, color: "#EC4899" },
+                      ]}
+                      centerValue={gender.men + gender.women}
+                      centerLabel="всего"
+                      size={190} innerRadius={58} outerRadius={92}
+                    />
+                    <div className="flex items-center gap-5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#2563EB" }} />
+                        <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">Мужчины</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{num(gender.men)}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#EC4899" }} />
+                        <span className="text-xs font-semibold text-pink-600">Женщины</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{num(gender.women)}</span>
+                      </div>
                     </div>
                   </div>
                 )}

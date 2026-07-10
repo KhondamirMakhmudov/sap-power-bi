@@ -25,11 +25,19 @@ const CATEGORY_MAP = {
 
 const FUEL_COLORS = {
   Дизель: "#3B82F6",
+  diesel: "#3B82F6",
   Бензин: "#F59E0B",
+  petrol: "#F59E0B",
   Электро: "#10B981",
+  electric: "#10B981",
   Газ: "#8B5CF6",
+  gas: "#8B5CF6",
   Метан: "#06B6D4",
+  methane: "#06B6D4",
+  petrol_methane: "#EC4899",
   Другое: "#94A3B8",
+  other: "#94A3B8",
+  unknown: "#CBD5E1",
 };
 
 const STATUS_BADGE = {
