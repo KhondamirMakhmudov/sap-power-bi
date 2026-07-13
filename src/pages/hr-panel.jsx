@@ -6,6 +6,7 @@ import { isAuthenticated } from "@/utils/auth";
 import CustomSelect from "@/components/ui/CustomSelect";
 import Loader from "@/components/ui/Loader";
 import { AlertCircle } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   BarChart,
   Bar,
@@ -70,15 +71,34 @@ const CAT_LABELS = {
   service_staff:   "Служащие",
   production_staff:"Рабочие",
 };
-const CAT_COLORS = ["#1E40AF","#3B82F6","#60A5FA","#F59E0B","#EF4444"];
+// paired light/dark palettes — dark variants are shifted lighter so segments
+// stay legible against dark cards instead of reusing the light-mode hex values
+const CAT_COLORS_LIGHT   = ["#1E40AF","#3B82F6","#60A5FA","#F59E0B","#EF4444"];
+const CAT_COLORS_DARK    = ["#60A5FA","#93C5FD","#BFDBFE","#FBBF24","#F87171"];
+const CAT_DIM_COLOR      = { light: "#e5e7eb", dark: "#374151" };
 
-const TOOLTIP_STYLE = {
-  fontSize: 12,
-  background: "#fff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 8,
-  padding: "6px 10px",
-};
+const EDU_COLORS_LIGHT   = ["#1E40AF","#2563EB","#3B82F6","#93C5FD","#1E3A5F"];
+const EDU_COLORS_DARK    = ["#60A5FA","#3B82F6","#93C5FD","#DBEAFE","#818CF8"];
+
+const PENS_COLORS_LIGHT  = ["#EF4444","#F97316","#EAB308","#10B981","#8B5CF6"];
+const PENS_COLORS_DARK   = ["#F87171","#FB923C","#FDE047","#34D399","#A78BFA"];
+
+const AGE_COLORS_LIGHT   = ["#2563EB","#EF4444"];
+const AGE_COLORS_DARK    = ["#60A5FA","#F87171"];
+
+const GENDER_COLORS_LIGHT = { men: "#2563EB", women: "#EC4899" };
+const GENDER_COLORS_DARK  = { men: "#60A5FA", women: "#F472B6" };
+
+function tooltipStyle(isDark) {
+  return {
+    fontSize: 12,
+    background: isDark ? "#1f2937" : "#fff",
+    border: isDark ? "1px solid #374151" : "1px solid #e2e8f0",
+    borderRadius: 8,
+    padding: "6px 10px",
+    color: isDark ? "#F1F5F9" : "#0b0b0b",
+  };
+}
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -140,6 +160,8 @@ function DonutCenter({ value, label }) {
 }
 
 function MiniDonut({ data, size = 120, innerRadius = 34, outerRadius = 52, centerValue, centerLabel }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <PieChart width={size} height={size}>
@@ -147,7 +169,7 @@ function MiniDonut({ data, size = 120, innerRadius = 34, outerRadius = 52, cente
           innerRadius={innerRadius} outerRadius={outerRadius} paddingAngle={2} startAngle={90} endAngle={-270}>
           {data.map((d, i) => <Cell key={i} fill={d.color} />)}
         </Pie>
-        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={TOOLTIP_FN} />
+        <Tooltip contentStyle={tooltipStyle(isDark)} formatter={TOOLTIP_FN} />
       </PieChart>
       {centerValue !== undefined && <DonutCenter value={centerValue} label={centerLabel} />}
     </div>
@@ -157,6 +179,9 @@ function MiniDonut({ data, size = 120, innerRadius = 34, outerRadius = 52, cente
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function HrPanelPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
@@ -265,24 +290,27 @@ export default function HrPanelPage() {
   const compositionData = useMemo(() => {
     if (!metrics) return [];
     const c = cats("all_count");
+    const palette = isDark ? CAT_COLORS_DARK : CAT_COLORS_LIGHT;
+    const dim = isDark ? CAT_DIM_COLOR.dark : CAT_DIM_COLOR.light;
     return CAT_KEYS.map((k, i) => ({
       name: CAT_LABELS[k],
       value: c[k]?.all ?? 0,
-      color: !filters.category || filters.category === k ? CAT_COLORS[i] : "#e5e7eb",
+      color: !filters.category || filters.category === k ? palette[i] : dim,
     })).filter((d) => d.value > 0);
-  }, [metrics, filters.category]);
+  }, [metrics, filters.category, isDark]);
 
   // education donut
   const eduData = useMemo(() => {
     if (!metrics) return [];
+    const palette = isDark ? EDU_COLORS_DARK : EDU_COLORS_LIGHT;
     return [
-      { name: "Высшее",         value: getF("higher") ?? 0,                              color: "#1E40AF" },
-      { name: "Магистратура",   value: (getF("obr_acad") ?? 0) + (getF("obr_bsch") ?? 0), color: "#2563EB" },
-      { name: "Среднее спец.",  value: getF("secondary") ?? 0,                           color: "#3B82F6" },
-      { name: "Проч. образов.", value: getF("secondary_prof_general_lower") ?? 0,         color: "#93C5FD" },
-      { name: "PhD / DSc",      value: getF("phd_dsc") ?? 0,                             color: "#1E3A5F" },
+      { name: "Высшее",         value: getF("higher") ?? 0,                              color: palette[0] },
+      { name: "Магистратура",   value: (getF("obr_acad") ?? 0) + (getF("obr_bsch") ?? 0), color: palette[1] },
+      { name: "Среднее спец.",  value: getF("secondary") ?? 0,                           color: palette[2] },
+      { name: "Проч. образов.", value: getF("secondary_prof_general_lower") ?? 0,         color: palette[3] },
+      { name: "PhD / DSc",      value: getF("phd_dsc") ?? 0,                             color: palette[4] },
     ].filter((d) => d.value > 0);
-  }, [metrics, filters.category]);
+  }, [metrics, filters.category, isDark]);
 
   // age bar
   const ageData = useMemo(() => {
@@ -300,7 +328,7 @@ export default function HrPanelPage() {
   const pensData = useMemo(() => {
     if (!metrics) return [];
     const c = cats("pens");
-    const colors = ["#EF4444","#F97316","#EAB308","#10B981","#8B5CF6"];
+    const colors = isDark ? PENS_COLORS_DARK : PENS_COLORS_LIGHT;
     if (filters.category) {
       const cat = c[filters.category];
       return cat ? [{ name: CAT_LABELS[filters.category], value: cat.all ?? 0, color: colors[CAT_KEYS.indexOf(filters.category)] }] : [];
@@ -308,7 +336,7 @@ export default function HrPanelPage() {
     return CAT_KEYS.map((k, i) => ({
       name: CAT_LABELS[k], value: c[k]?.all ?? 0, color: colors[i],
     })).filter((d) => d.value > 0);
-  }, [metrics, filters.category]);
+  }, [metrics, filters.category, isDark]);
 
   const hireCats    = useMemo(() => cats("all_hire"), [metrics]);
   const dismissCats = useMemo(() => cats("all_dismissed"), [metrics]);
@@ -475,8 +503,8 @@ export default function HrPanelPage() {
                   <div className="flex flex-col items-center gap-3">
                     <MiniDonut
                       data={[
-                        { name: "Мужчины", value: gender.men,   color: "#2563EB" },
-                        { name: "Женщины", value: gender.women, color: "#EC4899" },
+                        { name: "Мужчины", value: gender.men,   color: isDark ? GENDER_COLORS_DARK.men : GENDER_COLORS_LIGHT.men },
+                        { name: "Женщины", value: gender.women, color: isDark ? GENDER_COLORS_DARK.women : GENDER_COLORS_LIGHT.women },
                       ]}
                       centerValue={gender.men + gender.women}
                       centerLabel="всего"
@@ -484,13 +512,13 @@ export default function HrPanelPage() {
                     />
                     <div className="flex items-center gap-5">
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#2563EB" }} />
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: isDark ? GENDER_COLORS_DARK.men : GENDER_COLORS_LIGHT.men }} />
                         <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">Мужчины</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">{num(gender.men)}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#EC4899" }} />
-                        <span className="text-xs font-semibold text-pink-600">Женщины</span>
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: isDark ? GENDER_COLORS_DARK.women : GENDER_COLORS_LIGHT.women }} />
+                        <span className="text-xs font-semibold text-pink-600 dark:text-pink-400">Женщины</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">{num(gender.women)}</span>
                       </div>
                     </div>
@@ -538,8 +566,8 @@ export default function HrPanelPage() {
                           <span>{label}</span>
                           <span className="font-semibold">{num(val)}</span>
                         </div>
-                        <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full bg-red-500" style={{ width: `${pct}%` }} />
+                        <div className="h-1.5 bg-gray-100 dark:bg-gray-600 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full bg-red-500 dark:bg-red-400" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     );
@@ -574,13 +602,14 @@ export default function HrPanelPage() {
                 <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Возрастные группы</p>
                 <ResponsiveContainer width="100%" height={160}>
                   <BarChart data={ageData} margin={{ left: -20, right: 8, top: 8, bottom: 0 }}>
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: isDark ? "#CBD5E1" : "#94a3b8" }} axisLine={false} tickLine={false} />
                     <YAxis hide />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => [num(v), "чел."]} />
+                    <Tooltip contentStyle={tooltipStyle(isDark)} formatter={(v) => [num(v), "чел."]} />
                     <Bar dataKey="value" radius={[4,4,0,0]} barSize={28}>
-                      {ageData.map((_, i) => (
-                        <Cell key={i} fill={i % 2 === 0 ? "#2563EB" : "#EF4444"} />
-                      ))}
+                      {ageData.map((_, i) => {
+                        const palette = isDark ? AGE_COLORS_DARK : AGE_COLORS_LIGHT;
+                        return <Cell key={i} fill={i % 2 === 0 ? palette[0] : palette[1]} />;
+                      })}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -679,8 +708,8 @@ export default function HrPanelPage() {
                           <span>{label}</span>
                           <span className="font-bold text-gray-900 dark:text-gray-100">{num(val)}</span>
                         </div>
-                        <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full bg-blue-500" style={{ width: `${pct}%` }} />
+                        <div className="h-1.5 bg-gray-100 dark:bg-gray-600 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full bg-blue-500 dark:bg-blue-400" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     );
