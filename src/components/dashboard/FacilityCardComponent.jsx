@@ -75,7 +75,7 @@ export default function FacilityCardComponent({
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">УРУГ</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">УРУТ</p>
           <p
             className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1"
             title={urugTooltip || undefined}

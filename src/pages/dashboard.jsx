@@ -149,9 +149,18 @@ export default function DashboardPage({ username }) {
               onClick={handleLogout}
               className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"
+                />
               </svg>
               Выйти
             </button>
@@ -215,7 +224,9 @@ export default function DashboardPage({ username }) {
             </div>
           </div>
           {dashboardApiError && (
-            <p className="text-xs text-red-600 dark:text-red-400 mt-3">{dashboardApiError}</p>
+            <p className="text-xs text-red-600 dark:text-red-400 mt-3">
+              {dashboardApiError}
+            </p>
           )}
         </div>
 
@@ -270,7 +281,7 @@ export default function DashboardPage({ username }) {
                 unit={"сум"}
               />
               <KPICardComponent
-                label={"Выработка"}
+                label={"Реализация электр энергии"}
                 value={get(dashboardApiResponse, "VirabotkaEE")}
                 plan={get(dashboardApiResponse, "P_VirabotkaEE", 0)}
                 change={get(dashboardApiResponse, "PF_VirabotkaEE", 0)}
@@ -288,7 +299,7 @@ export default function DashboardPage({ username }) {
                 unit={"МВт"}
               />
               <KPICardComponent
-                label={"УРУГ"}
+                label={"УРУТ"}
                 value={get(dashboardApiResponse, "urug")}
                 plan={get(dashboardApiResponse, "P_urug", 0)}
                 change={get(dashboardApiResponse, "PF_urug", 0)}
