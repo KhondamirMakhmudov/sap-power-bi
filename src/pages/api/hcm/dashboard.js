@@ -1,6 +1,6 @@
 import https from "https";
 
-const SAP_URL = "https://10.20.6.144:44300/sap/bc/hcm/dashboard?sap-client=500";
+const SAP_URL = "https://10.20.6.146:44300/sap/bc/hcm/dashboard?sap-client=700";
 const SAP_AUTH = Buffer.from("Dashboard:Integration2026").toString("base64");
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
@@ -36,7 +36,9 @@ function fetchFromSap(orgin, begda, endda) {
           try {
             resolve(JSON.parse(raw));
           } catch {
-            const err = new Error(`SAP вернул не-JSON ответ (HTTP ${sapRes.statusCode})`);
+            const err = new Error(
+              `SAP вернул не-JSON ответ (HTTP ${sapRes.statusCode})`,
+            );
             err.sap_status = sapRes.statusCode;
             err.sap_body = raw.slice(0, 300);
             reject(err);
@@ -104,7 +106,9 @@ export default async function handler(req, res) {
     console.error("SAP HCM proxy error:", err);
     return res.status(502).json({
       error: err.message,
-      ...(err.sap_status ? { sap_status: err.sap_status, sap_body: err.sap_body } : {}),
+      ...(err.sap_status
+        ? { sap_status: err.sap_status, sap_body: err.sap_body }
+        : {}),
     });
   }
 }

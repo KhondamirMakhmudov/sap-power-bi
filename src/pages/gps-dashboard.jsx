@@ -7,37 +7,39 @@ import Loader from "@/components/ui/Loader";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { MapPin, Search } from "lucide-react";
 import { isAuthenticated, getSessionUsername } from "@/utils/auth";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const CATEGORY_MAP = {
   Автомобиль: { label: "Легковые", color: "#3B82F6" },
+  car: { label: "Легковые", color: "#3B82F6" },
   Автобус: { label: "Автобусы", color: "#F97316" },
+  bus: { label: "Автобусы", color: "#F97316" },
   Грузовой: { label: "Грузовые", color: "#EAB308" },
+  truck: { label: "Грузовые", color: "#EAB308" },
   crane: { label: "Кран", color: "#A855F7" },
   tractor: { label: "Трактор", color: "#8B5CF6" },
   forklift: { label: "Погрузчик", color: "#EC4899" },
   bulldozer: { label: "Бульдозер", color: "#14B8A6" },
+  excavator: { label: "Экскаватор", color: "#0EA5E9" },
   fire: { label: "Пожарный", color: "#EF4444" },
   garbage: { label: "Мусоровоз", color: "#6B7280" },
   dump: { label: "Самосвал", color: "#CA8A04" },
   Скутер: { label: "Скутер", color: "#06B6D4" },
+  scooter: { label: "Скутер", color: "#06B6D4" },
+  unknown: { label: "Не определено", color: "#64748B" },
   Другое: { label: "Прочие", color: "#94A3B8" },
 };
 
+// Keyed by the Russian label that normalizeFuel() produces, so fuelData always
+// looks up color after translation — no need to duplicate raw English keys here.
 const FUEL_COLORS = {
   Дизель: "#3B82F6",
-  diesel: "#3B82F6",
   Бензин: "#F59E0B",
-  petrol: "#F59E0B",
   Электро: "#10B981",
-  electric: "#10B981",
   Газ: "#8B5CF6",
-  gas: "#8B5CF6",
   Метан: "#06B6D4",
-  methane: "#06B6D4",
-  petrol_methane: "#EC4899",
+  "Бензин/метан": "#EC4899",
   Другое: "#94A3B8",
-  other: "#94A3B8",
-  unknown: "#CBD5E1",
 };
 
 const STATUS_BADGE = {
@@ -88,6 +90,7 @@ function normalizeFuel(fuelType) {
   if (normalized === "electric" || normalized === "электро") return "Электро";
   if (normalized === "gas" || normalized === "газ") return "Газ";
   if (normalized === "methane" || normalized === "метан") return "Метан";
+  if (normalized === "petrol_methane") return "Бензин/метан";
   if (normalized === "other" || normalized === "другое" || normalized === "unknown" || normalized === "неизвестно") return "Другое";
   return fuelType;
 }
@@ -104,6 +107,8 @@ function StatusBadge({ status }) {
 
 function HalfGauge({ online, offline, unknown, total }) {
   const canvasRef = useRef(null);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -124,7 +129,7 @@ function HalfGauge({ online, offline, unknown, total }) {
     ctx.lineCap = "round";
 
     ctx.beginPath();
-    ctx.strokeStyle = "#E2E8F0";
+    ctx.strokeStyle = isDark ? "#334155" : "#E2E8F0";
     ctx.arc(cx, cy, radius, Math.PI, 2 * Math.PI);
     ctx.stroke();
 
@@ -148,14 +153,14 @@ function HalfGauge({ online, offline, unknown, total }) {
     });
 
     const percent = total ? Math.round((online / total) * 100) : 0;
-    ctx.fillStyle = "#0F172A";
+    ctx.fillStyle = isDark ? "#F1F5F9" : "#0F172A";
     ctx.font = "bold 20px Inter, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(`${percent}%`, cx, cy - 12);
-    ctx.fillStyle = "#475569";
+    ctx.fillStyle = isDark ? "#94A3B8" : "#475569";
     ctx.font = "500 11px Inter, sans-serif";
     ctx.fillText("ОНЛАЙН", cx, cy + 8);
-  }, [online, offline, unknown, total]);
+  }, [online, offline, unknown, total, isDark]);
 
   return <canvas ref={canvasRef} className="w-full" style={{ height: 130 }} />;
 }
@@ -173,6 +178,8 @@ const TOOLTIP_STYLE = {
 const API_BASE = "https://app.tpp.uz/gps/api";
 
 export default function GPSDashboardPage({ username }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [summaryData, setSummaryData] = useState(null);
   const [vehiclesData, setVehiclesData] = useState([]);
   const [companiesData, setCompaniesData] = useState([]);
@@ -373,19 +380,24 @@ export default function GPSDashboardPage({ username }) {
   }, [displaySummary.byYear]);
 
   const categoryData = useMemo(() => {
-    return Object.entries(displaySummary.byCategory || {}).map(([name, value]) => ({
-      name: CATEGORY_MAP[name]?.label || name,
-      value,
-      color: CATEGORY_MAP[name]?.color || "#94A3B8",
-    }));
+    const grouped = {};
+    Object.entries(displaySummary.byCategory || {}).forEach(([rawName, value]) => {
+      const meta = CATEGORY_MAP[rawName];
+      const name = meta?.label || rawName;
+      if (!grouped[name]) grouped[name] = { name, value: 0, color: meta?.color || "#94A3B8" };
+      grouped[name].value += value;
+    });
+    return Object.values(grouped);
   }, [displaySummary.byCategory]);
 
   const fuelData = useMemo(() => {
-    return Object.entries(displaySummary.byFuel || {}).map(([name, value]) => ({
-      name,
-      value,
-      color: FUEL_COLORS[name] || "#94A3B8",
-    }));
+    const grouped = {};
+    Object.entries(displaySummary.byFuel || {}).forEach(([rawName, value]) => {
+      const name = normalizeFuel(rawName) || rawName;
+      if (!grouped[name]) grouped[name] = { name, value: 0, color: FUEL_COLORS[name] || "#94A3B8" };
+      grouped[name].value += value;
+    });
+    return Object.values(grouped);
   }, [displaySummary.byFuel]);
 
   const companies = useMemo(() => {
@@ -584,7 +596,7 @@ export default function GPSDashboardPage({ username }) {
                         dataKey="name"
                         width={88}
                         interval={0}
-                        tick={{ fontSize: 12, fill: "#0f172a", fontWeight: 500 }}
+                        tick={{ fontSize: 12, fill: isDark ? "#CBD5E1" : "#0f172a", fontWeight: 500 }}
                         axisLine={false}
                         tickLine={false}
                       />
@@ -745,7 +757,7 @@ export default function GPSDashboardPage({ username }) {
                         layout="horizontal"
                         iconType="circle"
                         iconSize={8}
-                        formatter={(value) => <span style={{ color: "#475569", fontSize: 12 }}>{value}</span>}
+                        formatter={(value) => <span style={{ color: isDark ? "#CBD5E1" : "#475569", fontSize: 12 }}>{value}</span>}
                         wrapperStyle={{ paddingTop: 12, display: "flex", justifyContent: "center", flexWrap: "wrap" }}
                       />
                     </PieChart>

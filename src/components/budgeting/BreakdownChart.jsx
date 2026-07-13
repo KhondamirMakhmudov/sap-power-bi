@@ -12,8 +12,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { CHART_COLORS, fmtSum } from "./utils";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function BreakdownChart({ title, total, rows }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const chartData = [...rows]
     .filter((r) => r.amount !== 0)
     .sort((a, b) => b.amount - a.amount)
@@ -24,6 +28,11 @@ export default function BreakdownChart({ title, total, rows }) {
     }));
 
   const height = Math.max(chartData.length * 44, 120);
+  // Recharts anchors vertical-axis category labels at their right edge and never
+  // wraps/truncates them, so a fixed width clips the start of long names off the
+  // left of the SVG. Size the axis to the longest label instead of a flat guess.
+  const longestName = chartData.reduce((max, r) => Math.max(max, r.name.length), 0);
+  const yAxisWidth = Math.min(260, Math.max(140, longestName * 6.5 + 16));
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
@@ -41,23 +50,24 @@ export default function BreakdownChart({ title, total, rows }) {
           <BarChart
             data={chartData}
             layout="vertical"
-            margin={{ top: 4, right: 60, left: 0, bottom: 4 }}
+            margin={{ top: 4, right: 60, left: 8, bottom: 4 }}
             barCategoryGap={10}
           >
             <XAxis type="number" hide />
             <YAxis
               type="category"
               dataKey="name"
-              width={230}
-              tick={{ fontSize: 12, fill: "#52514e" }}
+              width={yAxisWidth}
+              tick={{ fontSize: 12, fill: isDark ? "#CBD5E1" : "#52514e" }}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
-              cursor={{ fill: "#f0efec" }}
+              cursor={{ fill: isDark ? "#334155" : "#f0efec" }}
               contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e5e7eb",
+                backgroundColor: isDark ? "#1f2937" : "white",
+                color: isDark ? "#F1F5F9" : "#0b0b0b",
+                border: isDark ? "1px solid #374151" : "1px solid #e5e7eb",
                 borderRadius: "8px",
                 boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                 fontSize: "12px",
@@ -72,7 +82,7 @@ export default function BreakdownChart({ title, total, rows }) {
                 dataKey="amount"
                 position="right"
                 formatter={fmtSum}
-                style={{ fontSize: 12, fill: "#0b0b0b", fontWeight: 600 }}
+                style={{ fontSize: 12, fill: isDark ? "#F1F5F9" : "#0b0b0b", fontWeight: 600 }}
               />
             </Bar>
           </BarChart>

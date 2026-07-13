@@ -25,6 +25,24 @@ const MONTHS = [
   "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь",
 ];
 
+const PERIOD_TYPES = [
+  { value: "month",   label: "Месяц" },
+  { value: "quarter", label: "Квартал" },
+  { value: "half",    label: "Полугодие" },
+  { value: "year",    label: "Год" },
+  { value: "custom",  label: "Произвольно" },
+];
+
+const MONTH_OPTIONS = MONTHS.map((label, i) => ({ value: String(i + 1), label }));
+const QUARTER_OPTIONS = [1,2,3,4].map((q) => ({ value: String(q), label: `${q} квартал` }));
+const HALF_OPTIONS = [
+  { value: "1", label: "I полугодие (янв–июн)" },
+  { value: "2", label: "II полугодие (июл–дек)" },
+];
+
+const PERIOD_INDEX_LABELS = { month: "Месяц", quarter: "Квартал", half: "Полугодие" };
+const PERIOD_INDEX_OPTIONS = { month: MONTH_OPTIONS, quarter: QUARTER_OPTIONS, half: HALF_OPTIONS };
+
 const ORG_OPTIONS = [
   { value: "",     label: "Все организации" },
   { value: "1010", label: "1010 — ТЭС ЦА (Ташкент)" },
@@ -80,8 +98,32 @@ function num(v) {
   return new Intl.NumberFormat("ru").format(v);
 }
 
-function lastDay(year, month) {
-  return new Date(year, month, 0).getDate();
+function toDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function formatRuDate(s) {
+  const [y, m, d] = s.split("-");
+  return `${d}.${m}.${y}`;
+}
+
+// month is 1-based; quarter 1-4; half 1-2
+function periodRange(type, year, index) {
+  const y = parseInt(year);
+  const i = parseInt(index || "1");
+  let startMonth = 0, span = 12;
+  if (type === "month")   { startMonth = i - 1;     span = 1; }
+  if (type === "quarter") { startMonth = (i - 1) * 3; span = 3; }
+  if (type === "half")    { startMonth = (i - 1) * 6; span = 6; }
+  const from = new Date(y, startMonth, 1);
+  const to = new Date(y, startMonth + span, 0);
+  return [toDateStr(from), toDateStr(to)];
+}
+
+function defaultIndexFor(type, month) {
+  if (type === "quarter") return String(Math.ceil(month / 3));
+  if (type === "half")    return String(month <= 6 ? 1 : 2);
+  return String(month);
 }
 
 // ─── small components ─────────────────────────────────────────────────────────
@@ -119,32 +161,56 @@ export default function HrPanelPage() {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
 
-  const yearOptions = [-1, 0, 1].map((d) => ({
-    value: String(currentYear + d),
-    label: String(currentYear + d),
-  }));
-  const monthOptions = MONTHS.map((label, i) => ({ value: String(i + 1), label }));
   const categoryOptions = [
     { value: "", label: "Все" },
     ...CAT_KEYS.map((k) => ({ value: k, label: CAT_LABELS[k] })),
   ];
+  const yearOptions = [-1, 0, 1].map((d) => ({
+    value: String(currentYear + d),
+    label: String(currentYear + d),
+  }));
 
-  const [filters, setFilters] = useState({
-    year: String(currentYear),
-    month: String(currentMonth),
-    category: "",
-    orgin: "",
+  const [filters, setFilters] = useState(() => {
+    const periodIndex = defaultIndexFor("month", currentMonth);
+    const [dateFrom, dateTo] = periodRange("month", currentYear, periodIndex);
+    return {
+      periodType: "month",
+      periodYear: String(currentYear),
+      periodIndex,
+      dateFrom,
+      dateTo,
+      category: "",
+      orgin: "",
+    };
   });
   const [metrics, setMetrics]   = useState(null);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState(null);
   const [sapDetail, setSapDetail] = useState(null);
 
+  function selectPeriodType(type) {
+    if (type === "custom") {
+      setFilters((f) => ({ ...f, periodType: type }));
+      return;
+    }
+    const periodIndex = defaultIndexFor(type, currentMonth);
+    const [dateFrom, dateTo] = periodRange(type, filters.periodYear, periodIndex);
+    setFilters((f) => ({ ...f, periodType: type, periodIndex, dateFrom, dateTo }));
+  }
+
+  function selectPeriodYear(year) {
+    const [dateFrom, dateTo] = periodRange(filters.periodType, year, filters.periodIndex);
+    setFilters((f) => ({ ...f, periodYear: year, dateFrom, dateTo }));
+  }
+
+  function selectPeriodIndex(index) {
+    const [dateFrom, dateTo] = periodRange(filters.periodType, filters.periodYear, index);
+    setFilters((f) => ({ ...f, periodIndex: index, dateFrom, dateTo }));
+  }
+
   async function loadData() {
-    const year  = parseInt(filters.year);
-    const month = parseInt(filters.month);
-    const begda = `${year}-${String(month).padStart(2,"0")}-01`;
-    const endda = `${year}-${String(month).padStart(2,"0")}-${String(lastDay(year, month)).padStart(2,"0")}`;
+    const begda = filters.dateFrom;
+    const endda = filters.dateTo;
 
     setLoading(true);
     setError(null);
@@ -253,21 +319,77 @@ export default function HrPanelPage() {
 
         {/* ── Header ──────────────────────────────────────────────────── */}
         <div className="rounded-xl" style={{ background: "linear-gradient(90deg,#0B1F4B 0%,#0D2660 100%)" }}>
-          <div className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-lg font-bold" style={{ color: "#F5C518" }}>
-              Доска руководителя — Управление персоналом
-            </h1>
+          <div className="flex flex-col gap-3 px-6 py-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h1 className="text-lg font-bold" style={{ color: "#F5C518" }}>
+                Доска руководителя — Управление персоналом
+              </h1>
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1 bg-white/10 rounded-lg p-1">
+                  {PERIOD_TYPES.map((pt) => (
+                    <button
+                      key={pt.value}
+                      type="button"
+                      onClick={() => selectPeriodType(pt.value)}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                        filters.periodType === pt.value ? "bg-white text-slate-900" : "text-blue-200 hover:text-white"
+                      }`}
+                    >
+                      {pt.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-blue-300 whitespace-nowrap">
+                  {formatRuDate(filters.dateFrom)} – {formatRuDate(filters.dateTo)}
+                </p>
+              </div>
+            </div>
             <div className="flex flex-wrap items-end gap-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-blue-300 mb-1">Год</p>
-                <CustomSelect options={yearOptions} value={filters.year} placeholder="Год"
-                  onChange={(v) => setFilters({ ...filters, year: v })} />
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-blue-300 mb-1">Месяц</p>
-                <CustomSelect options={monthOptions} value={filters.month} placeholder="Месяц"
-                  onChange={(v) => setFilters({ ...filters, month: v })} />
-              </div>
+              {filters.periodType === "custom" ? (
+                <>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-blue-300 mb-1">С</p>
+                    <input
+                      type="date"
+                      value={filters.dateFrom}
+                      max={filters.dateTo}
+                      onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                      className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-blue-300 mb-1">По</p>
+                    <input
+                      type="date"
+                      value={filters.dateTo}
+                      min={filters.dateFrom}
+                      onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                      className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-blue-300 mb-1">Год</p>
+                    <CustomSelect options={yearOptions} value={filters.periodYear} placeholder="Год"
+                      onChange={selectPeriodYear} />
+                  </div>
+                  {PERIOD_INDEX_OPTIONS[filters.periodType] && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-blue-300 mb-1">
+                        {PERIOD_INDEX_LABELS[filters.periodType]}
+                      </p>
+                      <CustomSelect
+                        options={PERIOD_INDEX_OPTIONS[filters.periodType]}
+                        value={filters.periodIndex}
+                        placeholder="Период"
+                        onChange={selectPeriodIndex}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-blue-300 mb-1">Категория</p>
                 <CustomSelect
@@ -295,9 +417,6 @@ export default function HrPanelPage() {
               >
                 {loading ? "Загрузка…" : "Применить"}
               </button>
-              <p className="text-xs text-blue-300 self-end pb-1">
-                {now.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" })}
-              </p>
             </div>
           </div>
           {error && (
@@ -347,7 +466,7 @@ export default function HrPanelPage() {
             </div>
 
             {/* ── Row 1 ─────────────────────────────────────────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
               {/* Gender */}
               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
@@ -379,21 +498,24 @@ export default function HrPanelPage() {
                 )}
               </div>
 
-              {/* Hired / Dismissed grid */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm lg:col-span-2">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
-                  Принято / Уволено с нач. года
-                </p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                  {CAT_KEYS.map((k) => (
-                    <div key={k} className="space-y-0.5">
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400">{CAT_LABELS[k]}</p>
-                      <p className="text-xl font-bold text-blue-700 dark:text-blue-300 leading-none">{num(hireCats[k]?.all)}</p>
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400">принято</p>
-                      <p className="text-xl font-bold text-red-600 dark:text-red-400 leading-none">{num(dismissCats[k]?.all)}</p>
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400">уволено</p>
-                    </div>
-                  ))}
+              {/* Composition donut */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Состав работающих</p>
+                <div className="flex gap-4 items-center">
+                  <MiniDonut
+                    data={compositionData}
+                    centerValue={getF("all_count")}
+                    size={120} innerRadius={34} outerRadius={52}
+                  />
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    {compositionData.map((d) => (
+                      <div key={d.name} className="flex items-center gap-1.5 text-xs">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
+                        <span className="text-gray-600 dark:text-gray-400 flex-1 truncate">{d.name}</span>
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{num(d.value)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -500,26 +622,38 @@ export default function HrPanelPage() {
             </div>
 
             {/* ── Row 3 ─────────────────────────────────────────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
 
-              {/* Composition donut */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Состав работающих</p>
-                <div className="flex gap-4 items-center">
-                  <MiniDonut
-                    data={compositionData}
-                    centerValue={getF("all_count")}
-                    size={120} innerRadius={34} outerRadius={52}
-                  />
-                  <div className="space-y-1.5 flex-1 min-w-0">
-                    {compositionData.map((d) => (
-                      <div key={d.name} className="flex items-center gap-1.5 text-xs">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
-                        <span className="text-gray-600 dark:text-gray-400 flex-1 truncate">{d.name}</span>
-                        <span className="font-semibold text-gray-900 dark:text-gray-100">{num(d.value)}</span>
+              {/* Hired / Dismissed grid */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm lg:col-span-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
+                  Принято / Уволено с нач. года
+                </p>
+                <div className="grid grid-cols-[1fr_5rem_5rem_5rem] gap-x-2 px-2 pb-1.5 text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700">
+                  <span>Категория</span>
+                  <span className="text-right">Принято</span>
+                  <span className="text-right">Уволено</span>
+                  <span className="text-right">Баланс</span>
+                </div>
+                <div>
+                  {CAT_KEYS.map((k) => {
+                    const hired = hireCats[k]?.all ?? 0;
+                    const dismissed = dismissCats[k]?.all ?? 0;
+                    const delta = hired - dismissed;
+                    return (
+                      <div
+                        key={k}
+                        className="grid grid-cols-[1fr_5rem_5rem_5rem] gap-x-2 items-center px-2 py-2 odd:bg-slate-50 dark:odd:bg-slate-900/40 rounded-lg"
+                      >
+                        <span className="text-xs text-gray-700 dark:text-gray-300 truncate">{CAT_LABELS[k]}</span>
+                        <span className="text-right text-sm font-bold text-blue-700 dark:text-blue-300">▲ {num(hired)}</span>
+                        <span className="text-right text-sm font-bold text-red-600 dark:text-red-400">▼ {num(dismissed)}</span>
+                        <span className={`text-right text-sm font-bold ${delta > 0 ? "text-green-600 dark:text-green-400" : delta < 0 ? "text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500"}`}>
+                          {delta > 0 ? "+" : ""}{num(delta)}
+                        </span>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
 
