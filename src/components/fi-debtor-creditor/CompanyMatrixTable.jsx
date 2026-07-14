@@ -34,26 +34,26 @@ export default function CompanyMatrixTable({ activeSection, activeTab }) {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
-              <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide w-10">
+            <tr>
+              <th className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FCE4D6]">
                 №
               </th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">
+              <th className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FCE4D6]">
                 Организация
               </th>
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">
+              <th className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FCE4D6]">
                 Нач. баланс
               </th>
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">
+              <th className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FCE4D6]">
                 Тек. баланс
               </th>
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">
+              <th className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FFFF00]">
                 Изменение
               </th>
               {CATEGORY_KEYS.map((k) => (
                 <th
                   key={k}
-                  className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap"
+                  className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FFFF00]"
                 >
                   {CATEGORY_LABELS[k]}
                 </th>

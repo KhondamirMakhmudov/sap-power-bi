@@ -16,8 +16,12 @@ import {
   BUSPLAN_KEYS,
 } from "@/components/budgeting/utils";
 
+// Active org codes minus 1060 (Талимарджанская ТЭС) and 1140 (Ангренская ТЭС).
+const TES_BRANCHES_GROUP = ["1010", "1020", "1070", "1080", "1090", "1100"];
+
 const ORG_OPTIONS = [
   { value: "", label: "Все организации" },
+  { value: "TES_BRANCHES", label: "АО ТЭС и филиалы" },
   { value: "1010", label: "1010 — ТЭС ЦА (Ташкент)" },
   { value: "1020", label: "1020 — Филиал Сырдарьинская ТЭС (Ширин)" },
   // { value: "1030", label: "1030 — АО «Ташкентская ТЭС» (Ташкент)" },
@@ -131,6 +135,8 @@ function formatSum(value) {
   return `${sign}${new Intl.NumberFormat("ru").format(abs)}`;
 }
 
+// TODO: EBIT/EBIT plan will come from post_fi2 once that endpoint adds these
+// fields — placeholder keys below, update once the real field names are known.
 function buildKpiCards(d) {
   if (!d) return null;
 
@@ -139,15 +145,19 @@ function buildKpiCards(d) {
     return `${v >= 0 ? "+" : ""}${Number(v).toFixed(1)}% к плану`;
   };
   const statusColor = (v) => (v >= 0 ? "positive" : "negative");
-  const borderByStatus = (status) => {
-    if (status === "positive") return "border-l-4 border-l-green-500";
-    if (status === "negative") return "border-l-4 border-l-red-500";
-    return "border-l-4 border-l-orange-500";
+  const toneFromStatus = (status) => {
+    if (status === "positive") return "green";
+    if (status === "negative") return "red";
+    return "orange";
   };
   const statusByText = (text) => (text === "в норме" ? "positive" : "warning");
 
   const virStatus = statusColor(d.PF_Viruchka);
-  const ebitStatus = statusColor(d.PF_EBITDA);
+  const ebitTone = executionTone(d.EBIT, d.P_EBIT);
+  const ebitdaStatus = statusColor(d.PF_EBITDA);
+  const netProfit = d.ChistiyPribil ?? d.NetProfit;
+  const netProfitPlan = d.P_ChistiyPribil ?? d.Plan_NetProfit;
+  const netProfitTone = executionTone(netProfit, netProfitPlan);
   const wcStatus = statusByText(d.Status_WorkingCapital);
   const fcfStatus = statusByText(d.Status_FCF);
 
@@ -155,34 +165,56 @@ function buildKpiCards(d) {
     {
       label: "Выручка",
       value: formatSum(d.Viruchka),
-      plan: `План: ${formatSum(d.P_Viruchka)}`,
-      change: pf(d.PF_Viruchka),
-      status: virStatus,
-      borderColor: borderByStatus(virStatus),
+      target: `План: ${formatSum(d.P_Viruchka)}`,
+      status: pf(d.PF_Viruchka) ?? "—",
+      statusColor: TONE_TEXT_CLASS[toneFromStatus(virStatus)],
+      borderColor: TONE_BORDER_CLASS[toneFromStatus(virStatus)],
+      description: "Доход от основной деятельности.",
+    },
+    {
+      label: "EBIT",
+      value: formatSum(d.EBIT),
+      target: `План: ${formatSum(d.P_EBIT)}`,
+      status: executionLabel(d.EBIT, d.P_EBIT),
+      statusColor: TONE_TEXT_CLASS[ebitTone],
+      borderColor: TONE_BORDER_CLASS[ebitTone],
+      description: "Прибыль до процентов и налогов.",
     },
     {
       label: "EBITDA",
       value: formatSum(d.EBITDA),
-      plan: `План: ${formatSum(d.P_EBITDA)}`,
-      change: pf(d.PF_EBITDA),
-      status: ebitStatus,
-      borderColor: borderByStatus(ebitStatus),
+      target: `План: ${formatSum(d.P_EBITDA)}`,
+      status: pf(d.PF_EBITDA) ?? "—",
+      statusColor: TONE_TEXT_CLASS[toneFromStatus(ebitdaStatus)],
+      borderColor: TONE_BORDER_CLASS[toneFromStatus(ebitdaStatus)],
+      description: "Прибыль до процентов, налогов и амортизации.",
+    },
+    {
+      label: "Чистая прибыль",
+      value: formatSum(netProfit),
+      target: `План: ${formatSum(netProfitPlan)}`,
+      status: executionLabel(netProfit, netProfitPlan),
+      statusColor: TONE_TEXT_CLASS[netProfitTone],
+      borderColor: TONE_BORDER_CLASS[netProfitTone],
+      description: "Финансовый результат после всех расходов.",
     },
     {
       label: "Working Capital",
       value: formatSum(d.WorkingCapital),
-      plan: `План: ${formatSum(d.Plan_WorkingCapital)}`,
-      change: d.Status_WorkingCapital ?? "—",
-      status: wcStatus,
-      borderColor: borderByStatus(wcStatus),
+      target: `План: ${formatSum(d.Plan_WorkingCapital)}`,
+      status: d.Status_WorkingCapital ?? "—",
+      statusColor: TONE_TEXT_CLASS[toneFromStatus(wcStatus)],
+      borderColor: TONE_BORDER_CLASS[toneFromStatus(wcStatus)],
+      description: "Оборотный капитал компании.",
     },
     {
       label: "FCF",
       value: formatSum(d.FCF),
-      plan: `План: ${formatSum(d.Plan_FCF)}`,
-      change: d.Status_FCF ?? "—",
-      status: fcfStatus,
-      borderColor: borderByStatus(fcfStatus),
+      target: `План: ${formatSum(d.Plan_FCF)}`,
+      status: d.Status_FCF ?? "—",
+      statusColor: TONE_TEXT_CLASS[toneFromStatus(fcfStatus)],
+      borderColor: TONE_BORDER_CLASS[toneFromStatus(fcfStatus)],
+      description: "Свободный денежный поток.",
     },
   ];
 }
@@ -295,9 +327,38 @@ function statusToBorder(text, toneMap) {
   return "border-l-4 border-l-red-500";
 }
 
+// Execution-vs-plan color/border for cards that have no SAP status text.
+function executionTone(fact, plan) {
+  if (!plan) return "gray";
+  const pct = (Number(fact) / Number(plan)) * 100;
+  if (!Number.isFinite(pct)) return "gray";
+  if (pct >= 95 && pct <= 105) return "green";
+  if (pct >= 85 && pct <= 115) return "orange";
+  return "red";
+}
+
+function executionLabel(fact, plan) {
+  if (!plan) return "—";
+  const pct = (Number(fact) / Number(plan)) * 100;
+  if (!Number.isFinite(pct)) return "—";
+  return `Исполнение: ${pct.toFixed(1)}%`;
+}
+
+// TODO: EBIT margin / cost-per-energy-type / ROI / ROA will come from post_fi2
+// once that endpoint adds these fields — placeholder keys below, update once
+// the real field names are known. Until then these render "—".
 function buildRatioCards(d) {
   const ndStatus = d?.Status_NetDebtEbitda ?? null;
   const dscrStatus = d?.Status_DSCR ?? null;
+
+  const ebitMargin = { fact: d?.EBIT_Margin, plan: d?.P_EBIT_Margin };
+  const costElectro = { fact: d?.CostElectro, plan: d?.P_CostElectro };
+  const costHeat = { fact: d?.CostHeat, plan: d?.P_CostHeat };
+  const roi = { fact: d?.ROI, plan: d?.P_ROI };
+  const roa = { fact: d?.ROA, plan: d?.P_ROA };
+
+  const collectionRate = d?.CollectionRate;
+  const collectionTone = collectionRate != null && Number(collectionRate) >= 98 ? "green" : "orange";
 
   return [
     {
@@ -307,6 +368,7 @@ function buildRatioCards(d) {
       status: "в норме",
       statusColor: "text-green-600 dark:text-green-400",
       borderColor: "border-l-4 border-l-green-500",
+      description: "Оценка кредитоспособности компании.",
     },
     {
       label: "Net Debt / EBITDA",
@@ -315,6 +377,7 @@ function buildRatioCards(d) {
       status: ndStatus ?? "—",
       statusColor: statusToColor(ndStatus, NET_DEBT_EBITDA_STATUS_TONE),
       borderColor: statusToBorder(ndStatus, NET_DEBT_EBITDA_STATUS_TONE),
+      description: "Долговая нагрузка к EBITDA.",
     },
     {
       label: "DSCR",
@@ -323,14 +386,70 @@ function buildRatioCards(d) {
       status: dscrStatus ?? "—",
       statusColor: statusToColor(dscrStatus, DSCR_STATUS_TONE),
       borderColor: statusToBorder(dscrStatus, DSCR_STATUS_TONE),
+      description: "Способность обслуживать долг.",
     },
     {
-      label: "EBITDA Margin",
+      label: "Рентабельность EBIT",
+      value: formatRatio(ebitMargin?.fact, "%", 1),
+      target: `План: ${formatRatio(ebitMargin?.plan, "%", 1)}`,
+      status: executionLabel(ebitMargin?.fact, ebitMargin?.plan),
+      statusColor: TONE_TEXT_CLASS[executionTone(ebitMargin?.fact, ebitMargin?.plan)],
+      borderColor: TONE_BORDER_CLASS[executionTone(ebitMargin?.fact, ebitMargin?.plan)],
+      description: "Доля EBIT в выручке.",
+    },
+    {
+      label: "Рентабельность EBITDA",
       value: formatRatio(d?.EBITDAMargin, "%", 1),
       target: `Цели: ${d?.Plan_EBITDAMargin != null ? `${Number(d.Plan_EBITDAMargin).toFixed(1)}%` : "20%-25%"}`,
       status: d?.Status_EBITDAMargin ?? "—",
       statusColor: statusToColor(d?.Status_EBITDAMargin),
       borderColor: statusToBorder(d?.Status_EBITDAMargin),
+      description: "Доля EBITDA в выручке.",
+    },
+    {
+      label: "Collection Rate",
+      value: collectionRate != null ? `${Number(collectionRate).toFixed(2)}%` : "—",
+      target: "Цели: ≥ 98-99%",
+      status: collectionRate != null ? (collectionTone === "green" ? "в норме" : "ниже цели") : "—",
+      statusColor: TONE_TEXT_CLASS[collectionRate != null ? collectionTone : "gray"],
+      borderColor: TONE_BORDER_CLASS[collectionRate != null ? collectionTone : "gray"],
+      description: "Уровень сбора дебиторской задолженности.",
+    },
+    {
+      label: "Себестоимость электроэнергии",
+      value: formatSum(costElectro?.fact),
+      target: `План: ${formatSum(costElectro?.plan)}`,
+      status: executionLabel(costElectro?.fact, costElectro?.plan),
+      statusColor: TONE_TEXT_CLASS[executionTone(costElectro?.fact, costElectro?.plan)],
+      borderColor: TONE_BORDER_CLASS[executionTone(costElectro?.fact, costElectro?.plan)],
+      description: "Затраты на производство электроэнергии.",
+    },
+    {
+      label: "Себестоимость теплоэнергии",
+      value: formatSum(costHeat?.fact),
+      target: `План: ${formatSum(costHeat?.plan)}`,
+      status: executionLabel(costHeat?.fact, costHeat?.plan),
+      statusColor: TONE_TEXT_CLASS[executionTone(costHeat?.fact, costHeat?.plan)],
+      borderColor: TONE_BORDER_CLASS[executionTone(costHeat?.fact, costHeat?.plan)],
+      description: "Затраты на производство теплоэнергии.",
+    },
+    {
+      label: "ROI",
+      value: formatRatio(roi?.fact, "%", 1),
+      target: `План: ${formatRatio(roi?.plan, "%", 1)}`,
+      status: executionLabel(roi?.fact, roi?.plan),
+      statusColor: TONE_TEXT_CLASS[executionTone(roi?.fact, roi?.plan)],
+      borderColor: TONE_BORDER_CLASS[executionTone(roi?.fact, roi?.plan)],
+      description: "Доходность инвестиций.",
+    },
+    {
+      label: "ROA",
+      value: formatRatio(roa?.fact, "%", 1),
+      target: `План: ${formatRatio(roa?.plan, "%", 1)}`,
+      status: executionLabel(roa?.fact, roa?.plan),
+      statusColor: TONE_TEXT_CLASS[executionTone(roa?.fact, roa?.plan)],
+      borderColor: TONE_BORDER_CLASS[executionTone(roa?.fact, roa?.plan)],
+      description: "Эффективность использования активов.",
     },
   ];
 }
@@ -413,6 +532,7 @@ export default function FinancesPage() {
     const calyear = dateFrom.split("-")[0];
     const monthFrom = dateFrom.split("-")[1];
     const monthTo = dateTo.split("-")[1];
+    const compCodes = filters.comp === "TES_BRANCHES" ? TES_BRANCHES_GROUP : filters.comp ? [filters.comp] : null;
     try {
       const [res, budgetRes] = await Promise.all([
         fetch("/api/dashboard/post_fi2", {
@@ -421,7 +541,7 @@ export default function FinancesPage() {
           body: JSON.stringify({
             date_from: dateFrom,
             date_to: dateTo,
-            ...(filters.comp ? { comp: filters.comp } : {}),
+            ...(compCodes ? { comp: compCodes } : {}),
           }),
         }),
         fetch("/api/dashboard/budget", {
@@ -432,7 +552,7 @@ export default function FinancesPage() {
             version: "EDU",
             month_from: monthFrom,
             month_to: monthTo,
-            ...(filters.comp ? { comp: [filters.comp] } : {}),
+            ...(compCodes ? { comp: compCodes } : {}),
           }),
         }),
       ]);
@@ -473,9 +593,6 @@ export default function FinancesPage() {
 
   console.log(financesData, "data");
 
-  const kpiCards = buildKpiCards(financesData);
-  const ratioCards = buildRatioCards(financesData);
-
   const costsMap = sumByKey(budgetData?.costs);
   const revenueMap = sumByKey(budgetData?.revenue);
   const costsRows = COSTS_BREAKDOWN_KEYS.map((k) => costsMap.get(k)).filter(
@@ -493,6 +610,10 @@ export default function FinancesPage() {
   const busplanRows = BUSPLAN_KEYS.map((k) => busplanMap.get(k)).filter(
     Boolean,
   );
+
+  const kpiCards = buildKpiCards(financesData);
+  const ratioCards = buildRatioCards(financesData);
+  const allCards = kpiCards ? [...kpiCards, ...ratioCards] : null;
 
   return (
     <MainLayout>
@@ -634,10 +755,10 @@ export default function FinancesPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* KPI Cards */}
-            {kpiCards && (
+            {/* KPI & Ratio Cards */}
+            {allCards && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {kpiCards.map((card, index) => (
+                {allCards.map((card, index) => (
                   <div
                     key={index}
                     className={`bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 ${card.borderColor}`}
@@ -649,19 +770,16 @@ export default function FinancesPage() {
                       {card.value}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                      {card.plan}
+                      {card.target}
                     </p>
-                    <p
-                      className={`text-sm font-semibold mt-2 ${
-                        card.status === "positive"
-                          ? "text-green-600 dark:text-green-400"
-                          : card.status === "negative"
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-orange-600 dark:text-orange-400"
-                      }`}
-                    >
-                      {card.change}
+                    <p className={`text-sm font-semibold mt-2 ${card.statusColor}`}>
+                      {card.status}
                     </p>
+                    {card.description && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/60">
+                        {card.description}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -738,31 +856,6 @@ export default function FinancesPage() {
             </table>
           </div>
         </div> */}
-
-            {/* Financial Ratios Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {ratioCards.map((card, index) => (
-                <div
-                  key={index}
-                  className={`bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 ${card.borderColor}`}
-                >
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {card.label}
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-3">
-                    {card.value}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                    {card.target}
-                  </p>
-                  <p
-                    className={`text-sm font-semibold mt-3 ${card.statusColor}`}
-                  >
-                    {card.status}
-                  </p>
-                </div>
-              ))}
-            </div>
 
             {/* Cost / Revenue Breakdown */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
