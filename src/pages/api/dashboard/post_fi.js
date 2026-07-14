@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { date_from, date_to } = req.body;
+    const { date_from, date_to, comp } = req.body;
 
     // Validate required fields
     if (!date_from || !date_to) {
@@ -18,6 +18,9 @@ export default async function handler(req, res) {
         .json({ error: "date_from and date_to are required" });
     }
 
+    const payload = { date_from, date_to };
+    if (comp) payload.comp = comp;
+
     // Call the external API from server-side (no CORS issues)
     const response = await fetch("http://10.20.7.6/tes/hs/dashboard/post_fi", {
       method: "POST",
@@ -25,10 +28,7 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
         Authorization: "Basic YnBtczoyMjExMjAyMw==",
       },
-      body: JSON.stringify({
-        date_from,
-        date_to,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

@@ -9,7 +9,7 @@ import {
   PeriodInfoBar,
   KPISummaryCards,
   TotalsCards,
-  ItemsTable,
+  CompanyMatrixTable,
 } from "@/components/fi-debtor-creditor";
 import { toApiDate } from "@/components/fi-debtor-creditor/utils";
 
@@ -26,16 +26,6 @@ export default function FinDebtorCreditorPage() {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
   const [activeTab, setActiveTab] = useState("debtor");
-  const [expandedRows, setExpandedRows] = useState(new Set());
-
-  const toggleRow = (key) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  };
 
   const handleApply = async () => {
     let body;
@@ -49,7 +39,6 @@ export default function FinDebtorCreditorPage() {
 
     setLoading(true);
     setError(null);
-    setExpandedRows(new Set());
 
     try {
       const res = await fetch("/api/dashboard/fi_bp", {
@@ -78,7 +67,6 @@ export default function FinDebtorCreditorPage() {
   const handleReset = () => {
     setData(null);
     setError(null);
-    setExpandedRows(new Set());
   };
 
   const debtorSection = data?.sections?.debtor;
@@ -144,10 +132,7 @@ export default function FinDebtorCreditorPage() {
                 <button
                   key={key}
                   type="button"
-                  onClick={() => {
-                    setActiveTab(key);
-                    setExpandedRows(new Set());
-                  }}
+                  onClick={() => setActiveTab(key)}
                   className={`px-6 py-2.5 rounded-md text-sm font-semibold transition-all ${
                     activeTab === key
                       ? "bg-white dark:bg-gray-800 text-slate-900 dark:text-slate-100 shadow-sm"
@@ -174,11 +159,9 @@ export default function FinDebtorCreditorPage() {
                   activeSection={activeSection}
                   activeTab={activeTab}
                 />
-                <ItemsTable
+                <CompanyMatrixTable
                   activeSection={activeSection}
                   activeTab={activeTab}
-                  expandedRows={expandedRows}
-                  toggleRow={toggleRow}
                 />
               </div>
             )}

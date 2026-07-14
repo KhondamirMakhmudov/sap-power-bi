@@ -12,71 +12,135 @@ import { formatCurrency } from "@/utils/helpers";
 import { isAuthenticated, getSessionUsername } from "@/utils/auth";
 import { get } from "lodash";
 
+const ORG_OPTIONS = [
+  { value: "",     label: "Все организации" },
+  { value: "1010", label: "1010 — ТЭС ЦА (Ташкент)" },
+  { value: "1020", label: "1020 — Филиал Сырдарьинская ТЭС (Ширин)" },
+  // { value: "1030", label: "1030 — АО «Ташкентская ТЭС» (Ташкент)" },
+  // { value: "1040", label: "1040 — АО «Навоийская ТЭС» (Навои)" },
+  // { value: "1050", label: "1050 — АО «Тахиаташская ТЭС» (Тахиаташ)" },
+  { value: "1060", label: "1060 — АО «Талимарджанская ТЭС» (Талимарджан)" },
+  { value: "1070", label: "1070 — Филиал Туракурганская ТЭС (Туракурган)" },
+  { value: "1080", label: "1080 — Филиал Мубарекская ТЭЦ (Мубарек)" },
+  { value: "1090", label: "1090 — Филиал Ферганская ТЭЦ (Фергана)" },
+  { value: "1100", label: "1100 — Филиал Ташкентская ТЭЦ (Ташкент)" },
+  // { value: "1110", label: "1110 — ООО «Узэнергосозлаш»" },
+  // { value: "1120", label: "1120 — АО «Узбекэнерготаъмир»" },
+  // { value: "1130", label: "1130 — АО «Узэнерготаъминлаш» (Ташкент)" },
+  { value: "1140", label: "1140 — АО «Ангренская ТЭС»" },
+  // { value: "1150", label: "1150 — ООО «Ташкентская тепловая» (Ташкент)" },
+];
+
+const monthNames = [
+  "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+  "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
+];
+
+const PERIOD_TYPES = [
+  { value: "month",   label: "Месяц" },
+  { value: "quarter", label: "Квартал" },
+  { value: "half",    label: "Полугодие" },
+  { value: "year",    label: "Год" },
+  { value: "custom",  label: "Произвольно" },
+];
+
+const MONTH_OPTIONS = monthNames.map((label, i) => ({ value: String(i + 1), label }));
+const QUARTER_OPTIONS = [1, 2, 3, 4].map((q) => ({ value: String(q), label: `${q} квартал` }));
+const HALF_OPTIONS = [
+  { value: "1", label: "I полугодие (янв–июн)" },
+  { value: "2", label: "II полугодие (июл–дек)" },
+];
+
+const PERIOD_INDEX_LABELS = { month: "Месяц", quarter: "Квартал", half: "Полугодие" };
+const PERIOD_INDEX_OPTIONS = { month: MONTH_OPTIONS, quarter: QUARTER_OPTIONS, half: HALF_OPTIONS };
+
+function toDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function formatRuDate(s) {
+  if (!s) return "—";
+  const [y, m, d] = s.split("-");
+  return `${d}.${m}.${y}`;
+}
+
+// month is 1-based; quarter 1-4; half 1-2
+function periodRange(type, year, index) {
+  const y = parseInt(year);
+  const i = parseInt(index || "1");
+  let startMonth = 0, span = 12;
+  if (type === "month")   { startMonth = i - 1;     span = 1; }
+  if (type === "quarter") { startMonth = (i - 1) * 3; span = 3; }
+  if (type === "half")    { startMonth = (i - 1) * 6; span = 6; }
+  const from = new Date(y, startMonth, 1);
+  const to = new Date(y, startMonth + span, 0);
+  return [toDateStr(from), toDateStr(to)];
+}
+
+function defaultIndexFor(type, month) {
+  if (type === "quarter") return String(Math.ceil(month / 3));
+  if (type === "half")    return String(month <= 6 ? 1 : 2);
+  return String(month);
+}
+
 export default function DashboardPage({ username }) {
   const router = useRouter();
   const now = new Date();
   const currentYear = now.getFullYear();
-  const currentMonthValue = `${currentYear}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentMonth = now.getMonth() + 1;
   const yearOptions = [
     { value: String(currentYear - 1), label: String(currentYear - 1) },
     { value: String(currentYear), label: String(currentYear) },
     { value: String(currentYear + 1), label: String(currentYear + 1) },
   ];
-  const monthNames = [
-    "Январь",
-    "Февраль",
-    "Март",
-    "Апрель",
-    "Май",
-    "Июнь",
-    "Июль",
-    "Август",
-    "Сентябрь",
-    "Октябрь",
-    "Ноябрь",
-    "Декабрь",
-  ];
 
-  const getDateRangeFromMonth = (monthValue) => {
-    const [yearText, monthText] = String(monthValue || "").split("-");
-    const year = Number(yearText);
-    const month = Number(monthText);
-
-    if (!year || !month || month < 1 || month > 12) {
-      return { dateFrom: "2025-01-01", dateTo: "2025-03-31" };
-    }
-
-    const firstDay = `${year}-${String(month).padStart(2, "0")}-01`;
-    const lastDayDate = new Date(year, month, 0);
-    const lastDay = `${year}-${String(month).padStart(2, "0")}-${String(lastDayDate.getDate()).padStart(2, "0")}`;
-
-    return { dateFrom: firstDay, dateTo: lastDay };
-  };
-
-  const [filters, setFilters] = useState({
-    year: String(currentYear),
-    month: currentMonthValue,
-    scenario: "",
-    control: "",
+  const [filters, setFilters] = useState(() => {
+    const periodIndex = defaultIndexFor("month", currentMonth);
+    const [dateFrom, dateTo] = periodRange("month", currentYear, periodIndex);
+    return {
+      periodType: "month",
+      periodYear: String(currentYear),
+      periodIndex,
+      dateFrom,
+      dateTo,
+      scenario: "",
+      control: "",
+      comp: "",
+    };
   });
-
-  const monthOptions = monthNames.map((label, index) => ({
-    value: `${filters.year}-${String(index + 1).padStart(2, "0")}`,
-    label,
-  }));
   const [dashboardApiResponse, setDashboardApiResponse] = useState(null);
   const [dashboardApiLoading, setDashboardApiLoading] = useState(false);
   const [dashboardApiError, setDashboardApiError] = useState(null);
 
-  const postDashboardData = async (selectedMonth = filters.month) => {
-    if (!selectedMonth) {
-      setDashboardApiError("Выберите месяц");
+  function selectPeriodType(type) {
+    if (type === "custom") {
+      setFilters((f) => ({ ...f, periodType: type }));
+      return;
+    }
+    const periodIndex = defaultIndexFor(type, currentMonth);
+    const [dateFrom, dateTo] = periodRange(type, filters.periodYear, periodIndex);
+    setFilters((f) => ({ ...f, periodType: type, periodIndex, dateFrom, dateTo }));
+  }
+
+  function selectPeriodYear(year) {
+    const [dateFrom, dateTo] = periodRange(filters.periodType, year, filters.periodIndex);
+    setFilters((f) => ({ ...f, periodYear: year, dateFrom, dateTo }));
+  }
+
+  function selectPeriodIndex(index) {
+    const [dateFrom, dateTo] = periodRange(filters.periodType, filters.periodYear, index);
+    setFilters((f) => ({ ...f, periodIndex: index, dateFrom, dateTo }));
+  }
+
+  const postDashboardData = async () => {
+    const { dateFrom, dateTo } = filters;
+    if (!dateFrom || !dateTo) {
+      setDashboardApiError("Выберите период");
       return;
     }
 
     setDashboardApiLoading(true);
     setDashboardApiError(null);
-    const { dateFrom, dateTo } = getDateRangeFromMonth(selectedMonth);
 
     try {
       const response = await fetch("/api/dashboard/post_fi", {
@@ -87,6 +151,7 @@ export default function DashboardPage({ username }) {
         body: JSON.stringify({
           date_from: dateFrom,
           date_to: dateTo,
+          ...(filters.comp ? { comp: filters.comp } : {}),
         }),
       });
 
@@ -108,16 +173,22 @@ export default function DashboardPage({ username }) {
   };
 
   useEffect(() => {
-    queueMicrotask(() => postDashboardData(currentMonthValue));
+    queueMicrotask(() => postDashboardData());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleResetFilters = () => {
+    const periodIndex = defaultIndexFor("month", currentMonth);
+    const [dateFrom, dateTo] = periodRange("month", currentYear, periodIndex);
     setFilters({
-      year: String(currentYear),
-      month: currentMonthValue,
+      periodType: "month",
+      periodYear: String(currentYear),
+      periodIndex,
+      dateFrom,
+      dateTo,
       scenario: "",
       control: "",
+      comp: "",
     });
     setDashboardApiResponse(null);
     setDashboardApiError(null);
@@ -166,23 +237,76 @@ export default function DashboardPage({ username }) {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            <CustomSelect
-              label="Год"
-              options={yearOptions}
-              value={filters.year}
-              placeholder="Выберите"
-              onChange={(value) =>
-                setFilters({ ...filters, year: value, month: "" })
-              }
-            />
-            <CustomSelect
-              label="Месяц"
-              options={monthOptions}
-              value={filters.month}
-              placeholder="Выберите"
-              onChange={(value) => setFilters({ ...filters, month: value })}
-            />
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="flex gap-1 bg-gray-100 dark:bg-gray-900/40 rounded-lg p-1">
+              {PERIOD_TYPES.map((pt) => (
+                <button
+                  key={pt.value}
+                  type="button"
+                  onClick={() => selectPeriodType(pt.value)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    filters.periodType === pt.value
+                      ? "bg-slate-900 dark:bg-slate-700 text-white"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                  }`}
+                >
+                  {pt.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              {formatRuDate(filters.dateFrom)} – {formatRuDate(filters.dateTo)}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 items-end">
+            {filters.periodType === "custom" ? (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    С
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.dateFrom}
+                    max={filters.dateTo}
+                    onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    По
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.dateTo}
+                    min={filters.dateFrom}
+                    onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <CustomSelect
+                  label="Год"
+                  options={yearOptions}
+                  value={filters.periodYear}
+                  placeholder="Год"
+                  onChange={selectPeriodYear}
+                />
+                {PERIOD_INDEX_OPTIONS[filters.periodType] && (
+                  <CustomSelect
+                    label={PERIOD_INDEX_LABELS[filters.periodType]}
+                    options={PERIOD_INDEX_OPTIONS[filters.periodType]}
+                    value={filters.periodIndex}
+                    placeholder="Период"
+                    onChange={selectPeriodIndex}
+                  />
+                )}
+              </>
+            )}
             <CustomSelect
               label="Сценарий"
               options={[
@@ -202,6 +326,13 @@ export default function DashboardPage({ username }) {
               value={filters.control}
               placeholder="Выберите"
               onChange={(value) => setFilters({ ...filters, control: value })}
+            />
+            <CustomSelect
+              label="Организация"
+              options={ORG_OPTIONS}
+              value={filters.comp}
+              placeholder="Все организации"
+              onChange={(value) => setFilters({ ...filters, comp: value })}
             />
             <div className="flex items-end gap-2">
               <button
@@ -245,7 +376,7 @@ export default function DashboardPage({ username }) {
               Нет данных
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500 max-w-65 leading-relaxed">
-              Выберите месяц в фильтре выше, чтобы загрузить данные
+              Выберите период в фильтре выше, чтобы загрузить данные
             </p>
           </div>
         ) : (

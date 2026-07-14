@@ -18,6 +18,57 @@ export const CATEGORY_LABELS = {
 
 export const CATEGORY_KEYS = Object.keys(CATEGORY_LABELS);
 
+export const COMPANY_NAMES = {
+  "1010": "1010 — ТЭС ЦА (Ташкент)",
+  "1020": "1020 — Филиал Сырдарьинская ТЭС (Ширин)",
+  "1030": "1030 — АО «Ташкентская ТЭС» (Ташкент)",
+  "1040": "1040 — АО «Навоийская ТЭС» (Навои)",
+  "1050": "1050 — АО «Тахиаташская ТЭС» (Тахиаташ)",
+  "1060": "1060 — АО «Талимарджанская ТЭС» (Талимарджан)",
+  "1070": "1070 — Филиал Туракурганская ТЭС (Туракурган)",
+  "1080": "1080 — Филиал Мубарекская ТЭЦ (Мубарек)",
+  "1090": "1090 — Филиал Ферганская ТЭЦ (Фергана)",
+  "1100": "1100 — Филиал Ташкентская ТЭЦ (Ташкент)",
+  "1110": "1110 — ООО «Узэнергосозлаш»",
+  "1120": "1120 — АО «Узбекэнерготаъмир»",
+  "1130": "1130 — АО «Узэнерготаъминлаш» (Ташкент)",
+  "1140": "1140 — АО «Ангренская ТЭС»",
+  "1150": "1150 — ООО «Ташкентская тепловая» (Ташкент)",
+};
+
+// Groups flat per-counterparty items into one summed row per company (companyCode).
+export function groupItemsByCompany(items) {
+  const map = new Map();
+
+  (items || []).forEach((item) => {
+    const code = item.companyCode ?? "—";
+    let row = map.get(code);
+    if (!row) {
+      row = {
+        companyCode: code,
+        openingBalance: 0,
+        currentBalance: 0,
+        change: 0,
+      };
+      CATEGORY_KEYS.forEach((k) => {
+        row[k] = 0;
+      });
+      map.set(code, row);
+    }
+
+    row.openingBalance += Number(item.openingBalance) || 0;
+    row.currentBalance += Number(item.currentBalance) || 0;
+    row.change += Number(item.change) || 0;
+    CATEGORY_KEYS.forEach((k) => {
+      row[k] += Number(item[k]) || 0;
+    });
+  });
+
+  return Array.from(map.values()).sort((a, b) =>
+    String(a.companyCode).localeCompare(String(b.companyCode))
+  );
+}
+
 export const MONTH_NAMES = [
   "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
   "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",

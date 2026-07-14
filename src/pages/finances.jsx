@@ -6,6 +6,34 @@ import { isAuthenticated } from "@/utils/auth";
 import CustomSelect from "@/components/ui/CustomSelect";
 import Loader from "@/components/ui/Loader";
 import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
+import BreakdownPieChart from "@/components/finances/BreakdownPieChart";
+import { BusPlanTable } from "@/components/budgeting";
+import {
+  sumByKey,
+  sumByKeyVtype,
+  COSTS_BREAKDOWN_KEYS,
+  REVENUE_BREAKDOWN_KEYS,
+  BUSPLAN_KEYS,
+} from "@/components/budgeting/utils";
+
+const ORG_OPTIONS = [
+  { value: "", label: "Все организации" },
+  { value: "1010", label: "1010 — ТЭС ЦА (Ташкент)" },
+  { value: "1020", label: "1020 — Филиал Сырдарьинская ТЭС (Ширин)" },
+  // { value: "1030", label: "1030 — АО «Ташкентская ТЭС» (Ташкент)" },
+  // { value: "1040", label: "1040 — АО «Навоийская ТЭС» (Навои)" },
+  // { value: "1050", label: "1050 — АО «Тахиаташская ТЭС» (Тахиаташ)" },
+  { value: "1060", label: "1060 — АО «Талимарджанская ТЭС» (Талимарджан)" },
+  { value: "1070", label: "1070 — Филиал Туракурганская ТЭС (Туракурган)" },
+  { value: "1080", label: "1080 — Филиал Мубарекская ТЭЦ (Мубарек)" },
+  { value: "1090", label: "1090 — Филиал Ферганская ТЭЦ (Фергана)" },
+  { value: "1100", label: "1100 — Филиал Ташкентская ТЭЦ (Ташкент)" },
+  // { value: "1110", label: "1110 — ООО «Узэнергосозлаш»" },
+  // { value: "1120", label: "1120 — АО «Узбекэнерготаъмир»" },
+  // { value: "1130", label: "1130 — АО «Узэнерготаъминлаш» (Ташкент)" },
+  { value: "1140", label: "1140 — АО «Ангренская ТЭС»" },
+  // { value: "1150", label: "1150 — ООО «Ташкентская тепловая» (Ташкент)" },
+];
 
 const monthNames = [
   "Январь",
@@ -21,6 +49,77 @@ const monthNames = [
   "Ноябрь",
   "Декабрь",
 ];
+
+const PERIOD_TYPES = [
+  { value: "month", label: "Месяц" },
+  { value: "quarter", label: "Квартал" },
+  { value: "half", label: "Полугодие" },
+  { value: "year", label: "Год" },
+  { value: "custom", label: "Произвольно" },
+];
+
+const MONTH_OPTIONS = monthNames.map((label, i) => ({
+  value: String(i + 1),
+  label,
+}));
+const QUARTER_OPTIONS = [1, 2, 3, 4].map((q) => ({
+  value: String(q),
+  label: `${q} квартал`,
+}));
+const HALF_OPTIONS = [
+  { value: "1", label: "I полугодие (янв–июн)" },
+  { value: "2", label: "II полугодие (июл–дек)" },
+];
+
+const PERIOD_INDEX_LABELS = {
+  month: "Месяц",
+  quarter: "Квартал",
+  half: "Полугодие",
+};
+const PERIOD_INDEX_OPTIONS = {
+  month: MONTH_OPTIONS,
+  quarter: QUARTER_OPTIONS,
+  half: HALF_OPTIONS,
+};
+
+function toDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function formatRuDate(s) {
+  if (!s) return "—";
+  const [y, m, d] = s.split("-");
+  return `${d}.${m}.${y}`;
+}
+
+// month is 1-based; quarter 1-4; half 1-2
+function periodRange(type, year, index) {
+  const y = parseInt(year);
+  const i = parseInt(index || "1");
+  let startMonth = 0,
+    span = 12;
+  if (type === "month") {
+    startMonth = i - 1;
+    span = 1;
+  }
+  if (type === "quarter") {
+    startMonth = (i - 1) * 3;
+    span = 3;
+  }
+  if (type === "half") {
+    startMonth = (i - 1) * 6;
+    span = 6;
+  }
+  const from = new Date(y, startMonth, 1);
+  const to = new Date(y, startMonth + span, 0);
+  return [toDateStr(from), toDateStr(to)];
+}
+
+function defaultIndexFor(type, month) {
+  if (type === "quarter") return String(Math.ceil(month / 3));
+  if (type === "half") return String(month <= 6 ? 1 : 2);
+  return String(month);
+}
 
 function formatSum(value) {
   if (value === null || value === undefined) return "—";
@@ -175,7 +274,8 @@ function statusToColor(text, toneMap) {
     if (tone) return TONE_TEXT_CLASS[tone];
   }
   const t = text.toLowerCase();
-  if (t.includes("норме") || t.includes("коридоре")) return "text-green-600 dark:text-green-400";
+  if (t.includes("норме") || t.includes("коридоре"))
+    return "text-green-600 dark:text-green-400";
   if (t.includes("диапазоне")) return "text-orange-600 dark:text-orange-400";
   if (t.includes("контроль")) return "text-red-600 dark:text-red-400";
   return "text-red-600 dark:text-red-400";
@@ -238,62 +338,110 @@ function buildRatioCards(d) {
 export default function FinancesPage() {
   const now = new Date();
   const currentYear = now.getFullYear();
-  const currentMonthValue = `${currentYear}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentMonth = now.getMonth() + 1;
   const yearOptions = [
     { value: String(currentYear - 1), label: String(currentYear - 1) },
     { value: String(currentYear), label: String(currentYear) },
     { value: String(currentYear + 1), label: String(currentYear + 1) },
   ];
-  const [filters, setFilters] = useState({
-    year: String(currentYear),
-    month: currentMonthValue,
+
+  const [filters, setFilters] = useState(() => {
+    const periodIndex = defaultIndexFor("month", currentMonth);
+    const [dateFrom, dateTo] = periodRange("month", currentYear, periodIndex);
+    return {
+      periodType: "month",
+      periodYear: String(currentYear),
+      periodIndex,
+      dateFrom,
+      dateTo,
+      comp: "",
+    };
   });
   const [financesApiLoading, setFinancesApiLoading] = useState(false);
   const [financesApiError, setFinancesApiError] = useState(null);
   const [financesData, setFinancesData] = useState(null);
+  const [budgetData, setBudgetData] = useState(null);
 
-  const monthOptions = monthNames.map((label, index) => ({
-    value: `${filters.year}-${String(index + 1).padStart(2, "0")}`,
-    label,
-  }));
-
-  const getDateRangeFromMonth = (monthValue) => {
-    const [yearText, monthText] = String(monthValue || "").split("-");
-    const year = Number(yearText);
-    const month = Number(monthText);
-
-    if (!year || !month || month < 1 || month > 12) {
-      return { dateFrom: "2025-01-01", dateTo: "2025-03-31" };
+  function selectPeriodType(type) {
+    if (type === "custom") {
+      setFilters((f) => ({ ...f, periodType: type }));
+      return;
     }
+    const periodIndex = defaultIndexFor(type, currentMonth);
+    const [dateFrom, dateTo] = periodRange(
+      type,
+      filters.periodYear,
+      periodIndex,
+    );
+    setFilters((f) => ({
+      ...f,
+      periodType: type,
+      periodIndex,
+      dateFrom,
+      dateTo,
+    }));
+  }
 
-    const firstDay = `${year}-${String(month).padStart(2, "0")}-01`;
-    const lastDayDate = new Date(year, month, 0);
-    const lastDay = `${year}-${String(month).padStart(2, "0")}-${String(lastDayDate.getDate()).padStart(2, "0")}`;
+  function selectPeriodYear(year) {
+    const [dateFrom, dateTo] = periodRange(
+      filters.periodType,
+      year,
+      filters.periodIndex,
+    );
+    setFilters((f) => ({ ...f, periodYear: year, dateFrom, dateTo }));
+  }
 
-    return { dateFrom: firstDay, dateTo: lastDay };
-  };
+  function selectPeriodIndex(index) {
+    const [dateFrom, dateTo] = periodRange(
+      filters.periodType,
+      filters.periodYear,
+      index,
+    );
+    setFilters((f) => ({ ...f, periodIndex: index, dateFrom, dateTo }));
+  }
 
-  const postFinancesData = async (selectedMonth = filters.month) => {
-    if (!selectedMonth) {
-      setFinancesApiError("Выберите месяц");
+  const postFinancesData = async () => {
+    const { dateFrom, dateTo } = filters;
+    if (!dateFrom || !dateTo) {
+      setFinancesApiError("Выберите период");
       return;
     }
 
     setFinancesApiLoading(true);
     setFinancesApiError(null);
 
-    const { dateFrom, dateTo } = getDateRangeFromMonth(selectedMonth);
+    const calyear = dateFrom.split("-")[0];
+    const monthFrom = dateFrom.split("-")[1];
+    const monthTo = dateTo.split("-")[1];
     try {
-      const res = await fetch("/api/dashboard/post_fi2", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date_from: dateFrom, date_to: dateTo }),
-      });
+      const [res, budgetRes] = await Promise.all([
+        fetch("/api/dashboard/post_fi2", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date_from: dateFrom,
+            date_to: dateTo,
+            ...(filters.comp ? { comp: filters.comp } : {}),
+          }),
+        }),
+        fetch("/api/dashboard/budget", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            calyear,
+            version: "EDU",
+            month_from: monthFrom,
+            month_to: monthTo,
+            ...(filters.comp ? { comp: [filters.comp] } : {}),
+          }),
+        }),
+      ]);
 
       if (!res.ok) throw new Error(`post_fi2 failed with status ${res.status}`);
 
       const data = await res.json();
       setFinancesData(data);
+      setBudgetData(budgetRes.ok ? await budgetRes.json() : null);
     } catch (error) {
       setFinancesApiError(error?.message || "Failed to fetch finances data");
       console.error("Finances POST error:", error);
@@ -303,17 +451,24 @@ export default function FinancesPage() {
   };
 
   useEffect(() => {
-    postFinancesData(currentMonthValue);
+    queueMicrotask(() => postFinancesData());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleResetFilters = () => {
+    const periodIndex = defaultIndexFor("month", currentMonth);
+    const [dateFrom, dateTo] = periodRange("month", currentYear, periodIndex);
     setFilters({
-      year: String(currentYear),
-      month: currentMonthValue,
+      periodType: "month",
+      periodYear: String(currentYear),
+      periodIndex,
+      dateFrom,
+      dateTo,
+      comp: "",
     });
     setFinancesApiError(null);
     setFinancesData(null);
+    setBudgetData(null);
   };
 
   console.log(financesData, "data");
@@ -321,32 +476,116 @@ export default function FinancesPage() {
   const kpiCards = buildKpiCards(financesData);
   const ratioCards = buildRatioCards(financesData);
 
+  const costsMap = sumByKey(budgetData?.costs);
+  const revenueMap = sumByKey(budgetData?.revenue);
+  const costsRows = COSTS_BREAKDOWN_KEYS.map((k) => costsMap.get(k)).filter(
+    Boolean,
+  );
+  const totalCosts =
+    costsMap.get("TOTAL")?.amount ??
+    costsRows.reduce((s, r) => s + r.amount, 0);
+  const revenueRows = REVENUE_BREAKDOWN_KEYS.map((k) =>
+    revenueMap.get(k),
+  ).filter(Boolean);
+  const totalRevenue = revenueRows.reduce((s, r) => s + r.amount, 0);
+
+  const busplanMap = sumByKeyVtype(budgetData?.busplan);
+  const busplanRows = BUSPLAN_KEYS.map((k) => busplanMap.get(k)).filter(
+    Boolean,
+  );
+
   return (
     <MainLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Финансы</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Финансы
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">КПЭ и EBITDA</p>
         </div>
 
         {/* Filter Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex gap-1 bg-gray-100 dark:bg-gray-900/40 rounded-lg p-1">
+              {PERIOD_TYPES.map((pt) => (
+                <button
+                  key={pt.value}
+                  type="button"
+                  onClick={() => selectPeriodType(pt.value)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    filters.periodType === pt.value
+                      ? "bg-slate-900 dark:bg-slate-700 text-white"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                  }`}
+                >
+                  {pt.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              {formatRuDate(filters.dateFrom)} – {formatRuDate(filters.dateTo)}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            {filters.periodType === "custom" ? (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    С
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.dateFrom}
+                    max={filters.dateTo}
+                    onChange={(e) =>
+                      setFilters({ ...filters, dateFrom: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    По
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.dateTo}
+                    min={filters.dateFrom}
+                    onChange={(e) =>
+                      setFilters({ ...filters, dateTo: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <CustomSelect
+                  label="Год"
+                  options={yearOptions}
+                  value={filters.periodYear}
+                  placeholder="Год"
+                  onChange={selectPeriodYear}
+                />
+                {PERIOD_INDEX_OPTIONS[filters.periodType] && (
+                  <CustomSelect
+                    label={PERIOD_INDEX_LABELS[filters.periodType]}
+                    options={PERIOD_INDEX_OPTIONS[filters.periodType]}
+                    value={filters.periodIndex}
+                    placeholder="Период"
+                    onChange={selectPeriodIndex}
+                  />
+                )}
+              </>
+            )}
             <CustomSelect
-              label="Год"
-              options={yearOptions}
-              value={filters.year}
-              placeholder="Выберите"
-              onChange={(value) =>
-                setFilters({ ...filters, year: value, month: "" })
-              }
-            />
-            <CustomSelect
-              label="Месяц"
-              options={monthOptions}
-              value={filters.month}
-              placeholder="Выберите"
-              onChange={(value) => setFilters({ ...filters, month: value })}
+              label="Организация"
+              options={ORG_OPTIONS}
+              value={filters.comp}
+              placeholder="Все организации"
+              onChange={(value) => setFilters({ ...filters, comp: value })}
             />
             <div className="flex items-end gap-2">
               <button
@@ -369,7 +608,9 @@ export default function FinancesPage() {
             </div>
           </div>
           {financesApiError && (
-            <p className="text-xs text-red-600 dark:text-red-400 mt-3">{financesApiError}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">
+              {financesApiError}
+            </p>
           )}
         </div>
 
@@ -388,7 +629,7 @@ export default function FinancesPage() {
               Нет данных
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500 max-w-65 leading-relaxed">
-              Выберите месяц в фильтре выше, чтобы загрузить данные
+              Выберите период в фильтре выше, чтобы загрузить данные
             </p>
           </div>
         ) : (
@@ -407,7 +648,9 @@ export default function FinancesPage() {
                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">
                       {card.value}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">{card.plan}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                      {card.plan}
+                    </p>
                     <p
                       className={`text-sm font-semibold mt-2 ${
                         card.status === "positive"
@@ -509,7 +752,9 @@ export default function FinancesPage() {
                   <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-3">
                     {card.value}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">{card.target}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                    {card.target}
+                  </p>
                   <p
                     className={`text-sm font-semibold mt-3 ${card.statusColor}`}
                   >
@@ -519,10 +764,27 @@ export default function FinancesPage() {
               ))}
             </div>
 
+            {/* Cost / Revenue Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <BreakdownPieChart
+                title="Состав затрат"
+                total={totalCosts}
+                rows={costsRows}
+              />
+              <BreakdownPieChart
+                title="Структура доходов"
+                total={totalRevenue}
+                rows={revenueRows}
+              />
+            </div>
+
+            {/* Business Plan Execution */}
+            <BusPlanTable rows={busplanRows} />
+
             {/* Strategic Sections Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* 1. Financial Stability */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 border-l-4 border-l-green-500">
+              {/* <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 border-l-4 border-l-green-500">
                 <div className="flex items-start justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
@@ -590,10 +852,10 @@ export default function FinancesPage() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* 2. Liquidity */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 border-l-4 border-l-orange-500">
+              {/* <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 border-l-4 border-l-orange-500">
                 <div className="flex items-start justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
@@ -681,10 +943,10 @@ export default function FinancesPage() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* 3. Operational Efficiency */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 border-l-4 border-l-green-500">
+              {/* <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 border-l-4 border-l-green-500">
                 <div className="flex items-start justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
@@ -779,7 +1041,7 @@ export default function FinancesPage() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* 4. Investments & Reforms */}
               {/* <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 border-l-4 border-l-orange-500">
