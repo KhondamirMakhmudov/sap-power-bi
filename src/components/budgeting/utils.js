@@ -107,7 +107,7 @@ export function sumByKey(rows) {
   return map;
 }
 
-// Same, but split plan (vtype 10) vs fact (vtype 20) per key.
+// Same, but split plan (vtype 20) vs fact (vtype 10) per key.
 export function sumByKeyVtype(rows) {
   const map = new Map();
   (rows || []).forEach((r) => {
@@ -117,8 +117,8 @@ export function sumByKeyVtype(rows) {
       map.set(r.key, entry);
     }
     const amt = Number(r.amount) || 0;
-    if (Number(r.vtype) === 10) entry.plan += amt;
-    else if (Number(r.vtype) === 20) entry.fact += amt;
+    if (Number(r.vtype) === 20) entry.plan += amt;
+    else if (Number(r.vtype) === 10) entry.fact += amt;
   });
   return map;
 }
