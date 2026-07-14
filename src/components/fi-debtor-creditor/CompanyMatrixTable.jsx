@@ -47,7 +47,7 @@ export default function CompanyMatrixTable({ activeSection, activeTab }) {
               <th className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FCE4D6]">
                 Тек. баланс
               </th>
-              <th className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FFFF00]">
+              <th className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FCE4D6]">
                 Изменение
               </th>
               {CATEGORY_KEYS.map((k) => (
