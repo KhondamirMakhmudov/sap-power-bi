@@ -1,8 +1,8 @@
 import https from "https";
 
-const SAP_HOST = "10.20.6.144";
+const SAP_HOST = "10.20.6.146";
 const SAP_PORT = 44300;
-const SAP_PATH = "/sap/bc/zfi/ds_bp_api?sap-client=500";
+const SAP_PATH = "/sap/bc/zfi/ds_bp_api?sap-client=700";
 const AUTH = Buffer.from("DASHBOARD:Integration2026").toString("base64");
 
 export default async function handler(req, res) {
@@ -40,7 +40,9 @@ export default async function handler(req, res) {
         response.on("end", () => {
           if (response.statusCode >= 400) {
             reject(
-              new Error(`SAP вернул ${response.statusCode}: ${body.slice(0, 200)}`)
+              new Error(
+                `SAP вернул ${response.statusCode}: ${body.slice(0, 200)}`,
+              ),
             );
             return;
           }

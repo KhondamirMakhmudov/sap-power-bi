@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { date_from, date_to, comp } = req.body;
+    const { date_from, date_to, be } = req.body;
 
     if (!date_from || !date_to) {
       return res
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     }
 
     const payload = { date_from, date_to };
-    if (comp) payload.comp = comp;
+    if (be) payload.be = be;
 
     const response = await fetch("http://10.20.7.6/tes/hs/dashboard/post_fi2", {
       method: "POST",

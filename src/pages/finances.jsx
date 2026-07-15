@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { isAuthenticated } from "@/utils/auth";
 import CustomSelect from "@/components/ui/CustomSelect";
+import MultiSelect from "@/components/ui/MultiSelect";
 import Loader from "@/components/ui/Loader";
 import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 import BreakdownPieChart from "@/components/finances/BreakdownPieChart";
@@ -38,6 +39,20 @@ const ORG_OPTIONS = [
   { value: "1140", label: "1140 — АО «Ангренская ТЭС»" },
   // { value: "1150", label: "1150 — ООО «Ташкентская тепловая» (Ташкент)" },
 ];
+
+const ALL_ORG_CODES = ORG_OPTIONS.filter((o) => o.value !== "").map((o) => o.value);
+
+// `selected` is an array of ORG_OPTIONS values (may include the "TES_BRANCHES"
+// group shortcut alongside individual codes) — expand + dedupe into plain codes.
+function resolveCompCodes(selected) {
+  if (!selected || selected.length === 0) return null;
+  const codes = new Set();
+  selected.forEach((v) => {
+    if (v === "TES_BRANCHES") TES_BRANCHES_GROUP.forEach((c) => codes.add(c));
+    else if (v) codes.add(v);
+  });
+  return codes.size > 0 ? Array.from(codes) : null;
+}
 
 const monthNames = [
   "Январь",
@@ -219,38 +234,38 @@ function buildKpiCards(d) {
   ];
 }
 
-const ebitdaFactors = [
-  {
-    factor: "Недозаработка",
-    impact: "-9 млрд сум",
-    reason: "Незначительное отклонение по отдельным активам",
-    responsible: "Производственный блок",
-  },
-  {
-    factor: "Рост УРУТ",
-    impact: "-21 млрд сум",
-    reason: "Снижение эффективности старых блоков",
-    responsible: "Главный инженер",
-  },
-  {
-    factor: "Цена топлива",
-    impact: "-12 млрд сум",
-    reason: "Фактическая цена выше бюджетной",
-    responsible: "Финансовый блок",
-  },
-  {
-    factor: "Собственные нужды",
-    impact: "-4 млрд сум",
-    reason: "Превышение целевого уровня на 0.1 п.п.",
-    responsible: "Технический директор",
-  },
-  {
-    factor: "Компенсирующие факторы",
-    impact: "+37 млрд сум",
-    reason: "Рост выручки, экономия прочих ОРЕХ, курсовой и прочий эффект",
-    responsible: "Финансовый блок",
-  },
-];
+// const ebitdaFactors = [
+//   {
+//     factor: "Недозаработка",
+//     impact: "-9 млрд сум",
+//     reason: "Незначительное отклонение по отдельным активам",
+//     responsible: "Производственный блок",
+//   },
+//   {
+//     factor: "Рост УРУТ",
+//     impact: "-21 млрд сум",
+//     reason: "Снижение эффективности старых блоков",
+//     responsible: "Главный инженер",
+//   },
+//   {
+//     factor: "Цена топлива",
+//     impact: "-12 млрд сум",
+//     reason: "Фактическая цена выше бюджетной",
+//     responsible: "Финансовый блок",
+//   },
+//   {
+//     factor: "Собственные нужды",
+//     impact: "-4 млрд сум",
+//     reason: "Превышение целевого уровня на 0.1 п.п.",
+//     responsible: "Технический директор",
+//   },
+//   {
+//     factor: "Компенсирующие факторы",
+//     impact: "+37 млрд сум",
+//     reason: "Рост выручки, экономия прочих ОРЕХ, курсовой и прочий эффект",
+//     responsible: "Финансовый блок",
+//   },
+// ];
 
 // `value != null` treats NaN as present (NaN != null is true), so a 0/0 upstream
 // calculation renders as "NaNx" instead of a no-data state — guard with isFinite.
@@ -274,10 +289,6 @@ const TONE_BORDER_CLASS = {
   gray: "border-l-4 border-l-gray-300",
 };
 
-// Status_NetDebtEbitda from SAP is a fixed descriptive sentence, not a generic
-// "in range"/"out of range" phrase — map each known sentence to its tone explicitly.
-// "Рассчитать не удалось" means the calc itself failed (e.g. 0/0 upstream) —
-// that's a neutral no-data state, not a risk severity, so it gets gray, not red.
 const NET_DEBT_EBITDA_STATUS_TONE = {
   "очень низкая долговая нагрузка": "green",
   "долговая нагрузка низкая, комфортная": "green",
@@ -288,7 +299,6 @@ const NET_DEBT_EBITDA_STATUS_TONE = {
   "рассчитать не удалось": "gray",
 };
 
-// Same for Status_DSCR — both hyphen variants covered since SAP text may use "—" or "-".
 const DSCR_STATUS_TONE = {
   "критично — денежных средств недостаточно для обслуживания долга": "red",
   "критично - денежных средств недостаточно для обслуживания долга": "red",
@@ -327,7 +337,6 @@ function statusToBorder(text, toneMap) {
   return "border-l-4 border-l-red-500";
 }
 
-// Execution-vs-plan color/border for cards that have no SAP status text.
 function executionTone(fact, plan) {
   if (!plan) return "gray";
   const pct = (Number(fact) / Number(plan)) * 100;
@@ -358,7 +367,8 @@ function buildRatioCards(d) {
   const roa = { fact: d?.ROA, plan: d?.P_ROA };
 
   const collectionRate = d?.CollectionRate;
-  const collectionTone = collectionRate != null && Number(collectionRate) >= 98 ? "green" : "orange";
+  const collectionTone =
+    collectionRate != null && Number(collectionRate) >= 98 ? "green" : "orange";
 
   return [
     {
@@ -393,8 +403,10 @@ function buildRatioCards(d) {
       value: formatRatio(ebitMargin?.fact, "%", 1),
       target: `План: ${formatRatio(ebitMargin?.plan, "%", 1)}`,
       status: executionLabel(ebitMargin?.fact, ebitMargin?.plan),
-      statusColor: TONE_TEXT_CLASS[executionTone(ebitMargin?.fact, ebitMargin?.plan)],
-      borderColor: TONE_BORDER_CLASS[executionTone(ebitMargin?.fact, ebitMargin?.plan)],
+      statusColor:
+        TONE_TEXT_CLASS[executionTone(ebitMargin?.fact, ebitMargin?.plan)],
+      borderColor:
+        TONE_BORDER_CLASS[executionTone(ebitMargin?.fact, ebitMargin?.plan)],
       description: "Доля EBIT в выручке.",
     },
     {
@@ -408,11 +420,19 @@ function buildRatioCards(d) {
     },
     {
       label: "Collection Rate",
-      value: collectionRate != null ? `${Number(collectionRate).toFixed(2)}%` : "—",
+      value:
+        collectionRate != null ? `${Number(collectionRate).toFixed(2)}%` : "—",
       target: "Цели: ≥ 98-99%",
-      status: collectionRate != null ? (collectionTone === "green" ? "в норме" : "ниже цели") : "—",
-      statusColor: TONE_TEXT_CLASS[collectionRate != null ? collectionTone : "gray"],
-      borderColor: TONE_BORDER_CLASS[collectionRate != null ? collectionTone : "gray"],
+      status:
+        collectionRate != null
+          ? collectionTone === "green"
+            ? "в норме"
+            : "ниже цели"
+          : "—",
+      statusColor:
+        TONE_TEXT_CLASS[collectionRate != null ? collectionTone : "gray"],
+      borderColor:
+        TONE_BORDER_CLASS[collectionRate != null ? collectionTone : "gray"],
       description: "Уровень сбора дебиторской задолженности.",
     },
     {
@@ -420,8 +440,10 @@ function buildRatioCards(d) {
       value: formatSum(costElectro?.fact),
       target: `План: ${formatSum(costElectro?.plan)}`,
       status: executionLabel(costElectro?.fact, costElectro?.plan),
-      statusColor: TONE_TEXT_CLASS[executionTone(costElectro?.fact, costElectro?.plan)],
-      borderColor: TONE_BORDER_CLASS[executionTone(costElectro?.fact, costElectro?.plan)],
+      statusColor:
+        TONE_TEXT_CLASS[executionTone(costElectro?.fact, costElectro?.plan)],
+      borderColor:
+        TONE_BORDER_CLASS[executionTone(costElectro?.fact, costElectro?.plan)],
       description: "Затраты на производство электроэнергии.",
     },
     {
@@ -429,8 +451,10 @@ function buildRatioCards(d) {
       value: formatSum(costHeat?.fact),
       target: `План: ${formatSum(costHeat?.plan)}`,
       status: executionLabel(costHeat?.fact, costHeat?.plan),
-      statusColor: TONE_TEXT_CLASS[executionTone(costHeat?.fact, costHeat?.plan)],
-      borderColor: TONE_BORDER_CLASS[executionTone(costHeat?.fact, costHeat?.plan)],
+      statusColor:
+        TONE_TEXT_CLASS[executionTone(costHeat?.fact, costHeat?.plan)],
+      borderColor:
+        TONE_BORDER_CLASS[executionTone(costHeat?.fact, costHeat?.plan)],
       description: "Затраты на производство теплоэнергии.",
     },
     {
@@ -473,7 +497,7 @@ export default function FinancesPage() {
       periodIndex,
       dateFrom,
       dateTo,
-      comp: "",
+      comp: ALL_ORG_CODES,
     };
   });
   const [financesApiLoading, setFinancesApiLoading] = useState(false);
@@ -532,7 +556,7 @@ export default function FinancesPage() {
     const calyear = dateFrom.split("-")[0];
     const monthFrom = dateFrom.split("-")[1];
     const monthTo = dateTo.split("-")[1];
-    const compCodes = filters.comp === "TES_BRANCHES" ? TES_BRANCHES_GROUP : filters.comp ? [filters.comp] : null;
+    const compCodes = resolveCompCodes(filters.comp);
     try {
       const [res, budgetRes] = await Promise.all([
         fetch("/api/dashboard/post_fi2", {
@@ -541,7 +565,7 @@ export default function FinancesPage() {
           body: JSON.stringify({
             date_from: dateFrom,
             date_to: dateTo,
-            ...(compCodes ? { comp: compCodes } : {}),
+            ...(compCodes ? { be: compCodes } : {}),
           }),
         }),
         fetch("/api/dashboard/budget", {
@@ -584,7 +608,7 @@ export default function FinancesPage() {
       periodIndex,
       dateFrom,
       dateTo,
-      comp: "",
+      comp: ALL_ORG_CODES,
     });
     setFinancesApiError(null);
     setFinancesData(null);
@@ -701,10 +725,10 @@ export default function FinancesPage() {
                 )}
               </>
             )}
-            <CustomSelect
+            <MultiSelect
               label="Организация"
               options={ORG_OPTIONS}
-              value={filters.comp}
+              selected={filters.comp}
               placeholder="Все организации"
               onChange={(value) => setFilters({ ...filters, comp: value })}
             />
@@ -772,7 +796,9 @@ export default function FinancesPage() {
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
                       {card.target}
                     </p>
-                    <p className={`text-sm font-semibold mt-2 ${card.statusColor}`}>
+                    <p
+                      className={`text-sm font-semibold mt-2 ${card.statusColor}`}
+                    >
                       {card.status}
                     </p>
                     {card.description && (

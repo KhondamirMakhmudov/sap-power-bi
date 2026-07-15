@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import MainLayout from "@/components/layout/MainLayout";
 import Card from "@/components/ui/Card";
 import CustomSelect from "@/components/ui/CustomSelect";
+import MultiSelect from "@/components/ui/MultiSelect";
 import Loader from "@/components/ui/Loader";
 import KPICardComponent from "@/components/dashboard/KPICardComponent";
 import FacilityCardComponent from "@/components/dashboard/FacilityCardComponent";
@@ -30,6 +31,8 @@ const ORG_OPTIONS = [
   { value: "1140", label: "1140 — АО «Ангренская ТЭС»" },
   // { value: "1150", label: "1150 — ООО «Ташкентская тепловая» (Ташкент)" },
 ];
+
+const ALL_ORG_CODES = ORG_OPTIONS.filter((o) => o.value !== "").map((o) => o.value);
 
 const monthNames = [
   "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -105,7 +108,7 @@ export default function DashboardPage({ username }) {
       dateTo,
       scenario: "",
       control: "",
-      comp: "",
+      comp: ALL_ORG_CODES,
     };
   });
   const [dashboardApiResponse, setDashboardApiResponse] = useState(null);
@@ -151,7 +154,7 @@ export default function DashboardPage({ username }) {
         body: JSON.stringify({
           date_from: dateFrom,
           date_to: dateTo,
-          ...(filters.comp ? { comp: filters.comp } : {}),
+          ...(filters.comp.length > 0 ? { be: filters.comp } : {}),
         }),
       });
 
@@ -188,7 +191,7 @@ export default function DashboardPage({ username }) {
       dateTo,
       scenario: "",
       control: "",
-      comp: "",
+      comp: ALL_ORG_CODES,
     });
     setDashboardApiResponse(null);
     setDashboardApiError(null);
@@ -327,10 +330,10 @@ export default function DashboardPage({ username }) {
               placeholder="Выберите"
               onChange={(value) => setFilters({ ...filters, control: value })}
             />
-            <CustomSelect
+            <MultiSelect
               label="Организация"
               options={ORG_OPTIONS}
-              value={filters.comp}
+              selected={filters.comp}
               placeholder="Все организации"
               onChange={(value) => setFilters({ ...filters, comp: value })}
             />
