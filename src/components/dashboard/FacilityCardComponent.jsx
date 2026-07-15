@@ -1,3 +1,16 @@
+// Same compact "трлн/млрд/млн сум" convention used by KPICardComponent/finances.jsx.
+function formatSum(value) {
+  if (value === null || value === undefined || value === "") return "-";
+  const n = Number(value);
+  if (Number.isNaN(n)) return "-";
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(2)} трлн сум`;
+  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(2)} млрд сум`;
+  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(1)} млн сум`;
+  return `${sign}${new Intl.NumberFormat("ru").format(abs)} сум`;
+}
+
 export default function FacilityCardComponent({
   name,
   status,
@@ -81,6 +94,35 @@ export default function FacilityCardComponent({
             title={urugTooltip || undefined}
           >
             {metrics?.urug}
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-4 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div>
+          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Выручка</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {formatSum(metrics?.revenue)}
+          </p>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+            План: {formatSum(metrics?.revenuePlan)}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">EBITDA</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {formatSum(metrics?.ebitda)}
+          </p>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+            План: {formatSum(metrics?.ebitdaPlan)}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Чистая прибыль</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {formatSum(metrics?.netProfit)}
+          </p>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+            План: {formatSum(metrics?.netProfitPlan)}
           </p>
         </div>
       </div>

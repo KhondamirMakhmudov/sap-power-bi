@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import MainLayout from "@/components/layout/MainLayout";
 import Card from "@/components/ui/Card";
@@ -12,6 +12,16 @@ import FacilityCardComponent from "@/components/dashboard/FacilityCardComponent"
 import { formatCurrency } from "@/utils/helpers";
 import { isAuthenticated, getSessionUsername } from "@/utils/auth";
 import { get } from "lodash";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const ORG_OPTIONS = [
   { value: "",     label: "Все организации" },
@@ -86,6 +96,85 @@ function defaultIndexFor(type, month) {
   return String(month);
 }
 
+const MONTH_SHORT = [
+  "янв", "фев", "мар", "апр", "май", "июн",
+  "июл", "авг", "сен", "окт", "ноя", "дек",
+];
+
+const TREND_METRIC_OPTIONS = [
+  { value: "EBITDA", label: "EBITDA" },
+  { value: "urug", label: "УРУТ" },
+  { value: "Viruchka", label: "Выручка" },
+  { value: "ChistiyPribil", label: "Чистая прибыль" },
+  { value: "VirabotkaTE", label: "Средняя доступная мощность" },
+];
+
+const TREND_LINE_COLORS = [
+  "#2a78d6", "#eda100", "#1baf7a", "#e34948", "#4a3aa7",
+  "#e87ba4", "#008300", "#eb6834", "#0891b2", "#a855f7",
+];
+
+// Enumerates every calendar month the [dateFrom, dateTo] range touches.
+function monthsInRange(dateFrom, dateTo) {
+  if (!dateFrom || !dateTo) return [];
+  const [fy, fm] = dateFrom.split("-").map(Number);
+  const [ty, tm] = dateTo.split("-").map(Number);
+  const months = [];
+  let y = fy, m = fm;
+  while (y < ty || (y === ty && m <= tm)) {
+    const first = `${y}-${String(m).padStart(2, "0")}-01`;
+    const lastDay = new Date(y, m, 0).getDate();
+    const last = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    months.push({
+      label: `${MONTH_SHORT[m - 1]}.${String(y).slice(2)}`,
+      dateFrom: first,
+      dateTo: last,
+    });
+    m += 1;
+    if (m > 12) { m = 1; y += 1; }
+  }
+  return months;
+}
+
+function formatCompactNumber(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "-";
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(2)} трлн`;
+  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(2)} млрд`;
+  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(1)} млн`;
+  return `${sign}${new Intl.NumberFormat("ru").format(abs)}`;
+}
+
+// Compact tooltip — only the hovered month's values, scrollable if the org
+// list is long, so it never balloons over the rest of the chart/page.
+function TrendTooltip({ active, payload, label, hiddenSeries }) {
+  if (!active || !payload || payload.length === 0) return null;
+  const visible = payload.filter((p) => !hiddenSeries.has(p.dataKey));
+  if (visible.length === 0) return null;
+
+  return (
+    <div
+      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 text-xs overflow-y-auto"
+      style={{ maxWidth: 260, maxHeight: 240 }}
+    >
+      <p className="font-semibold text-gray-900 dark:text-gray-100 mb-1.5">{label}</p>
+      {visible.map((p) => (
+        <div key={p.dataKey} className="flex items-center justify-between gap-3 py-0.5">
+          <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 min-w-0">
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
+            <span className="truncate">{p.dataKey}</span>
+          </span>
+          <span className="font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap shrink-0">
+            {formatCompactNumber(p.value)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function DashboardPage({ username }) {
   const router = useRouter();
   const now = new Date();
@@ -106,7 +195,7 @@ export default function DashboardPage({ username }) {
       periodIndex,
       dateFrom,
       dateTo,
-      scenario: "",
+      scenario: "Факт / план",
       control: "",
       comp: ALL_ORG_CODES,
     };
@@ -114,6 +203,19 @@ export default function DashboardPage({ username }) {
   const [dashboardApiResponse, setDashboardApiResponse] = useState(null);
   const [dashboardApiLoading, setDashboardApiLoading] = useState(false);
   const [dashboardApiError, setDashboardApiError] = useState(null);
+  const [trendRaw, setTrendRaw] = useState(null);
+  const [trendLoading, setTrendLoading] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState(TREND_METRIC_OPTIONS[0].value);
+  const [hiddenSeries, setHiddenSeries] = useState(() => new Set());
+
+  function toggleSeries(name) {
+    setHiddenSeries((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }
 
   function selectPeriodType(type) {
     if (type === "custom") {
@@ -144,19 +246,36 @@ export default function DashboardPage({ username }) {
 
     setDashboardApiLoading(true);
     setDashboardApiError(null);
+    setTrendLoading(true);
+
+    const months = monthsInRange(dateFrom, dateTo);
+    const compFilter = filters.comp.length > 0 ? { be: filters.comp } : {};
 
     try {
-      const response = await fetch("/api/dashboard/post_fi", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          date_from: dateFrom,
-          date_to: dateTo,
-          ...(filters.comp.length > 0 ? { be: filters.comp } : {}),
+      const [response, ...monthResponses] = await Promise.all([
+        fetch("/api/dashboard/post_fi", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date_from: dateFrom,
+            date_to: dateTo,
+            ...compFilter,
+          }),
         }),
-      });
+        ...months.map((m) =>
+          fetch("/api/dashboard/post_fi", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              date_from: m.dateFrom,
+              date_to: m.dateTo,
+              ...compFilter,
+            }),
+          }).catch(() => null),
+        ),
+      ]);
 
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`);
@@ -167,11 +286,23 @@ export default function DashboardPage({ username }) {
 
       // You can map this responseData into KPI and facilities content when ready.
       console.log("Dashboard POST response:", responseData);
+
+      const monthPayloads = await Promise.all(
+        monthResponses.map((r) => (r && r.ok ? r.json().catch(() => null) : null)),
+      );
+      setTrendRaw(
+        months.map((m, i) => {
+          const payload = monthPayloads[i];
+          const orgs = get(payload, "data") ?? get(payload, "Data") ?? [];
+          return { month: m.label, orgs: Array.isArray(orgs) ? orgs : [] };
+        }),
+      );
     } catch (error) {
       setDashboardApiError(error?.message || "Failed to fetch dashboard data");
       console.error("Dashboard POST error:", error);
     } finally {
       setDashboardApiLoading(false);
+      setTrendLoading(false);
     }
   };
 
@@ -189,12 +320,13 @@ export default function DashboardPage({ username }) {
       periodIndex,
       dateFrom,
       dateTo,
-      scenario: "",
+      scenario: "Факт / план",
       control: "",
       comp: ALL_ORG_CODES,
     });
     setDashboardApiResponse(null);
     setDashboardApiError(null);
+    setTrendRaw(null);
   };
 
   const apiFacilities =
@@ -206,6 +338,28 @@ export default function DashboardPage({ username }) {
       ? apiFacilities
       : [];
   const showPlanAndChangeInKpi = filters.scenario === "Факт / план";
+
+  const trendOrgNames = useMemo(() => {
+    if (!trendRaw) return [];
+    const set = new Set();
+    trendRaw.forEach((m) => m.orgs.forEach((o) => set.add(get(o, "BE", "—"))));
+    return Array.from(set);
+  }, [trendRaw]);
+
+  const trendChartDataByMetric = useMemo(() => {
+    if (!trendRaw) return {};
+    const result = {};
+    TREND_METRIC_OPTIONS.forEach((opt) => {
+      result[opt.value] = trendRaw.map((m) => {
+        const row = { month: m.month };
+        m.orgs.forEach((o) => {
+          row[get(o, "BE", "—")] = Number(get(o, opt.value, 0)) || 0;
+        });
+        return row;
+      });
+    });
+    return result;
+  }, [trendRaw]);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -488,10 +642,115 @@ export default function DashboardPage({ username }) {
                         get(facility, "urug", "-"),
                       ),
                       urugKey: "urug",
+                      revenue: get(facility, "Viruchka"),
+                      revenuePlan: get(facility, "P_Viruchka"),
+                      ebitda: get(facility, "EBITDA"),
+                      ebitdaPlan: get(facility, "P_EBITDA"),
+                      netProfit: get(facility, "ChistiyPribil"),
+                      netProfitPlan: get(facility, "P_ChistiyPribil"),
                     }}
                     risk={get(facility, "risk", "")}
                   />
                 ))}
+              </div>
+            </div>
+
+            {/* Trend by organization */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
+                Динамика по организациям
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                Помесячный тренд по организациям за период{" "}
+                {formatRuDate(filters.dateFrom)} – {formatRuDate(filters.dateTo)}
+                {trendChartDataByMetric[selectedMetric]?.length === 1 && (
+                  <span className="block text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    В выбранном периоде всего один месяц — тренд покажет одну точку.
+                    Выберите «Квартал», «Полугодие» или «Год», чтобы увидеть линию.
+                  </span>
+                )}
+              </p>
+
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex-1 min-w-0" style={{ height: 380 }}>
+                  {trendLoading ? (
+                    <div className="h-full flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+                      Загрузка тренда…
+                    </div>
+                  ) : !trendRaw ? (
+                    <div className="h-full flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+                      Нет данных за выбранный период
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={trendChartDataByMetric[selectedMetric]}
+                        margin={{ top: 8, right: 16, left: 8, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#94a3b8" }} />
+                        <YAxis
+                          tick={{ fontSize: 12, fill: "#94a3b8" }}
+                          width={72}
+                          tickFormatter={formatCompactNumber}
+                        />
+                        <Tooltip content={(p) => <TrendTooltip {...p} hiddenSeries={hiddenSeries} />} />
+                        <Legend
+                          onClick={(entry) => toggleSeries(entry.dataKey)}
+                          wrapperStyle={{ fontSize: 11, lineHeight: "1.6", cursor: "pointer" }}
+                          formatter={(value) => (
+                            <span
+                              style={{
+                                opacity: hiddenSeries.has(value) ? 0.4 : 1,
+                                textDecoration: hiddenSeries.has(value) ? "line-through" : "none",
+                              }}
+                            >
+                              {value}
+                            </span>
+                          )}
+                        />
+                        {trendOrgNames.map((name, i) => (
+                          <Line
+                            key={name}
+                            type="monotone"
+                            dataKey={name}
+                            stroke={TREND_LINE_COLORS[i % TREND_LINE_COLORS.length]}
+                            strokeWidth={2}
+                            strokeOpacity={hiddenSeries.has(name) ? 0 : 1}
+                            dot={hiddenSeries.has(name) ? false : { r: 3 }}
+                            activeDot={hiddenSeries.has(name) ? false : { r: 5 }}
+                            isAnimationActive={false}
+                          />
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+
+                <div className="lg:w-64 shrink-0">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                    Показатель
+                  </p>
+                  <div className="space-y-2">
+                    {TREND_METRIC_OPTIONS.map((opt) => (
+                      <label
+                        key={opt.value}
+                        className="flex items-center gap-2.5 text-sm text-gray-900 dark:text-gray-100 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedMetric === opt.value}
+                          onChange={() => setSelectedMetric(opt.value)}
+                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
+                        />
+                        {opt.label}
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+                    Клик по организации в легенде скрывает/показывает её линию.
+                  </p>
+                </div>
               </div>
             </div>
           </>
