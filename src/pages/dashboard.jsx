@@ -200,15 +200,19 @@ export default function DashboardPage({ username }) {
   const yearOptions = [
     { value: String(currentYear - 1), label: String(currentYear - 1) },
     { value: String(currentYear), label: String(currentYear) },
-    { value: String(currentYear + 1), label: String(currentYear + 1) },
   ];
 
+  // Default view is last month, not the current (still in-progress) one.
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const defaultYear = prevMonthDate.getFullYear();
+  const defaultMonth = prevMonthDate.getMonth() + 1;
+
   const [filters, setFilters] = useState(() => {
-    const periodIndex = defaultIndexFor("month", currentMonth);
-    const [dateFrom, dateTo] = periodRange("month", currentYear, periodIndex);
+    const periodIndex = defaultIndexFor("month", defaultMonth);
+    const [dateFrom, dateTo] = periodRange("month", defaultYear, periodIndex);
     return {
       periodType: "month",
-      periodYear: String(currentYear),
+      periodYear: String(defaultYear),
       periodIndex,
       dateFrom,
       dateTo,
@@ -329,11 +333,11 @@ export default function DashboardPage({ username }) {
   }, []);
 
   const handleResetFilters = () => {
-    const periodIndex = defaultIndexFor("month", currentMonth);
-    const [dateFrom, dateTo] = periodRange("month", currentYear, periodIndex);
+    const periodIndex = defaultIndexFor("month", defaultMonth);
+    const [dateFrom, dateTo] = periodRange("month", defaultYear, periodIndex);
     setFilters({
       periodType: "month",
-      periodYear: String(currentYear),
+      periodYear: String(defaultYear),
       periodIndex,
       dateFrom,
       dateTo,

@@ -470,7 +470,6 @@ export default function FinancesPage() {
   const yearOptions = [
     { value: String(currentYear - 1), label: String(currentYear - 1) },
     { value: String(currentYear), label: String(currentYear) },
-    { value: String(currentYear + 1), label: String(currentYear + 1) },
   ];
 
   // Default view is last month, not the current (still in-progress) one.
