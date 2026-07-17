@@ -8,6 +8,7 @@ export default function KPICard({
   displayUnit = "сум",
   unit,
   decimals = 2,
+  description,
 }) {
   const resolvedUnit = displayUnit || unit || "сум";
   const isNegativeChange = String(change || "").includes("-");
@@ -81,6 +82,11 @@ export default function KPICard({
             {change}% к плану
           </p>
         </>
+      )}
+      {description && (
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/60">
+          {description}
+        </p>
       )}
     </div>
   );

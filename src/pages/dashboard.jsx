@@ -23,8 +23,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+// Active org codes minus 1060 (Талимарджанская ТЭС) and 1140 (Ангренская ТЭС).
+const TES_BRANCHES_GROUP = ["1010", "1020", "1070", "1080", "1090", "1100"];
+
 const ORG_OPTIONS = [
   { value: "",     label: "Все организации" },
+  { value: "TES_BRANCHES", label: "АО ТЭС и филиалы" },
   { value: "1010", label: "1010 — ТЭС ЦА (Ташкент)" },
   { value: "1020", label: "1020 — Филиал Сырдарьинская ТЭС (Ширин)" },
   // { value: "1030", label: "1030 — АО «Ташкентская ТЭС» (Ташкент)" },
@@ -43,6 +47,18 @@ const ORG_OPTIONS = [
 ];
 
 const ALL_ORG_CODES = ORG_OPTIONS.filter((o) => o.value !== "").map((o) => o.value);
+
+// `selected` is an array of ORG_OPTIONS values (may include the "TES_BRANCHES"
+// group shortcut alongside individual codes) — expand + dedupe into plain codes.
+function resolveCompCodes(selected) {
+  if (!selected || selected.length === 0) return null;
+  const codes = new Set();
+  selected.forEach((v) => {
+    if (v === "TES_BRANCHES") TES_BRANCHES_GROUP.forEach((c) => codes.add(c));
+    else if (v) codes.add(v);
+  });
+  return codes.size > 0 ? Array.from(codes) : null;
+}
 
 const monthNames = [
   "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -196,7 +212,6 @@ export default function DashboardPage({ username }) {
       dateFrom,
       dateTo,
       scenario: "Факт / план",
-      control: "",
       comp: ALL_ORG_CODES,
     };
   });
@@ -249,7 +264,8 @@ export default function DashboardPage({ username }) {
     setTrendLoading(true);
 
     const months = monthsInRange(dateFrom, dateTo);
-    const compFilter = filters.comp.length > 0 ? { be: filters.comp } : {};
+    const compCodes = resolveCompCodes(filters.comp);
+    const compFilter = compCodes ? { be: compCodes } : {};
 
     try {
       const [response, ...monthResponses] = await Promise.all([
@@ -321,7 +337,6 @@ export default function DashboardPage({ username }) {
       dateFrom,
       dateTo,
       scenario: "Факт / план",
-      control: "",
       comp: ALL_ORG_CODES,
     });
     setDashboardApiResponse(null);
@@ -474,16 +489,6 @@ export default function DashboardPage({ username }) {
               placeholder="Выберите"
               onChange={(value) => setFilters({ ...filters, scenario: value })}
             />
-            <CustomSelect
-              label="Контур"
-              options={[
-                { value: "Вся компания", label: "Вся компания" },
-                { value: "Генерация", label: "Генерация" },
-              ]}
-              value={filters.control}
-              placeholder="Выберите"
-              onChange={(value) => setFilters({ ...filters, control: value })}
-            />
             <MultiSelect
               label="Организация"
               options={ORG_OPTIONS}
@@ -548,8 +553,18 @@ export default function DashboardPage({ username }) {
                 showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="сум"
                 unit={"сум"}
+                description="Доход от основной деятельности."
               />
-
+              <KPICardComponent
+                label={"EBIT"}
+                value={get(dashboardApiResponse, "EBIT")}
+                plan={get(dashboardApiResponse, "P_EBIT", 0)}
+                change={get(dashboardApiResponse, "PF_EBIT", 0)}
+                showPlanAndChange={showPlanAndChangeInKpi}
+                displayUnit="сум"
+                unit={"сум"}
+                description="Прибыль до процентов и налогов."
+              />
               <KPICardComponent
                 label={"EBITDA"}
                 value={get(dashboardApiResponse, "EBITDA")}
@@ -558,6 +573,7 @@ export default function DashboardPage({ username }) {
                 showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="сум"
                 unit={"сум"}
+                description="Прибыль до процентов, налогов и амортизации."
               />
               <KPICardComponent
                 label={"Чистая прибыль"}
@@ -567,33 +583,27 @@ export default function DashboardPage({ username }) {
                 showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="сум"
                 unit={"сум"}
+                description="Финансовый результат после всех расходов."
               />
               <KPICardComponent
-                label={"Реализация электр энергии"}
+                label={"Реализация электроэнергии"}
                 value={get(dashboardApiResponse, "VirabotkaEE")}
                 plan={get(dashboardApiResponse, "P_VirabotkaEE", 0)}
                 change={get(dashboardApiResponse, "PF_VirabotkaEE", 0)}
                 showPlanAndChange={showPlanAndChangeInKpi}
                 displayUnit="кВтч"
                 unit={"кВтч"}
+                description="Количество реализованной электроэнергии."
               />
               <KPICardComponent
-                label={"Средняя доступная мощность"}
+                label={"Реализация теплоэнергии"}
                 value={get(dashboardApiResponse, "VirabotkaTE")}
                 plan={get(dashboardApiResponse, "P_VirabotkaTE", 0)}
                 change={get(dashboardApiResponse, "PF_VirabotkaTE", 0)}
                 showPlanAndChange={showPlanAndChangeInKpi}
-                displayUnit="МВт"
-                unit={"МВт"}
-              />
-              <KPICardComponent
-                label={"УРУТ"}
-                value={get(dashboardApiResponse, "urug")}
-                plan={get(dashboardApiResponse, "P_urug", 0)}
-                change={get(dashboardApiResponse, "PF_urug", 0)}
-                showPlanAndChange={showPlanAndChangeInKpi}
-                displayUnit="г/кВтч"
-                unit={"г/кВтч"}
+                displayUnit="Гкал"
+                unit={"Гкал"}
+                description="Количество реализованной теплоэнергии."
               />
             </div>
 
@@ -614,40 +624,18 @@ export default function DashboardPage({ username }) {
                     status={get(facility, "status")}
                     statusDot={get(facility, "statusDot", "orange")}
                     metrics={{
-                      output: get(
-                        facility,
-                        "VirabotkaEE",
-                        get(facility, "metrics.output", 0),
-                      ),
-                      outputKey: "VirabotkaEE",
-                      outputPlan: get(
-                        facility,
-                        "P_VirabotkaEE",
-                        get(
-                          facility,
-                          "metrics.outputPlan",
-                          get(facility, "metrics.outputSecondary", 0),
-                        ),
-                      ),
-                      outputPlanKey: "P_VirabotkaEE",
-                      power: get(
-                        facility,
-                        "metrics.power",
-                        get(facility, "sdm", "-"),
-                      ),
-                      powerKey: "sdm",
-                      urug: get(
-                        facility,
-                        "metrics.urug",
-                        get(facility, "urug", "-"),
-                      ),
-                      urugKey: "urug",
                       revenue: get(facility, "Viruchka"),
                       revenuePlan: get(facility, "P_Viruchka"),
+                      ebit: get(facility, "EBIT"),
+                      ebitPlan: get(facility, "P_EBIT"),
                       ebitda: get(facility, "EBITDA"),
                       ebitdaPlan: get(facility, "P_EBITDA"),
                       netProfit: get(facility, "ChistiyPribil"),
                       netProfitPlan: get(facility, "P_ChistiyPribil"),
+                      electricOutput: get(facility, "VirabotkaEE"),
+                      electricOutputPlan: get(facility, "P_VirabotkaEE"),
+                      heatOutput: get(facility, "VirabotkaTE"),
+                      heatOutputPlan: get(facility, "P_VirabotkaTE"),
                     }}
                     risk={get(facility, "risk", "")}
                   />
