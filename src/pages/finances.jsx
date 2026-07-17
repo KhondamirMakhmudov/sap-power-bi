@@ -11,10 +11,9 @@ import BreakdownPieChart from "@/components/finances/BreakdownPieChart";
 import { BusPlanTable } from "@/components/budgeting";
 import {
   sumByKey,
-  sumByKeyVtype,
   COSTS_BREAKDOWN_KEYS,
   REVENUE_BREAKDOWN_KEYS,
-  BUSPLAN_KEYS,
+  buildBusplanRows,
 } from "@/components/budgeting/utils";
 
 // Active org codes minus 1060 (Талимарджанская ТЭС) and 1140 (Ангренская ТЭС).
@@ -619,10 +618,7 @@ export default function FinancesPage() {
   ).filter(Boolean);
   const totalRevenue = revenueRows.reduce((s, r) => s + r.amount, 0);
 
-  const busplanMap = sumByKeyVtype(budgetData?.busplan);
-  const busplanRows = BUSPLAN_KEYS.map((k) => busplanMap.get(k)).filter(
-    Boolean,
-  );
+  const busplanRows = buildBusplanRows(financesData);
 
   const kpiCards = buildKpiCards(financesData);
   const ratioCards = buildRatioCards(financesData);

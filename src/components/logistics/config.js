@@ -3,7 +3,7 @@ export const ENTITIES = {
     label: "ЗМЗ",
     labelFull: "Заявки на закупку (PR)",
     columns: [
-      { key: "PurchaseRequisition", label: "№ ЗМЗ" },
+      { key: "PURCHASEREQUISITION", label: "№ ЗМЗ" },
       { key: "PurchaseRequisitionItem", label: "Позиция" },
       { key: "Material", label: "Материал" },
       { key: "Purchaserequisitionitemtext", label: "Описание" },
@@ -21,12 +21,17 @@ export const ENTITIES = {
       { key: "Contract", label: "№ Контракта" },
       { key: "ContractItem", label: "Позиция" },
       { key: "PriceAmount", label: "Сумма" },
-      { key: "DocumentCurrency", label: "Валюта" },
+      { key: "Currency", label: "Валюта" },
       { key: "PurchaseRequisition", label: "№ ЗМЗ" },
       { key: "PurchaseRequisitionItem", label: "Поз. ЗМЗ" },
     ],
     filter: { type: "text", field: "PurchaseRequisition", placeholder: "Номер ЗМЗ" },
   },
+  // po/gr now point at a different underlying entity (PurchaseOrder /
+  // InboundDelivery, per the SAP testing guide) than what these columns were
+  // written against — the service is 403 (auth) on every host tested so far,
+  // so field names below are unverified guesses. Re-check against real data
+  // once SAP Basis grants the DASHBOARD user access to these service groups.
   po: {
     label: "Заказы",
     labelFull: "Заказы на закупку (PO)",
@@ -60,12 +65,13 @@ export const ENTITIES = {
     label: "Счета",
     labelFull: "Счета-фактуры",
     columns: [
-      { key: "PurchasingHistoryDocument", label: "№ Счёта" },
+      { key: "OrderNumber", label: "№ Документа" },
+      { key: "PurchaseOrder", label: "№ ЗнЗ" },
+      { key: "PurchaseOrderNumber", label: "Поз. ЗнЗ" },
       { key: "PurchasingHistoryDocumentYear", label: "Год" },
-      { key: "ReferenceDocumentNumber", label: "Реф. документ" },
-      { key: "PurchaseOrdQty", label: "Кол-во" },
-      { key: "PurchaseOrdQtyUnit", label: "Ед." },
-      { key: "NetValueWithoutTax", label: "Сумма (без НДС)" },
+      { key: "QuantityInPurchaseOrderUnit", label: "Кол-во" },
+      { key: "QuantityUnit", label: "Ед." },
+      { key: "SupplierInvoiceItemAmount", label: "Сумма" },
       { key: "DocumentCurrency", label: "Валюта" },
     ],
     filter: { type: "year", field: "PurchasingHistoryDocumentYear" },
