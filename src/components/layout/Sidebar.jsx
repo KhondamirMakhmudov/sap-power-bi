@@ -71,7 +71,7 @@ const sidebarItems = [
   },
   {
     label: "Дебиторы / Кредиторы",
-    description: "Задолженность ФИ",
+    description: "Информация оперативная",
     href: "/fi-debtor-creditor",
     icon: <Landmark className="w-5 h-5" />,
   },
