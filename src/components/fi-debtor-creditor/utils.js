@@ -37,7 +37,9 @@ export const COMPANY_NAMES = {
 };
 
 // Groups flat per-counterparty items into one summed row per company (companyCode).
-export function groupItemsByCompany(items) {
+// By default rows are sorted alphabetically by companyCode; pass preserveOrder to
+// keep the original item order instead (e.g. a static source like an Excel snapshot).
+export function groupItemsByCompany(items, { preserveOrder = false } = {}) {
   const map = new Map();
 
   (items || []).forEach((item) => {
@@ -64,9 +66,10 @@ export function groupItemsByCompany(items) {
     });
   });
 
-  return Array.from(map.values()).sort((a, b) =>
-    String(a.companyCode).localeCompare(String(b.companyCode))
-  );
+  const rows = Array.from(map.values());
+  return preserveOrder
+    ? rows
+    : rows.sort((a, b) => String(a.companyCode).localeCompare(String(b.companyCode)));
 }
 
 export const MONTH_NAMES = [
@@ -91,7 +94,10 @@ export function fmtMln(value) {
   if (value === null || value === undefined) return "—";
   const n = Number(value);
   if (isNaN(n)) return "—";
-  return new Intl.NumberFormat("ru", { maximumFractionDigits: 2 }).format(n);
+  return new Intl.NumberFormat("ru", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(n);
 }
 
 export function changeClass(value) {

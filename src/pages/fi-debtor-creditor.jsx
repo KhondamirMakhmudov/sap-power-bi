@@ -5,15 +5,33 @@ import MainLayout from "@/components/layout/MainLayout";
 import { isAuthenticated } from "@/utils/auth";
 import Loader from "@/components/ui/Loader";
 import {
-  FilterCard,
+  // FilterCard, // SAP tab — commented out for now, see block below to re-enable
   PeriodInfoBar,
   KPISummaryCards,
   TotalsCards,
   CompanyMatrixTable,
 } from "@/components/fi-debtor-creditor";
-import { toApiDate } from "@/components/fi-debtor-creditor/utils";
+// import { toApiDate } from "@/components/fi-debtor-creditor/utils"; // SAP tab — re-enable together with FilterCard above
+
+// ---------------------------------------------------------------------------
+// SAP live tab is temporarily disabled — only the Excel snapshot is shown.
+// To bring the SAP tab back:
+//   1. Uncomment the FilterCard / toApiDate imports above.
+//   2. Uncomment the "SAP live source" state + handleApply/handleReset block below.
+//   3. Uncomment the source-switcher JSX and the FilterCard render block further down,
+//      and change `source` to a real useState (not a hardcoded constant).
+// ---------------------------------------------------------------------------
 
 export default function FinDebtorCreditorPage() {
+  const [activeTab, setActiveTab] = useState("debtor");
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // const [source, setSource] = useState("sap"); // SAP tab — re-enable as real state ("sap" | "excel")
+  const source = "excel";
+
+  /* SAP live source — state + fetch (commented out, see note above)
   const now = new Date();
   const [mode, setMode] = useState("period");
   const [dateInput, setDateInput] = useState("");
@@ -21,24 +39,22 @@ export default function FinDebtorCreditorPage() {
     String(now.getMonth() + 1).padStart(2, "0")
   );
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [data, setData] = useState(null);
-  const [activeTab, setActiveTab] = useState("debtor");
+  const [sapData, setSapData] = useState(null);
+  const [sapLoading, setSapLoading] = useState(false);
+  const [sapError, setSapError] = useState(null);
 
   const handleApply = async () => {
     let body;
     if (mode === "date") {
-      if (!dateInput) { setError("Выберите дату"); return; }
+      if (!dateInput) { setSapError("Выберите дату"); return; }
       body = { date: toApiDate(dateInput), month: "", year: "" };
     } else {
-      if (!selectedMonth || !selectedYear) { setError("Выберите месяц и год"); return; }
+      if (!selectedMonth || !selectedYear) { setSapError("Выберите месяц и год"); return; }
       body = { date: "", month: String(parseInt(selectedMonth, 10)), year: selectedYear };
     }
 
-    setLoading(true);
-    setError(null);
+    setSapLoading(true);
+    setSapError(null);
 
     try {
       const res = await fetch("/api/dashboard/fi_bp", {
@@ -50,25 +66,48 @@ export default function FinDebtorCreditorPage() {
         const errJson = await res.json().catch(() => ({}));
         throw new Error(errJson?.error || `Ошибка сервера: ${res.status}`);
       }
-      setData(await res.json());
+      setSapData(await res.json());
       setActiveTab("debtor");
     } catch (e) {
-      setError(e?.message || "Ошибка загрузки данных");
+      setSapError(e?.message || "Ошибка загрузки данных");
     } finally {
-      setLoading(false);
+      setSapLoading(false);
     }
   };
 
+  const handleReset = () => {
+    setSapData(null);
+    setSapError(null);
+  };
+  */
+
   useEffect(() => {
-    queueMicrotask(() => handleApply());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetch("/api/dashboard/fi_bp_excel")
+      .then(async (res) => {
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          throw new Error(errJson?.error || `Ошибка сервера: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled) setData(json);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e?.message || "Ошибка загрузки файла");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleReset = () => {
-    setData(null);
-    setError(null);
-  };
-
+  const isExcel = source === "excel";
   const debtorSection = data?.sections?.debtor;
   const creditorSection = data?.sections?.creditor;
   const activeSection = activeTab === "debtor" ? debtorSection : creditorSection;
@@ -90,27 +129,62 @@ export default function FinDebtorCreditorPage() {
           </p>
         </div>
 
-        <FilterCard
-          mode={mode}
-          setMode={setMode}
-          dateInput={dateInput}
-          setDateInput={setDateInput}
-          selectedYear={selectedYear}
-          setSelectedYear={setSelectedYear}
-          selectedMonth={selectedMonth}
-          setSelectedMonth={setSelectedMonth}
-          loading={loading}
-          hasData={!!data}
-          error={error}
-          onApply={handleApply}
-          onReset={handleReset}
-        />
+        {/* Source Switcher — SAP tab commented out for now, only Excel snapshot shown
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg w-fit">
+          {[
+            { key: "sap", label: "Живые данные (SAP)" },
+            { key: "excel", label: "Excel-снимок 01.07.2026" },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setSource(key)}
+              className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                source === key
+                  ? "bg-white dark:bg-gray-800 text-slate-900 dark:text-slate-100 shadow-sm"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        */}
+        {isExcel && (
+          <p className="text-sm text-gray-600 dark:text-gray-400 italic">
+            Справка о дебиторской и кредиторской задолженности предприятий, входящих в состав АО «ИЭС», по состоянию на 1 июля 2026 года
+          </p>
+        )}
+
+        {/* FilterCard (SAP mode/date picker) — commented out for now
+        {!isExcel && (
+          <FilterCard
+            mode={mode}
+            setMode={setMode}
+            dateInput={dateInput}
+            setDateInput={setDateInput}
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
+            loading={sapLoading}
+            hasData={!!sapData}
+            error={sapError}
+            onApply={handleApply}
+            onReset={handleReset}
+          />
+        )}
+        */}
 
         {loading && (
           <Loader
             label="Загрузка данных..."
             hint="Получаем информацию по дебиторской и кредиторской задолженности"
           />
+        )}
+
+        {error && !loading && (
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         )}
 
         {data && (
@@ -162,6 +236,7 @@ export default function FinDebtorCreditorPage() {
                 <CompanyMatrixTable
                   activeSection={activeSection}
                   activeTab={activeTab}
+                  preserveOrder={isExcel}
                 />
               </div>
             )}

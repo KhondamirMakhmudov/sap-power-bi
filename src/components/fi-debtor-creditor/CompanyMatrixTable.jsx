@@ -11,11 +11,11 @@ import {
   groupItemsByCompany,
 } from "./utils";
 
-export default function CompanyMatrixTable({ activeSection, activeTab }) {
+export default function CompanyMatrixTable({ activeSection, activeTab, preserveOrder = false }) {
   const title =
     activeTab === "debtor" ? "Детализация дебиторов" : "Детализация кредиторов";
 
-  const rows = groupItemsByCompany(activeSection.items);
+  const rows = groupItemsByCompany(activeSection.items, { preserveOrder });
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
