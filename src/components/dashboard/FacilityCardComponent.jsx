@@ -86,15 +86,19 @@ export default function FacilityCardComponent({
           <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-snug line-clamp-2">
             {name}
           </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{status}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            {status}
+          </p>
         </div>
         <div className={`w-3 h-3 rounded-full shrink-0 mt-1 ${dotClass}`} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 py-4 border-y border-gray-200 dark:border-gray-700 flex-1">
+      <div className="grid grid-cols-3 gap-4 py-4 border-y border-gray-200 dark:border-gray-700 flex-1">
         {METRIC_TILES.map((tile) => (
           <div key={tile.key}>
-            <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">{tile.label}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+              {tile.label}
+            </p>
             <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1">
               {formatQty(metrics?.[tile.key], tile.unit)}
             </p>
