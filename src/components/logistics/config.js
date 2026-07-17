@@ -27,24 +27,19 @@ export const ENTITIES = {
     ],
     filter: { type: "text", field: "PurchaseRequisition", placeholder: "Номер ЗМЗ" },
   },
-  // po/gr now point at a different underlying entity (PurchaseOrder /
-  // InboundDelivery, per the SAP testing guide) than what these columns were
-  // written against — the service is 403 (auth) on every host tested so far,
-  // so field names below are unverified guesses. Re-check against real data
-  // once SAP Basis grants the DASHBOARD user access to these service groups.
   po: {
     label: "Заказы",
     labelFull: "Заказы на закупку (PO)",
     columns: [
       { key: "PurchaseOrder", label: "№ ЗнЗ" },
       { key: "PurchaseOrderItem", label: "Позиция" },
-      { key: "PositionType", label: "Тип позиции" },
+      { key: "PurchaseDocType", label: "Тип документа" },
       { key: "OrderVolume", label: "Объём" },
       { key: "OrderVolumeUnit", label: "Ед." },
-      { key: "AmountWihtoutTax", label: "Сумма (без НДС)" },
+      { key: "TotalAmount", label: "Сумма" },
       { key: "DocumentCurrency", label: "Валюта" },
     ],
-    filter: { type: "text", field: "PositionType", placeholder: "Тип позиции (напр. NORM)" },
+    filter: { type: "text", field: "PurchaseDocType", placeholder: "Тип документа (напр. ZSRO)" },
   },
   gr: {
     label: "Поступления",
@@ -52,10 +47,10 @@ export const ENTITIES = {
     columns: [
       { key: "OrderNumber", label: "№ Документа" },
       { key: "PurchaseOrder", label: "№ ЗнЗ" },
-      { key: "PurchaseOrderItem", label: "Позиция" },
-      { key: "DeliveryDocumentBySupplier", label: "Накладная" },
+      { key: "PurchaseOrderNumber", label: "Поз. ЗнЗ" },
+      { key: "DeliveryDocument", label: "Накладная" },
       { key: "ActualQuantity", label: "Факт. кол-во" },
-      { key: "PurchaseOrderQuantityUnit", label: "Ед." },
+      { key: "OrderQuantityUnit", label: "Ед." },
       { key: "PostingDate", label: "Дата проводки" },
       { key: "PurchasingHistoryDocumentType", label: "Тип" },
     ],

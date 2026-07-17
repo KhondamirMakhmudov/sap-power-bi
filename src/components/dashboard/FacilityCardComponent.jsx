@@ -13,47 +13,26 @@ function formatQty(value, unit = "сум") {
 }
 
 const METRIC_TILES = [
-  {
-    key: "revenue",
-    planKey: "revenuePlan",
-    label: "Выручка",
-    unit: "сум",
-    description: "Доход от основной деятельности.",
-  },
-  {
-    key: "ebit",
-    planKey: "ebitPlan",
-    label: "EBIT",
-    unit: "сум",
-    description: "Прибыль до процентов и налогов.",
-  },
-  {
-    key: "ebitda",
-    planKey: "ebitdaPlan",
-    label: "EBITDA",
-    unit: "сум",
-    description: "Прибыль до процентов, налогов и амортизации.",
-  },
+  { key: "revenue", planKey: "revenuePlan", label: "Выручка", unit: "сум" },
+  { key: "ebit", planKey: "ebitPlan", label: "EBIT", unit: "сум" },
+  { key: "ebitda", planKey: "ebitdaPlan", label: "EBITDA", unit: "сум" },
   {
     key: "netProfit",
     planKey: "netProfitPlan",
     label: "Чистая прибыль",
     unit: "сум",
-    description: "Финансовый результат после всех расходов.",
   },
   {
     key: "electricOutput",
     planKey: "electricOutputPlan",
     label: "Реализация электроэнергии",
     unit: "кВтч",
-    description: "Количество реализованной электроэнергии.",
   },
   {
     key: "heatOutput",
     planKey: "heatOutputPlan",
     label: "Реализация теплоэнергии",
     unit: "Гкал",
-    description: "Количество реализованной теплоэнергии.",
   },
 ];
 
@@ -104,9 +83,6 @@ export default function FacilityCardComponent({
             </p>
             <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
               План: {formatQty(metrics?.[tile.planKey], tile.unit)}
-            </p>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1.5">
-              {tile.description}
             </p>
           </div>
         ))}

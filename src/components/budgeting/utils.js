@@ -45,8 +45,8 @@ export const BUSPLAN_LABELS = {
 export const BUSPLAN_KEYS = ["REVENUE", "PROD_COSTS", "PERIOD_COSTS", "FIN_COSTS", "NET_PROFIT"];
 
 // post_fi2 exposes each metric as three fields: the bare name is fact,
-// `P_<name>` is plan, `PF_<name>` is the plan-vs-fact deviation % (redundant
-// with plan/fact, which is all BusPlanTable needs to derive Отклонение/Исполнение itself).
+// `P_<name>` is plan, `PF_<name>` is execution % (Исполнение) as reported by
+// the backend — used as-is instead of being recomputed from plan/fact.
 export const BUSPLAN_FIELD_MAP = {
   REVENUE: "ViruchkaSNDS",
   PROD_COSTS: "ZatratiNaProizvodstvo",
@@ -62,12 +62,14 @@ export function buildBusplanRows(d) {
     const field = BUSPLAN_FIELD_MAP[key];
     const fact = d[field];
     const plan = d[`P_${field}`];
+    const pf = d[`PF_${field}`];
     if (fact == null && plan == null) return null;
     return {
       key,
       name: BUSPLAN_LABELS[key],
       plan: Number(plan) || 0,
       fact: Number(fact) || 0,
+      pf: pf == null ? null : Number(pf),
     };
   }).filter(Boolean);
 }

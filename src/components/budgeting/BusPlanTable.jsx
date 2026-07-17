@@ -1,12 +1,23 @@
 "use client";
 
-import { fmtSum, fmtPercent, executionPct, changeClass } from "./utils";
+import { executionPct, changeClass } from "./utils";
 
 function executionClass(pct) {
   if (pct === null) return "text-gray-400 dark:text-gray-500";
   if (pct >= 95 && pct <= 105) return "text-green-600 dark:text-green-400";
   if (pct >= 85 && pct <= 115) return "text-orange-600 dark:text-orange-400";
   return "text-red-600 dark:text-red-400";
+}
+
+function fmt3(value) {
+  if (value === null || value === undefined || isNaN(Number(value))) return "—";
+  const n = Number(value);
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(3)} трлн сум`;
+  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(3)} млрд сум`;
+  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(3)} млн сум`;
+  return `${sign}${abs.toFixed(3)} сум`;
 }
 
 export default function BusPlanTable({ rows }) {
@@ -40,21 +51,21 @@ export default function BusPlanTable({ rows }) {
           </thead>
           <tbody>
             {rows.map((row) => {
-              const pct = executionPct(row.plan, row.fact);
+              const pct = row.pf ?? executionPct(row.plan, row.fact);
               const diff = row.fact - row.plan;
               return (
                 <tr key={row.key} className="border-b border-gray-100 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-900/40">
                   <td className="py-3.5 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">{row.name}</td>
-                  <td className="py-3.5 px-4 text-sm text-right text-gray-600 dark:text-gray-400">{fmtSum(row.plan)}</td>
+                  <td className="py-3.5 px-4 text-sm text-right text-gray-600 dark:text-gray-400">{fmt3(row.plan)}</td>
                   <td className="py-3.5 px-4 text-sm text-right font-semibold text-gray-900 dark:text-gray-100">
-                    {fmtSum(row.fact)}
+                    {fmt3(row.fact)}
                   </td>
                   <td className={`py-3.5 px-4 text-sm text-right font-medium ${changeClass(diff)}`}>
                     {diff >= 0 ? "+" : ""}
-                    {fmtSum(diff)}
+                    {fmt3(diff)}
                   </td>
                   <td className={`py-3.5 px-4 text-sm text-right font-semibold ${executionClass(pct)}`}>
-                    {fmtPercent(pct)}
+                    {pct === null || pct === undefined ? "—" : `${pct}%`}
                   </td>
                 </tr>
               );

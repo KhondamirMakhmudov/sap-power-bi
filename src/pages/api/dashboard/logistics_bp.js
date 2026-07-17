@@ -4,14 +4,17 @@ const SAP_HOST = "10.20.6.146";
 const SAP_PORT = 44300;
 const AUTH = Buffer.from("DASHBOARD:Integration2026").toString("base64");
 
+// Paths per "Custom SAP OData V4 APIs" testing guide — all 5 verified live
+// (200, real data) against 10.20.6.146 client 700 once DASHBOARD's role got
+// authorization for these service groups.
 const ENTITY_PATHS = {
   pr: "/sap/opu/odata4/sap/zsc_api_purreqitem_o4/srvd_a2x/sap/zsc_purreqitem_api/0001/PurReqItemAPI",
   contract:
     "/sap/opu/odata4/sap/zsc_purch_cotract_o4/srvd_a2x/sap/zsc_purch_cotract_api/0001/PurchaseContractAPI",
-  po: "/sap/opu/odata4/sap/zsc_api_purrorder_o4/srvd_a2x/sap/zsc_purch_order_api/0001/PurchaseOrderAPI",
-  gr: "/sap/opu/odata4/sap/zsc_po_history_o4/srvd_a2x/sap/zsc_po_history_api/0001/PurchaseOrderHistoryAPI",
+  po: "/sap/opu/odata4/sap/zsc_purch_order_o4/srvd_a2x/sap/zsc_purch_order_api/0001/PurchaseOrder",
+  gr: "/sap/opu/odata4/sap/zsc_inbound_del_o4/srvd_a2x/sap/zsc_inbound_del_api/0001/InboundDelivery",
   invoice:
-    "/sap/opu/odata4/sap/zsc_invoice_o4/srvd_a2x/sap/zsc_invoice_api/0001/InvoiceDocument",
+    "/sap/opu/odata4/sap/zsc_invoice_o4/srvd_a2x/sap/zsc_invoice_api/0001/Invoice",
 };
 
 export default async function handler(req, res) {
