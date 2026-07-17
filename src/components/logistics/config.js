@@ -25,7 +25,11 @@ export const ENTITIES = {
       { key: "PurchaseRequisition", label: "№ ЗМЗ" },
       { key: "PurchaseRequisitionItem", label: "Поз. ЗМЗ" },
     ],
-    filter: { type: "text", field: "PurchaseRequisition", placeholder: "Номер ЗМЗ" },
+    filter: {
+      type: "text",
+      field: "PurchaseRequisition",
+      placeholder: "Номер ЗМЗ",
+    },
   },
   po: {
     label: "Заказы",
@@ -39,7 +43,11 @@ export const ENTITIES = {
       { key: "TotalAmount", label: "Сумма" },
       { key: "DocumentCurrency", label: "Валюта" },
     ],
-    filter: { type: "text", field: "PurchaseDocType", placeholder: "Тип документа (напр. ZSRO)" },
+    filter: {
+      type: "text",
+      field: "PurchaseDocType",
+      placeholder: "Тип документа (напр. ZSRO)",
+    },
   },
   gr: {
     label: "Поступления",
@@ -79,7 +87,7 @@ export const TOP_OPTIONS = [
   { value: "20", label: "20 записей" },
   { value: "50", label: "50 записей" },
   { value: "100", label: "100 записей" },
-  { value: "200", label: "200 записей" },
+  { value: "2000", label: "2000 записей" },
 ];
 
 export function buildODataFilter(entityKey, filter) {
