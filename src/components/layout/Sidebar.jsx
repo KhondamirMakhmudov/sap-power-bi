@@ -75,12 +75,12 @@ const sidebarItems = [
     href: "/fi-debtor-creditor",
     icon: <Landmark className="w-5 h-5" />,
   },
-  {
-    label: "Бюджетирование",
-    description: "БДР, БДДС, Баланс",
-    href: "/budgeting",
-    icon: <Wallet className="w-5 h-5" />,
-  },
+  // {
+  //   label: "Бюджетирование",
+  //   description: "БДР, БДДС, Баланс",
+  //   href: "/budgeting",
+  //   icon: <Wallet className="w-5 h-5" />,
+  // },
   {
     label: "Логистика",
     description: "Задолженность логистики",

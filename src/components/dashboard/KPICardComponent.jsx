@@ -1,3 +1,10 @@
+// Caps decimals at 3 (73.76845 -> 73.768) without padding shorter numbers with zeros.
+function roundTo3(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return value;
+  return String(Math.round(n * 1000) / 1000);
+}
+
 export default function KPICard({
   label,
   value,
@@ -7,7 +14,7 @@ export default function KPICard({
   borderColor = "border-l-4 border-gray-200 dark:border-gray-700",
   displayUnit = "сум",
   unit,
-  decimals = 2,
+  decimals = 3,
   description,
 }) {
   const resolvedUnit = displayUnit || unit || "сум";
@@ -79,7 +86,7 @@ export default function KPICard({
               isNegativeChange ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}
           >
-            {change}% к плану
+            {roundTo3(change)}% к плану
           </p>
         </>
       )}

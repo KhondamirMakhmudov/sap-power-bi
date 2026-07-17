@@ -6,9 +6,9 @@ function formatQty(value, unit = "сум") {
   if (Number.isNaN(n)) return "-";
   const abs = Math.abs(n);
   const sign = n < 0 ? "-" : "";
-  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(2)} трлн ${unit}`;
-  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(2)} млрд ${unit}`;
-  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(1)} млн ${unit}`;
+  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(3)} трлн ${unit}`;
+  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(3)} млрд ${unit}`;
+  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(3)} млн ${unit}`;
   return `${sign}${new Intl.NumberFormat("ru").format(abs)} ${unit}`;
 }
 

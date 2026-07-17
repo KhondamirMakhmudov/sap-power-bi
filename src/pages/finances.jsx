@@ -40,7 +40,9 @@ const ORG_OPTIONS = [
   // { value: "1150", label: "1150 — ООО «Ташкентская тепловая» (Ташкент)" },
 ];
 
-const ALL_ORG_CODES = ORG_OPTIONS.filter((o) => o.value !== "").map((o) => o.value);
+const ALL_ORG_CODES = ORG_OPTIONS.filter((o) => o.value !== "").map(
+  (o) => o.value,
+);
 
 // `selected` is an array of ORG_OPTIONS values (may include the "TES_BRANCHES"
 // group shortcut alongside individual codes) — expand + dedupe into plain codes.
@@ -144,14 +146,12 @@ function formatSum(value) {
   if (value === null || value === undefined) return "—";
   const abs = Math.abs(value);
   const sign = value < 0 ? "-" : "";
-  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(2)} трлн сум`;
-  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(0)} млрд сум`;
-  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(0)} млн сум`;
+  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(3)} трлн сум`;
+  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(3)} млрд сум`;
+  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(3)} млн сум`;
   return `${sign}${new Intl.NumberFormat("ru").format(abs)}`;
 }
 
-// TODO: EBIT/EBIT plan will come from post_fi2 once that endpoint adds these
-// fields — placeholder keys below, update once the real field names are known.
 function buildKpiCards(d) {
   if (!d) return null;
 
@@ -168,11 +168,9 @@ function buildKpiCards(d) {
   const statusByText = (text) => (text === "в норме" ? "positive" : "warning");
 
   const virStatus = statusColor(d.PF_Viruchka);
-  const ebitTone = executionTone(d.EBIT, d.P_EBIT);
+  const ebitStatus = statusColor(d.PF_EBIT);
   const ebitdaStatus = statusColor(d.PF_EBITDA);
-  const netProfit = d.ChistiyPribil ?? d.NetProfit;
-  const netProfitPlan = d.P_ChistiyPribil ?? d.Plan_NetProfit;
-  const netProfitTone = executionTone(netProfit, netProfitPlan);
+  const netProfitStatus = statusColor(d.PF_ChistayaPribil);
   const wcStatus = statusByText(d.Status_WorkingCapital);
   const fcfStatus = statusByText(d.Status_FCF);
 
@@ -190,9 +188,9 @@ function buildKpiCards(d) {
       label: "EBIT",
       value: formatSum(d.EBIT),
       target: `План: ${formatSum(d.P_EBIT)}`,
-      status: executionLabel(d.EBIT, d.P_EBIT),
-      statusColor: TONE_TEXT_CLASS[ebitTone],
-      borderColor: TONE_BORDER_CLASS[ebitTone],
+      status: pf(d.PF_EBIT) ?? "—",
+      statusColor: TONE_TEXT_CLASS[toneFromStatus(ebitStatus)],
+      borderColor: TONE_BORDER_CLASS[toneFromStatus(ebitStatus)],
       description: "Прибыль до процентов и налогов.",
     },
     {
@@ -206,11 +204,11 @@ function buildKpiCards(d) {
     },
     {
       label: "Чистая прибыль",
-      value: formatSum(netProfit),
-      target: `План: ${formatSum(netProfitPlan)}`,
-      status: executionLabel(netProfit, netProfitPlan),
-      statusColor: TONE_TEXT_CLASS[netProfitTone],
-      borderColor: TONE_BORDER_CLASS[netProfitTone],
+      value: formatSum(d.ChistayaPribil),
+      target: `План: ${formatSum(d.P_ChistayaPribil)}`,
+      status: pf(d.PF_ChistayaPribil) ?? "—",
+      statusColor: TONE_TEXT_CLASS[toneFromStatus(netProfitStatus)],
+      borderColor: TONE_BORDER_CLASS[toneFromStatus(netProfitStatus)],
       description: "Финансовый результат после всех расходов.",
     },
     {
@@ -337,34 +335,27 @@ function statusToBorder(text, toneMap) {
   return "border-l-4 border-l-red-500";
 }
 
-function executionTone(fact, plan) {
-  if (!plan) return "gray";
-  const pct = (Number(fact) / Number(plan)) * 100;
-  if (!Number.isFinite(pct)) return "gray";
-  if (pct >= 95 && pct <= 105) return "green";
-  if (pct >= 85 && pct <= 115) return "orange";
-  return "red";
-}
-
-function executionLabel(fact, plan) {
-  if (!plan) return "—";
-  const pct = (Number(fact) / Number(plan)) * 100;
-  if (!Number.isFinite(pct)) return "—";
-  return `Исполнение: ${pct.toFixed(1)}%`;
-}
-
-// TODO: EBIT margin / cost-per-energy-type / ROI / ROA will come from post_fi2
-// once that endpoint adds these fields — placeholder keys below, update once
-// the real field names are known. Until then these render "—".
 function buildRatioCards(d) {
   const ndStatus = d?.Status_NetDebtEbitda ?? null;
   const dscrStatus = d?.Status_DSCR ?? null;
+  const ebitMarginStatus = d?.Status_RentabelnostEBIT ?? null;
+  const roiStatus = d?.PF_ROI ?? null;
+  const roaStatus = d?.PF_ROA ?? null;
 
-  const ebitMargin = { fact: d?.EBIT_Margin, plan: d?.P_EBIT_Margin };
-  const costElectro = { fact: d?.CostElectro, plan: d?.P_CostElectro };
-  const costHeat = { fact: d?.CostHeat, plan: d?.P_CostHeat };
-  const roi = { fact: d?.ROI, plan: d?.P_ROI };
-  const roa = { fact: d?.ROA, plan: d?.P_ROA };
+  const pf = (v) => {
+    if (v === null || v === undefined) return null;
+    return `${v >= 0 ? "+" : ""}${Number(v).toFixed(1)}% к плану`;
+  };
+  // Cost metrics: actual below plan (negative deviation) is GOOD → green;
+  // above plan (positive deviation) is BAD → red — reversed vs revenue metrics
+  // (per backend dev: "Минус - зелёный. Плюс - красный").
+  const costTone = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return "gray";
+    return n <= 0 ? "green" : "red";
+  };
+  const costElectroTone = costTone(d?.PF_SebestoimostElektr);
+  const costHeatTone = costTone(d?.PF_SebestoimostTeplo);
 
   const collectionRate = d?.CollectionRate;
   const collectionTone =
@@ -373,7 +364,7 @@ function buildRatioCards(d) {
   return [
     {
       label: "Кредитный рейтинг",
-      value: "BB-",
+      value: "BB",
       target: "Цели: суверенный уровень РУ",
       status: "в норме",
       statusColor: "text-green-600 dark:text-green-400",
@@ -400,13 +391,11 @@ function buildRatioCards(d) {
     },
     {
       label: "Рентабельность EBIT",
-      value: formatRatio(ebitMargin?.fact, "%", 1),
-      target: `План: ${formatRatio(ebitMargin?.plan, "%", 1)}`,
-      status: executionLabel(ebitMargin?.fact, ebitMargin?.plan),
-      statusColor:
-        TONE_TEXT_CLASS[executionTone(ebitMargin?.fact, ebitMargin?.plan)],
-      borderColor:
-        TONE_BORDER_CLASS[executionTone(ebitMargin?.fact, ebitMargin?.plan)],
+      value: formatRatio(d?.RentabelnostEBIT, "%", 1),
+      target: `План: ${formatRatio(d?.Plan_RentabelnostEBIT, "%", 1)}`,
+      status: ebitMarginStatus ?? "—",
+      statusColor: statusToColor(ebitMarginStatus),
+      borderColor: statusToBorder(ebitMarginStatus),
       description: "Доля EBIT в выручке.",
     },
     {
@@ -437,42 +426,38 @@ function buildRatioCards(d) {
     },
     {
       label: "Себестоимость электроэнергии",
-      value: formatSum(costElectro?.fact),
-      target: `План: ${formatSum(costElectro?.plan)}`,
-      status: executionLabel(costElectro?.fact, costElectro?.plan),
-      statusColor:
-        TONE_TEXT_CLASS[executionTone(costElectro?.fact, costElectro?.plan)],
-      borderColor:
-        TONE_BORDER_CLASS[executionTone(costElectro?.fact, costElectro?.plan)],
+      value: formatSum(d?.SebestoimostElektr),
+      target: `План: ${formatSum(d?.P_SebestoimostElektr)}`,
+      status: pf(d?.PF_SebestoimostElektr) ?? "—",
+      statusColor: TONE_TEXT_CLASS[costElectroTone],
+      borderColor: TONE_BORDER_CLASS[costElectroTone],
       description: "Затраты на производство электроэнергии.",
     },
     {
       label: "Себестоимость теплоэнергии",
-      value: formatSum(costHeat?.fact),
-      target: `План: ${formatSum(costHeat?.plan)}`,
-      status: executionLabel(costHeat?.fact, costHeat?.plan),
-      statusColor:
-        TONE_TEXT_CLASS[executionTone(costHeat?.fact, costHeat?.plan)],
-      borderColor:
-        TONE_BORDER_CLASS[executionTone(costHeat?.fact, costHeat?.plan)],
+      value: formatSum(d?.SebestoimostTeplo),
+      target: `План: ${formatSum(d?.P_SebestoimostTeplo)}`,
+      status: pf(d?.PF_SebestoimostTeplo) ?? "—",
+      statusColor: TONE_TEXT_CLASS[costHeatTone],
+      borderColor: TONE_BORDER_CLASS[costHeatTone],
       description: "Затраты на производство теплоэнергии.",
     },
     {
       label: "ROI",
-      value: formatRatio(roi?.fact, "%", 1),
-      target: `План: ${formatRatio(roi?.plan, "%", 1)}`,
-      status: executionLabel(roi?.fact, roi?.plan),
-      statusColor: TONE_TEXT_CLASS[executionTone(roi?.fact, roi?.plan)],
-      borderColor: TONE_BORDER_CLASS[executionTone(roi?.fact, roi?.plan)],
+      value: formatRatio(d?.ROI, "%", 1),
+      target: `План: ${formatRatio(d?.P_ROI, "%", 1)}`,
+      status: roiStatus ?? "—",
+      statusColor: statusToColor(roiStatus),
+      borderColor: statusToBorder(roiStatus),
       description: "Доходность инвестиций.",
     },
     {
       label: "ROA",
-      value: formatRatio(roa?.fact, "%", 1),
-      target: `План: ${formatRatio(roa?.plan, "%", 1)}`,
-      status: executionLabel(roa?.fact, roa?.plan),
-      statusColor: TONE_TEXT_CLASS[executionTone(roa?.fact, roa?.plan)],
-      borderColor: TONE_BORDER_CLASS[executionTone(roa?.fact, roa?.plan)],
+      value: formatRatio(d?.ROA, "%", 1),
+      target: `План: ${formatRatio(d?.P_ROA, "%", 1)}`,
+      status: roaStatus ?? "—",
+      statusColor: statusToColor(roaStatus),
+      borderColor: statusToBorder(roaStatus),
       description: "Эффективность использования активов.",
     },
   ];
@@ -887,6 +872,14 @@ export default function FinancesPage() {
             </table>
           </div>
         </div> */}
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                Бюджетирование
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                БДР, БДДС, Баланс
+              </p>
+            </div>
 
             {/* Cost / Revenue Breakdown */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

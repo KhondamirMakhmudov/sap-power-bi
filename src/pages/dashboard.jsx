@@ -118,11 +118,12 @@ const MONTH_SHORT = [
 ];
 
 const TREND_METRIC_OPTIONS = [
-  { value: "EBITDA", label: "EBITDA" },
-  { value: "urug", label: "УРУТ" },
   { value: "Viruchka", label: "Выручка" },
+  { value: "EBIT", label: "EBIT" },
+  { value: "EBITDA", label: "EBITDA" },
   { value: "ChistiyPribil", label: "Чистая прибыль" },
-  { value: "VirabotkaTE", label: "Средняя доступная мощность" },
+  { value: "VirabotkaEE", label: "Реализация электроэнергии" },
+  { value: "VirabotkaTE", label: "Реализация теплоэнергии" },
 ];
 
 const TREND_LINE_COLORS = [
@@ -157,9 +158,9 @@ function formatCompactNumber(value) {
   if (!Number.isFinite(n)) return "-";
   const abs = Math.abs(n);
   const sign = n < 0 ? "-" : "";
-  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(2)} трлн`;
-  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(2)} млрд`;
-  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(1)} млн`;
+  if (abs >= 1e12) return `${sign}${(abs / 1e12).toFixed(3)} трлн`;
+  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(3)} млрд`;
+  if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(3)} млн`;
   return `${sign}${new Intl.NumberFormat("ru").format(abs)}`;
 }
 
