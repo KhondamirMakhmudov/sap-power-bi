@@ -679,7 +679,7 @@ export default function DashboardPage({ username }) {
               <div className="flex flex-col lg:flex-row gap-6">
                 <div
                   className="flex-1 min-w-0"
-                  style={{ height: Math.max(240, pfChartData.length * 36) }}
+                  style={{ height: Math.max(240, pfChartData.length * 44) }}
                 >
                   {pfChartData.length === 0 ? (
                     <div className="h-full flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
@@ -690,22 +690,29 @@ export default function DashboardPage({ username }) {
                       <BarChart
                         data={pfChartData}
                         layout="vertical"
-                        margin={{ top: 8, right: 24, left: 8, bottom: 0 }}
+                        margin={{ top: 8, right: 32, left: 8, bottom: 0 }}
+                        barCategoryGap={10}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
                         <XAxis
                           type="number"
+                          domain={["auto", "auto"]}
                           tick={{ fontSize: 12, fill: "#94a3b8" }}
                           tickFormatter={(v) => `${v}%`}
                         />
                         <YAxis
                           type="category"
                           dataKey="name"
-                          tick={{ fontSize: 12, fill: "#94a3b8" }}
-                          width={180}
+                          tick={{ fontSize: 11, fill: "#64748b" }}
+                          tickFormatter={(v) => (v.length > 30 ? `${v.slice(0, 29)}…` : v)}
+                          width={230}
+                          interval={0}
                         />
-                        <Tooltip formatter={(v) => [`${Number(v).toFixed(1)}%`, "к плану"]} />
-                        <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive={false}>
+                        <Tooltip
+                          formatter={(v) => [`${Number(v).toFixed(1)}%`, "к плану"]}
+                          labelStyle={{ fontWeight: 600 }}
+                        />
+                        <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive={false} barSize={18}>
                           {pfChartData.map((entry, i) => (
                             <Cell key={i} fill={entry.value < 0 ? "#dc2626" : "#16a34a"} />
                           ))}

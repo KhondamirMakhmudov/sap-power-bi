@@ -2,13 +2,6 @@
 
 import { executionPct, changeClass } from "./utils";
 
-function executionClass(pct) {
-  if (pct === null) return "text-gray-400 dark:text-gray-500";
-  if (pct >= 95 && pct <= 105) return "text-green-600 dark:text-green-400";
-  if (pct >= 85 && pct <= 115) return "text-orange-600 dark:text-orange-400";
-  return "text-red-600 dark:text-red-400";
-}
-
 function fmt3(value) {
   if (value === null || value === undefined || isNaN(Number(value))) return "—";
   const n = Number(value);
@@ -64,7 +57,7 @@ export default function BusPlanTable({ rows }) {
                     {diff >= 0 ? "+" : ""}
                     {fmt3(diff)}
                   </td>
-                  <td className={`py-3.5 px-4 text-sm text-right font-semibold ${executionClass(pct)}`}>
+                  <td className={`py-3.5 px-4 text-sm text-right font-semibold ${changeClass(pct)}`}>
                     {pct === null || pct === undefined ? "—" : `${pct}%`}
                   </td>
                 </tr>
