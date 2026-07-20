@@ -15,6 +15,9 @@ import { get } from "lodash";
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -226,6 +229,7 @@ export default function DashboardPage({ username }) {
   const [trendRaw, setTrendRaw] = useState(null);
   const [trendLoading, setTrendLoading] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState(TREND_METRIC_OPTIONS[0].value);
+  const [selectedPFMetric, setSelectedPFMetric] = useState(TREND_METRIC_OPTIONS[0].value);
   const [hiddenSeries, setHiddenSeries] = useState(() => new Set());
 
   function toggleSeries(name) {
@@ -349,14 +353,11 @@ export default function DashboardPage({ username }) {
     setTrendRaw(null);
   };
 
-  const apiFacilities =
-    get(dashboardApiResponse, "data") ??
-    get(dashboardApiResponse, "Data") ??
-    [];
-  const facilityList =
-    Array.isArray(apiFacilities) && apiFacilities.length > 0
-      ? apiFacilities
-      : [];
+  const facilityList = useMemo(() => {
+    const apiFacilities =
+      get(dashboardApiResponse, "data") ?? get(dashboardApiResponse, "Data") ?? [];
+    return Array.isArray(apiFacilities) ? apiFacilities : [];
+  }, [dashboardApiResponse]);
   const showPlanAndChangeInKpi = filters.scenario === "Факт / план";
 
   const trendOrgNames = useMemo(() => {
@@ -380,6 +381,17 @@ export default function DashboardPage({ username }) {
     });
     return result;
   }, [trendRaw]);
+
+  // PF_* (percent deviation from plan) per organization, for the selected
+  // metric — comes straight from facilityList, no extra fetch needed.
+  const pfChartData = useMemo(() => {
+    return facilityList
+      .map((f) => ({
+        name: get(f, "BE", "—"),
+        value: Number(get(f, `PF_${selectedPFMetric}`, 0)) || 0,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [facilityList, selectedPFMetric]);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -631,20 +643,100 @@ export default function DashboardPage({ username }) {
                     metrics={{
                       revenue: get(facility, "Viruchka"),
                       revenuePlan: get(facility, "P_Viruchka"),
+                      revenuePF: get(facility, "PF_Viruchka"),
                       ebit: get(facility, "EBIT"),
                       ebitPlan: get(facility, "P_EBIT"),
+                      ebitPF: get(facility, "PF_EBIT"),
                       ebitda: get(facility, "EBITDA"),
                       ebitdaPlan: get(facility, "P_EBITDA"),
+                      ebitdaPF: get(facility, "PF_EBITDA"),
                       netProfit: get(facility, "ChistiyPribil"),
                       netProfitPlan: get(facility, "P_ChistiyPribil"),
+                      netProfitPF: get(facility, "PF_ChistiyPribil"),
                       electricOutput: get(facility, "VirabotkaEE"),
                       electricOutputPlan: get(facility, "P_VirabotkaEE"),
+                      electricOutputPF: get(facility, "PF_VirabotkaEE"),
                       heatOutput: get(facility, "VirabotkaTE"),
                       heatOutputPlan: get(facility, "P_VirabotkaTE"),
+                      heatOutputPF: get(facility, "PF_VirabotkaTE"),
                     }}
                     risk={get(facility, "risk", "")}
                   />
                 ))}
+              </div>
+            </div>
+
+            {/* PF (исполнение плана) by organization */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
+                Исполнение плана (PF) по организациям
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                Отклонение факта от плана, % — за период {formatRuDate(filters.dateFrom)} –{" "}
+                {formatRuDate(filters.dateTo)}
+              </p>
+
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div
+                  className="flex-1 min-w-0"
+                  style={{ height: Math.max(240, pfChartData.length * 36) }}
+                >
+                  {pfChartData.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+                      Нет данных за выбранный период
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={pfChartData}
+                        layout="vertical"
+                        margin={{ top: 8, right: 24, left: 8, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis
+                          type="number"
+                          tick={{ fontSize: 12, fill: "#94a3b8" }}
+                          tickFormatter={(v) => `${v}%`}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          tick={{ fontSize: 12, fill: "#94a3b8" }}
+                          width={180}
+                        />
+                        <Tooltip formatter={(v) => [`${Number(v).toFixed(1)}%`, "к плану"]} />
+                        <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive={false}>
+                          {pfChartData.map((entry, i) => (
+                            <Cell key={i} fill={entry.value < 0 ? "#dc2626" : "#16a34a"} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+
+                <div className="lg:w-64 shrink-0">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                    Показатель
+                  </p>
+                  <div className="space-y-2">
+                    {TREND_METRIC_OPTIONS.map((opt) => (
+                      <label
+                        key={opt.value}
+                        className="flex items-center gap-2.5 text-sm text-gray-900 dark:text-gray-100 cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="pf-metric"
+                          checked={selectedPFMetric === opt.value}
+                          onChange={() => setSelectedPFMetric(opt.value)}
+                          className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
+                        />
+                        {opt.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 

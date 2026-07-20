@@ -12,25 +12,36 @@ function formatQty(value, unit = "сум") {
   return `${sign}${new Intl.NumberFormat("ru").format(abs)} ${unit}`;
 }
 
+// Percent-deviation-from-plan (SAP's "PF_" fields) rounded to 1 decimal, or
+// null when there's nothing to show (missing/non-numeric).
+function formatPF(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  return Number.isNaN(n) ? null : n;
+}
+
 const METRIC_TILES = [
-  { key: "revenue", planKey: "revenuePlan", label: "Выручка", unit: "сум" },
-  { key: "ebit", planKey: "ebitPlan", label: "EBIT", unit: "сум" },
-  { key: "ebitda", planKey: "ebitdaPlan", label: "EBITDA", unit: "сум" },
+  { key: "revenue", planKey: "revenuePlan", pfKey: "revenuePF", label: "Выручка", unit: "сум" },
+  { key: "ebit", planKey: "ebitPlan", pfKey: "ebitPF", label: "EBIT", unit: "сум" },
+  { key: "ebitda", planKey: "ebitdaPlan", pfKey: "ebitdaPF", label: "EBITDA", unit: "сум" },
   {
     key: "netProfit",
     planKey: "netProfitPlan",
+    pfKey: "netProfitPF",
     label: "Чистая прибыль",
     unit: "сум",
   },
   {
     key: "electricOutput",
     planKey: "electricOutputPlan",
+    pfKey: "electricOutputPF",
     label: "Реализация электроэнергии",
     unit: "кВтч",
   },
   {
     key: "heatOutput",
     planKey: "heatOutputPlan",
+    pfKey: "heatOutputPF",
     label: "Реализация теплоэнергии",
     unit: "Гкал",
   },
@@ -73,19 +84,34 @@ export default function FacilityCardComponent({
       </div>
 
       <div className="grid grid-cols-3 gap-4 py-4 border-y border-gray-200 dark:border-gray-700 flex-1">
-        {METRIC_TILES.map((tile) => (
-          <div key={tile.key}>
-            <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-              {tile.label}
-            </p>
-            <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1">
-              {formatQty(metrics?.[tile.key], tile.unit)}
-            </p>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
-              План: {formatQty(metrics?.[tile.planKey], tile.unit)}
-            </p>
-          </div>
-        ))}
+        {METRIC_TILES.map((tile) => {
+          const pf = formatPF(metrics?.[tile.pfKey]);
+          return (
+            <div key={tile.key}>
+              <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                {tile.label}
+              </p>
+              <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1">
+                {formatQty(metrics?.[tile.key], tile.unit)}
+              </p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+                План: {formatQty(metrics?.[tile.planKey], tile.unit)}
+              </p>
+              {pf !== null && (
+                <p
+                  className={`text-[11px] font-semibold mt-0.5 ${
+                    pf < 0
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-green-600 dark:text-green-400"
+                  }`}
+                >
+                  {pf >= 0 ? "+" : ""}
+                  {pf.toFixed(1)}% к плану
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <p className="text-xs text-gray-600 dark:text-gray-400 mt-4">{risk}</p>
