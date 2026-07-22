@@ -5,33 +5,35 @@ import MainLayout from "@/components/layout/MainLayout";
 import { isAuthenticated } from "@/utils/auth";
 import Loader from "@/components/ui/Loader";
 import {
-  // FilterCard, // SAP tab — commented out for now, see block below to re-enable
-  PeriodInfoBar,
+  // FilterCard, // old SAP tab — commented out for now, see block below to re-enable
   KPISummaryCards,
   TotalsCards,
   CompanyMatrixTable,
 } from "@/components/fi-debtor-creditor";
-// import { toApiDate } from "@/components/fi-debtor-creditor/utils"; // SAP tab — re-enable together with FilterCard above
+// import { toApiDate } from "@/components/fi-debtor-creditor/utils"; // old SAP tab — re-enable together with FilterCard above
 
 // ---------------------------------------------------------------------------
-// SAP live tab is temporarily disabled — only the Excel snapshot is shown.
-// To bring the SAP tab back:
-//   1. Uncomment the FilterCard / toApiDate imports above.
-//   2. Uncomment the "SAP live source" state + handleApply/handleReset block below.
-//   3. Uncomment the source-switcher JSX and the FilterCard render block further down,
-//      and change `source` to a real useState (not a hardcoded constant).
+// Data source history for this page:
+//   1. Live SAP proxy (/api/dashboard/fi_bp) — commented out below, see that block.
+//   2. Excel snapshot (/api/dashboard/fi_bp_excel) — commented out below, see that block.
+//   3. Current: live operdtkt proxy (/api/dashboard/new_fi_bp), single date_to param,
+//      defaults to today.
 // ---------------------------------------------------------------------------
+
+function todayIso() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
 
 export default function FinDebtorCreditorPage() {
   const [activeTab, setActiveTab] = useState("debtor");
+  const [dateTo, setDateTo] = useState(todayIso());
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // const [source, setSource] = useState("sap"); // SAP tab — re-enable as real state ("sap" | "excel")
-  const source = "excel";
-
-  /* SAP live source — state + fetch (commented out, see note above)
+  /* Old SAP live source — state + fetch (commented out)
   const now = new Date();
   const [mode, setMode] = useState("period");
   const [dateInput, setDateInput] = useState("");
@@ -81,6 +83,7 @@ export default function FinDebtorCreditorPage() {
   };
   */
 
+  /* Excel snapshot source — fetch on mount (commented out)
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -106,8 +109,40 @@ export default function FinDebtorCreditorPage() {
       cancelled = true;
     };
   }, []);
+  */
 
-  const isExcel = source === "excel";
+  const fetchLiveData = (targetDateTo) => {
+    setLoading(true);
+    setError(null);
+    fetch("/api/dashboard/new_fi_bp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date_to: targetDateTo }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          throw new Error(errJson?.error || `Ошибка сервера: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((json) => {
+        setData(json);
+        setActiveTab("debtor");
+      })
+      .catch((e) => {
+        setError(e?.message || "Ошибка загрузки данных");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    queueMicrotask(() => fetchLiveData(dateTo));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const debtorSection = data?.sections?.debtor;
   const creditorSection = data?.sections?.creditor;
   const activeSection = activeTab === "debtor" ? debtorSection : creditorSection;
@@ -129,7 +164,7 @@ export default function FinDebtorCreditorPage() {
           </p>
         </div>
 
-        {/* Source Switcher — SAP tab commented out for now, only Excel snapshot shown
+        {/* Old source switcher (SAP / Excel) — commented out, see notes above
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg w-fit">
           {[
             { key: "sap", label: "Живые данные (SAP)" },
@@ -150,30 +185,47 @@ export default function FinDebtorCreditorPage() {
           ))}
         </div>
         */}
-        {isExcel && (
-          <p className="text-sm text-gray-600 dark:text-gray-400 italic">
-            Справка о дебиторской и кредиторской задолженности предприятий, входящих в состав АО «ИЭС», по состоянию на 1 июля 2026 года
-          </p>
-        )}
 
-        {/* FilterCard (SAP mode/date picker) — commented out for now
-        {!isExcel && (
-          <FilterCard
-            mode={mode}
-            setMode={setMode}
-            dateInput={dateInput}
-            setDateInput={setDateInput}
-            selectedYear={selectedYear}
-            setSelectedYear={setSelectedYear}
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
-            loading={sapLoading}
-            hasData={!!sapData}
-            error={sapError}
-            onApply={handleApply}
-            onReset={handleReset}
-          />
-        )}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="flex items-end gap-3 flex-wrap">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Дата
+              </label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => fetchLiveData(dateTo)}
+              disabled={loading || !dateTo}
+              className="px-6 py-2.5 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-500"
+            >
+              {loading ? "Загрузка..." : "Применить"}
+            </button>
+          </div>
+        </div>
+
+        {/* Old FilterCard (month/year or date, SAP source) — commented out
+        <FilterCard
+          mode={mode}
+          setMode={setMode}
+          dateInput={dateInput}
+          setDateInput={setDateInput}
+          selectedYear={selectedYear}
+          setSelectedYear={setSelectedYear}
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+          loading={sapLoading}
+          hasData={!!sapData}
+          error={sapError}
+          onApply={handleApply}
+          onReset={handleReset}
+        />
         */}
 
         {loading && (
@@ -189,12 +241,6 @@ export default function FinDebtorCreditorPage() {
 
         {data && (
           <>
-            <PeriodInfoBar
-              beginDate={data.beginDate}
-              currentDate={data.currentDate}
-              currencyUnit={data.currencyUnit}
-            />
-
             <KPISummaryCards
               debtorSection={debtorSection}
               creditorSection={creditorSection}
@@ -236,7 +282,7 @@ export default function FinDebtorCreditorPage() {
                 <CompanyMatrixTable
                   activeSection={activeSection}
                   activeTab={activeTab}
-                  preserveOrder={isExcel}
+                  preserveOrder
                 />
               </div>
             )}
