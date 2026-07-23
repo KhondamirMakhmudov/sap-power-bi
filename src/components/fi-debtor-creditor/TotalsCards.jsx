@@ -18,6 +18,7 @@ export default function TotalsCards({ activeSection, activeTab }) {
   const accent = isCreditor ? "orange" : "blue";
   const badgeClass = ACCENT_COLORS[accent].badge;
   const roleLabel = isCreditor ? "Кредитор" : "Дебитор";
+  const labels = activeSection.categoryLabels ?? CATEGORY_LABELS;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -63,7 +64,7 @@ export default function TotalsCards({ activeSection, activeTab }) {
               <div className="border-t border-gray-100 dark:border-gray-700/60 pt-3 grid grid-cols-2 gap-x-6 gap-y-1.5">
                 {nonZeroCats.map((k) => (
                   <div key={k} className="flex justify-between text-xs">
-                    <span className="text-gray-500 dark:text-gray-400">{CATEGORY_LABELS[k]}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{labels[k]}</span>
                     <span className="font-medium text-gray-700 dark:text-gray-300">
                       {fmtMln(cats[k])}
                     </span>

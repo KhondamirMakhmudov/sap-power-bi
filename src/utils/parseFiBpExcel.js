@@ -43,7 +43,19 @@ function readRow(row) {
   };
 }
 
-function buildSection(rows, { totalRow, branchesRow, headOfficeRow, itemRows }, isCreditor) {
+// The category header text (e.g. "КУМИР (Узбеккумир Шаргункумир)") lives one row
+// above the total/opening row, at the same columns as the category values —
+// read it verbatim instead of using our own shortened translations, so the page
+// matches the file's own wording exactly.
+function readCategoryLabels(headerRow) {
+  const labels = {};
+  CATEGORY_KEYS.forEach((key, i) => {
+    labels[key] = String(headerRow[CATEGORY_START_COL + i] ?? "").trim();
+  });
+  return labels;
+}
+
+function buildSection(rows, { headerRow, totalRow, branchesRow, headOfficeRow, itemRows }, isCreditor) {
   const toTotal = ({ openingBalance, currentBalance, change, ...breakdown }) =>
     isCreditor ? { openingBalance, currentBalance, change, breakdown } : { openingBalance, currentBalance, change, ...breakdown };
 
@@ -52,15 +64,26 @@ function buildSection(rows, { totalRow, branchesRow, headOfficeRow, itemRows }, 
     return { companyCode: name, ...data };
   };
 
-  const items = [headOfficeRow, ...itemRows].map(toItem);
+  const items = [totalRow, branchesRow, headOfficeRow, ...itemRows].map(toItem);
 
   return {
     items,
+    categoryLabels: readCategoryLabels(rows[headerRow]),
     totals: {
       total_ies: toTotal(readRow(rows[totalRow]).data),
       total_ies_branches: toTotal(readRow(rows[branchesRow]).data),
     },
   };
+}
+
+const DATE_RE = /(\d{2}\.\d{2}\.\d{4})/;
+
+// The header row (e.g. "Дебитор қарздорлик       01.01.2026" / "... (тезкор) 22.07.2026")
+// carries the opening/current dates for whichever snapshot file this is — pull them
+// out directly instead of hardcoding a date that only matched one specific file.
+function extractDate(headerCell, fallback) {
+  const match = DATE_RE.exec(String(headerCell ?? ""));
+  return match ? match[1] : fallback;
 }
 
 // Parses the "Д-т К-т <date>.xlsx" debtor/creditor snapshot into the same
@@ -73,18 +96,21 @@ export function parseFiBpExcel(fileName) {
 
   const debtor = buildSection(
     rows,
-    { totalRow: 4, branchesRow: 5, headOfficeRow: 6, itemRows: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16] },
+    { headerRow: 3, totalRow: 4, branchesRow: 5, headOfficeRow: 6, itemRows: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16] },
     false
   );
   const creditor = buildSection(
     rows,
-    { totalRow: 22, branchesRow: 23, headOfficeRow: 24, itemRows: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34] },
+    { headerRow: 21, totalRow: 22, branchesRow: 23, headOfficeRow: 24, itemRows: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34] },
     true
   );
 
+  const beginDate = extractDate(rows[2]?.[2], "01.01.2026");
+  const currentDate = extractDate(rows[2]?.[3], "01.07.2026");
+
   return {
-    beginDate: "01.01.2026",
-    currentDate: "01.07.2026",
+    beginDate,
+    currentDate,
     currencyUnit: "млн.сўм",
     sections: { debtor, creditor },
   };

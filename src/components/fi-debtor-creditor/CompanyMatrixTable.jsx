@@ -16,6 +16,7 @@ export default function CompanyMatrixTable({ activeSection, activeTab, preserveO
     activeTab === "debtor" ? "Детализация дебиторов" : "Детализация кредиторов";
 
   const rows = groupItemsByCompany(activeSection.items, { preserveOrder });
+  const labels = activeSection.categoryLabels ?? CATEGORY_LABELS;
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -55,7 +56,7 @@ export default function CompanyMatrixTable({ activeSection, activeTab, preserveO
                   key={k}
                   className="border border-gray-400 py-2.5 px-3 text-xs font-bold text-gray-900 text-center whitespace-nowrap bg-[#FFFF00]"
                 >
-                  {CATEGORY_LABELS[k]}
+                  {labels[k]}
                 </th>
               ))}
             </tr>
