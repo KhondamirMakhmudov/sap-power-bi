@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
 import {
   ChevronDown,
   BarChart3,
@@ -95,12 +96,20 @@ export default function Sidebar({
   isCollapsed = false,
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [expandedItems, setExpandedItems] = useState([]);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const toggleExpanded = (label) => {
     setExpandedItems((prev) =>
       prev.includes(label) ? prev.filter((i) => i !== label) : [...prev, label],
     );
+  };
+
+  const handleLogout = async () => {
+    setIsLogoutModalOpen(false);
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
   };
 
   const isActive = (href) =>
@@ -221,6 +230,7 @@ export default function Sidebar({
         </Link>
 
         <button
+          onClick={() => setIsLogoutModalOpen(true)}
           className="group w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-red-400 transition-all duration-200 relative"
           title={isCollapsed ? "Выход" : ""}
         >
@@ -253,6 +263,47 @@ export default function Sidebar({
       >
         {sidebarContent}
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      {isLogoutModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-60 flex items-center justify-center p-4"
+          onClick={() => setIsLogoutModalOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-950/40 flex items-center justify-center shrink-0">
+                <LogOut className="w-5 h-5 text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                Выйти из системы?
+              </h3>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Вам нужно будет снова войти, чтобы продолжить работу.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsLogoutModalOpen(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
+              >
+                Выйти
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

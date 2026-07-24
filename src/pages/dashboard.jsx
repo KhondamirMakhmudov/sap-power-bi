@@ -167,30 +167,26 @@ function formatCompactNumber(value) {
   return `${sign}${new Intl.NumberFormat("ru").format(abs)}`;
 }
 
-// Compact tooltip — only the hovered month's values, scrollable if the org
-// list is long, so it never balloons over the rest of the chart/page.
-function TrendTooltip({ active, payload, label, hiddenSeries }) {
-  if (!active || !payload || payload.length === 0) return null;
-  const visible = payload.filter((p) => !hiddenSeries.has(p.dataKey));
-  if (visible.length === 0) return null;
+// Tooltip shows only the single line the cursor is actually over — not every
+// org at that month — so it doesn't drown the point you're pointing at in a
+// list of unrelated zeros.
+function TrendTooltip({ active, payload, label, hiddenSeries, hoveredSeries }) {
+  if (!active || !payload || payload.length === 0 || !hoveredSeries) return null;
+  const point = payload.find((p) => p.dataKey === hoveredSeries && !hiddenSeries.has(p.dataKey));
+  if (!point) return null;
 
   return (
-    <div
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 text-xs overflow-y-auto"
-      style={{ maxWidth: 260, maxHeight: 240 }}
-    >
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 text-xs">
       <p className="font-semibold text-gray-900 dark:text-gray-100 mb-1.5">{label}</p>
-      {visible.map((p) => (
-        <div key={p.dataKey} className="flex items-center justify-between gap-3 py-0.5">
-          <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 min-w-0">
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
-            <span className="truncate">{p.dataKey}</span>
-          </span>
-          <span className="font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap shrink-0">
-            {formatCompactNumber(p.value)}
-          </span>
-        </div>
-      ))}
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 min-w-0">
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: point.color }} />
+          <span className="truncate">{point.dataKey}</span>
+        </span>
+        <span className="font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap shrink-0">
+          {formatCompactNumber(point.value)}
+        </span>
+      </div>
     </div>
   );
 }
@@ -231,6 +227,7 @@ export default function DashboardPage({ username }) {
   const [selectedMetric, setSelectedMetric] = useState(TREND_METRIC_OPTIONS[0].value);
   const [selectedPFMetric, setSelectedPFMetric] = useState(TREND_METRIC_OPTIONS[0].value);
   const [hiddenSeries, setHiddenSeries] = useState(() => new Set());
+  const [hoveredSeries, setHoveredSeries] = useState(null);
 
   function toggleSeries(name) {
     setHiddenSeries((prev) => {
@@ -786,7 +783,11 @@ export default function DashboardPage({ username }) {
                           width={72}
                           tickFormatter={formatCompactNumber}
                         />
-                        <Tooltip content={(p) => <TrendTooltip {...p} hiddenSeries={hiddenSeries} />} />
+                        <Tooltip
+                          content={(p) => (
+                            <TrendTooltip {...p} hiddenSeries={hiddenSeries} hoveredSeries={hoveredSeries} />
+                          )}
+                        />
                         <Legend
                           onClick={(entry) => toggleSeries(entry.dataKey)}
                           wrapperStyle={{ fontSize: 11, lineHeight: "1.6", cursor: "pointer" }}
@@ -814,6 +815,34 @@ export default function DashboardPage({ username }) {
                             isAnimationActive={false}
                           />
                         ))}
+                        {/* Invisible wide-stroke overlay per line — a 2px line is too thin a
+                            hit target to hover reliably, so this carries the mouse handlers
+                            instead, on top of (after, in SVG paint order) the visible lines.
+                            The dot is enlarged too so a single-month view (isolated points,
+                            no line segment to widen) is still hoverable. */}
+                        {trendOrgNames.map((name) =>
+                          hiddenSeries.has(name) ? null : (
+                            <Line
+                              key={`${name}-hit`}
+                              type="monotone"
+                              dataKey={name}
+                              stroke="transparent"
+                              strokeWidth={16}
+                              dot={{
+                                r: 10,
+                                fill: "transparent",
+                                stroke: "transparent",
+                                onMouseEnter: () => setHoveredSeries(name),
+                                onMouseLeave: () => setHoveredSeries(null),
+                              }}
+                              activeDot={false}
+                              legendType="none"
+                              isAnimationActive={false}
+                              onMouseEnter={() => setHoveredSeries(name)}
+                              onMouseLeave={() => setHoveredSeries(null)}
+                            />
+                          )
+                        )}
                       </LineChart>
                     </ResponsiveContainer>
                   )}
