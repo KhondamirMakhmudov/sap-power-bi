@@ -74,7 +74,6 @@ export default function LogisticsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [deliveryRange, setDeliveryRange] = useState(defaultDateRange());
-  const [postingRange, setPostingRange] = useState(defaultDateRange());
   const [plant, setPlant] = useState("");
   const [pageSize, setPageSize] = useState("50");
   const [page, setPage] = useState(1);
@@ -239,7 +238,7 @@ export default function LogisticsPage() {
   const loadAll = async () => {
     setLoading(true);
     setError(null);
-    const $filter = buildGeneralBlockFilter({ deliveryRange, postingRange, plant });
+    const $filter = buildGeneralBlockFilter({ deliveryRange, plant });
 
     let allRows = [];
     let skip = 0;
@@ -298,9 +297,8 @@ export default function LogisticsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">Фильтры</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-end">
             <DateRangeField label="Дата поставки ЗМЗ" range={deliveryRange} onChange={setDeliveryRange} />
-            <DateRangeField label="Дата проводки поступления" range={postingRange} onChange={setPostingRange} />
 
             <CustomSelect label="Завод" options={PLANT_OPTIONS} value={plant} placeholder="Все заводы" onChange={setPlant} />
 

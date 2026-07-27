@@ -2,10 +2,10 @@ import https from "https";
 
 // Aggregated logistics analytics — per-currency counts/sums across inbound
 // deliveries, contracts, purchase orders, purchase requisitions and invoices.
-// Same SAP system as general_block.js (10.20.6.144, client 500); a different
-// service group (ZSC_TOTALS_O4), so it needs its own authorization grant even
-// once ZSC_GENERAL_BLOCK_O4 is sorted.
-const SAP_HOST = "10.20.6.144";
+// Same SAP host/client as general_block.js; a different service group
+// (ZSC_TOTALS_O4), so it needs its own authorization grant even once
+// ZSC_GENERAL_BLOCK_O4 is sorted.
+const SAP_HOST = "10.20.6.146";
 const SAP_PORT = 44300;
 const SAP_PATH =
   "/sap/opu/odata4/sap/zsc_totals_o4/srvd_a2x/sap/zsc_c_totals_api/0001/Totals";
@@ -17,11 +17,16 @@ export default async function handler(req, res) {
   }
 
   const params = new URLSearchParams({
-    "sap-client": "500",
+    "sap-client": "700",
     "sap-language": "RU",
     $format: "json",
   });
   const path = `${SAP_PATH}?${params.toString()}`;
+
+  // Visible in DevTools → Network → this request → Response Headers, so the
+  // real upstream call is inspectable without exposing it as the browser's
+  // own request (which would leak the Basic Auth credentials client-side).
+  res.setHeader("X-Upstream-Url", `https://${SAP_HOST}:${SAP_PORT}${path}`);
 
   try {
     const data = await new Promise((resolve, reject) => {

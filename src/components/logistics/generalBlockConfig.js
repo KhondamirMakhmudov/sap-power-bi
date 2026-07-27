@@ -75,12 +75,10 @@ export const GENERAL_BLOCK_GROUPS = [
   },
 ];
 
-export function buildGeneralBlockFilter({ deliveryRange, postingRange, plant } = {}) {
+export function buildGeneralBlockFilter({ deliveryRange, plant } = {}) {
   const parts = [];
   if (deliveryRange?.from) parts.push(`DeliveryDate ge ${deliveryRange.from}`);
   if (deliveryRange?.to) parts.push(`DeliveryDate le ${deliveryRange.to}`);
-  if (postingRange?.from) parts.push(`PostingDate ge ${postingRange.from}`);
-  if (postingRange?.to) parts.push(`PostingDate le ${postingRange.to}`);
   if (plant) parts.push(`Plant eq '${plant}'`);
   return parts.length ? parts.join(" and ") : null;
 }

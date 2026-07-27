@@ -1,9 +1,6 @@
 import https from "https";
 
-// New consolidated logistics endpoint — SAP now joins PR + Contract + PO + GR +
-// Invoice server-side into one flat entity, replacing the 5 separate calls in
-// logistics_bp.js. Different host/client than the old logistics APIs.
-const SAP_HOST = "10.20.6.144";
+const SAP_HOST = "10.20.6.146";
 const SAP_PORT = 44300;
 const SAP_PATH =
   "/sap/opu/odata4/sap/zsc_general_block_o4/srvd_a2x/sap/zsc_general_block_api/0001/GeneralBlock";
@@ -17,12 +14,17 @@ export default async function handler(req, res) {
   const { query = {} } = req.body || {};
 
   const params = new URLSearchParams({
-    "sap-client": "500",
+    "sap-client": "700",
     "sap-language": "RU",
     $format: "json",
     ...query,
   });
   const path = `${SAP_PATH}?${params.toString()}`;
+
+  // Visible in DevTools → Network → this request → Response Headers, so the
+  // real upstream call is inspectable without exposing it as the browser's
+  // own request (which would leak the Basic Auth credentials client-side).
+  res.setHeader("X-Upstream-Url", `https://${SAP_HOST}:${SAP_PORT}${path}`);
 
   try {
     const data = await new Promise((resolve, reject) => {
