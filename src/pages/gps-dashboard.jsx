@@ -82,6 +82,12 @@ function fmt(value) {
   return new Intl.NumberFormat("ru").format(Math.round(value || 0));
 }
 
+function todayIso() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function normalizeFuel(fuelType) {
   if (!fuelType) return null;
   const normalized = fuelType.toLowerCase();
@@ -200,6 +206,10 @@ export default function GPSDashboardPage({ username }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
+  const [fuelConsumptionRows, setFuelConsumptionRows] = useState([]);
+  const [loadingFuel, setLoadingFuel] = useState(true);
+  const [errorFuel, setErrorFuel] = useState(null);
+
   useEffect(() => {
     setLoadingAuth(true);
     setErrorAuth(null);
@@ -286,6 +296,49 @@ export default function GPSDashboardPage({ username }) {
     const interval = setInterval(() => setRetryKey((key) => key + 1), 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fuel consumption per vehicle — separate SAP-backed source (post_toplivo_avto),
+  // joined into the vehicles table client-side by plate number (NomerAvto).
+  useEffect(() => {
+    setLoadingFuel(true);
+    setErrorFuel(null);
+    fetch("/api/dashboard/post_toplivo_avto", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date_from: "2020-01-01", date_to: todayIso() }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errJson = await response.json().catch(() => ({}));
+          throw new Error(errJson?.error || `Ошибка ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((json) => setFuelConsumptionRows(Array.isArray(json?.data) ? json.data : []))
+      .catch((error) => setErrorFuel(error.message || "Не удалось загрузить данные о топливе"))
+      .finally(() => setLoadingFuel(false));
+  }, []);
+
+  // Plate numbers between the GPS system and SAP can differ in spacing/case
+  // ("01 283 THA" vs "01283THA") — normalize both sides before matching.
+  const normalizePlate = (plate) => String(plate || "").toUpperCase().replace(/[^A-Z0-9А-Я]/g, "");
+
+  const fuelByPlate = useMemo(() => {
+    const map = new Map();
+    fuelConsumptionRows.forEach((row) => {
+      const key = normalizePlate(row.NomerAvto);
+      if (!key) return;
+      let entry = map.get(key);
+      if (!entry) {
+        entry = { fuels: new Set(), kolichestvo: 0, summa: 0 };
+        map.set(key, entry);
+      }
+      if (row.Toplivo) entry.fuels.add(row.Toplivo);
+      entry.kolichestvo += Number(row.Kolichestvo) || 0;
+      entry.summa += Number(row.Summa) || 0;
+    });
+    return map;
+  }, [fuelConsumptionRows]);
 
   const filteredVehicles = useMemo(() => {
     return vehiclesData.filter((vehicle) => {
@@ -622,24 +675,25 @@ export default function GPSDashboardPage({ username }) {
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Транспортные средства</h2>
                   <p className="text-sm text-slate-500 dark:text-slate-400">Фильтруйте, ищите и просматривайте список.</p>
                 </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                  <div className="text-sm text-slate-500 dark:text-slate-400">
-                    Показано {paginatedVehicles.length} из {filteredVehicles.length}
-                  </div>
-                  <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2">
-                    <span className="text-sm text-slate-500 dark:text-slate-400">Строк на страницу:</span>
-                    <select
-                      value={pageSize}
-                      onChange={(e) => setPageSize(Number(e.target.value))}
-                      className="min-w-[72px] bg-transparent text-sm text-slate-900 dark:text-slate-100 outline-none"
-                    >
-                      {[10, 20, 50, 100].map((size) => (
-                        <option key={size} value={size}>
-                          {size}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-sm text-slate-500 dark:text-slate-400">
+                  Показано {paginatedVehicles.length} из {filteredVehicles.length}
+                </div>
+                <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">Строк на страницу:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="min-w-[72px] bg-transparent text-sm text-slate-900 dark:text-slate-100 outline-none"
+                  >
+                    {[10, 20, 50, 100].map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -656,28 +710,43 @@ export default function GPSDashboardPage({ username }) {
                       <th className="sticky top-0 bg-slate-950 whitespace-nowrap px-4 py-3 text-left font-semibold">Топливо</th>
                       <th className="sticky top-0 bg-slate-950 whitespace-nowrap px-4 py-3 text-left font-semibold">Одометр</th>
                       <th className="sticky top-0 bg-slate-950 whitespace-nowrap px-4 py-3 text-left font-semibold">Статус</th>
+                      <th className="sticky top-0 bg-slate-950 whitespace-nowrap px-4 py-3 text-left font-semibold">Топливо (расход)</th>
+                      <th className="sticky top-0 bg-slate-950 whitespace-nowrap px-4 py-3 text-left font-semibold">Кол-во</th>
+                      <th className="sticky top-0 bg-slate-950 whitespace-nowrap px-4 py-3 text-left font-semibold">Сумма</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white dark:bg-gray-800">
                     {filteredVehicles.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                        <td colSpan={11} className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
                           Нет транспортных средств по текущим фильтрам.
                         </td>
                       </tr>
                     ) : (
-                      paginatedVehicles.map((vehicle, index) => (
-                        <tr key={`${vehicle.id || vehicle.plateNumber || index}`} className="hover:bg-slate-50 dark:hover:bg-slate-800">
-                          <td className="whitespace-nowrap px-4 py-3">{vehicle.company || "—"}</td>
-                          <td className="whitespace-nowrap px-4 py-3">{vehicle.category || "—"}</td>
-                          <td className="whitespace-nowrap px-4 py-3">{vehicle.model || "—"}</td>
-                          <td className="whitespace-nowrap px-4 py-3">{vehicle.plateNumber || "—"}</td>
-                          <td className="whitespace-nowrap px-4 py-3">{vehicle.yearProduced || "—"}</td>
-                          <td className="whitespace-nowrap px-4 py-3">{getFuelText(vehicle.fuelType)}</td>
-                          <td className="whitespace-nowrap px-4 py-3">{vehicle.odometer ?? "—"}</td>
-                          <td className="whitespace-nowrap px-4 py-3"><StatusBadge status={vehicle.status} /></td>
-                        </tr>
-                      ))
+                      paginatedVehicles.map((vehicle, index) => {
+                        const fuelConsumption = fuelByPlate.get(normalizePlate(vehicle.plateNumber));
+                        return (
+                          <tr key={`${vehicle.id || vehicle.plateNumber || index}`} className="hover:bg-slate-50 dark:hover:bg-slate-800">
+                            <td className="whitespace-nowrap px-4 py-3">{vehicle.company || "—"}</td>
+                            <td className="whitespace-nowrap px-4 py-3">{vehicle.category || "—"}</td>
+                            <td className="whitespace-nowrap px-4 py-3">{vehicle.model || "—"}</td>
+                            <td className="whitespace-nowrap px-4 py-3">{vehicle.plateNumber || "—"}</td>
+                            <td className="whitespace-nowrap px-4 py-3">{vehicle.yearProduced || "—"}</td>
+                            <td className="whitespace-nowrap px-4 py-3">{getFuelText(vehicle.fuelType)}</td>
+                            <td className="whitespace-nowrap px-4 py-3">{vehicle.odometer ?? "—"}</td>
+                            <td className="whitespace-nowrap px-4 py-3"><StatusBadge status={vehicle.status} /></td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {fuelConsumption ? [...fuelConsumption.fuels].join(", ") : "—"}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {fuelConsumption ? fmt(fuelConsumption.kolichestvo) : "—"}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {fuelConsumption ? fmt(fuelConsumption.summa) : "—"}
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>

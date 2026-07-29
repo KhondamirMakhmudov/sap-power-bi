@@ -15,15 +15,21 @@ import {
 // ---------------------------------------------------------------------------
 // Data source history for this page:
 //   1. Live SAP proxy (/api/dashboard/fi_bp) — commented out below, see that block.
-//   2. Live operdtkt proxy (/api/dashboard/new_fi_bp), single date_to param —
-//      commented out below; will be re-enabled next week once SAP grants
-//      DASHBOARD access to service group. Do not delete new_fi_bp.js.
-//   3. Current: Excel snapshot (/api/dashboard/fi_bp_excel), file updated to
-//      "Д-т К-т 22.07.2026.xlsx" (see fi_bp_excel.js).
+//   2. Excel snapshot (/api/dashboard/fi_bp_excel) — commented out below, see that
+//      block; fi_bp_excel.js itself is untouched if this needs reverting.
+//   3. Current: live operdtkt proxy (/api/dashboard/new_fi_bp), single date_to
+//      param, defaults to today.
 // ---------------------------------------------------------------------------
+
+function todayIso() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
 
 export default function FinDebtorCreditorPage() {
   const [activeTab, setActiveTab] = useState("debtor");
+  const [dateTo, setDateTo] = useState(todayIso());
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -78,6 +84,7 @@ export default function FinDebtorCreditorPage() {
   };
   */
 
+  /* Excel snapshot source — fetch on mount (commented out)
   useEffect(() => {
     let cancelled = false;
     queueMicrotask(() => {
@@ -106,14 +113,7 @@ export default function FinDebtorCreditorPage() {
       cancelled = true;
     };
   }, []);
-
-  /* Live operdtkt source — state + fetch (commented out, re-enable next week)
-  function todayIso() {
-    const d = new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  }
-  const [dateTo, setDateTo] = useState(todayIso());
+  */
 
   const fetchLiveData = (targetDateTo) => {
     setLoading(true);
@@ -146,7 +146,6 @@ export default function FinDebtorCreditorPage() {
     queueMicrotask(() => fetchLiveData(dateTo));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  */
 
   const debtorSection = data?.sections?.debtor;
   const creditorSection = data?.sections?.creditor;
@@ -191,11 +190,12 @@ export default function FinDebtorCreditorPage() {
         </div>
         */}
 
+        {/* Excel static description — commented out, see notes above
         <p className="text-sm text-gray-600 dark:text-gray-400 italic">
           Справка о дебиторской и кредиторской задолженности предприятий, входящих в состав АО «ИЭС», по состоянию на 22 июля 2026 года
         </p>
+        */}
 
-        {/* Live date picker (operdtkt source) — commented out, re-enable next week
         <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-end gap-3 flex-wrap">
             <div className="flex flex-col gap-1">
@@ -219,7 +219,6 @@ export default function FinDebtorCreditorPage() {
             </button>
           </div>
         </div>
-        */}
 
         {/* Old FilterCard (month/year or date, SAP source) — commented out
         <FilterCard
