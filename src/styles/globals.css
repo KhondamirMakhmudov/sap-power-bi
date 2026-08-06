@@ -68,21 +68,6 @@ body {
   scrollbar-color: #1d4ed8 #1f2937;
 }
 
-/* Hides only the *horizontal* scrollbar on an element that scrolls both ways
-   — used where a separate shadow scrollbar drives horizontal scroll instead
-   (JoinedTable's top-pinned bar), while the native vertical scrollbar stays.
-   WebKit/Blink support the :horizontal sub-selector for per-axis targeting;
-   there's no per-axis equivalent for Firefox/scrollbar-width, so Firefox
-   shows both — an accepted trade-off rather than breaking sticky positioning
-   by splitting scroll axes across nested elements (overflow-x non-visible
-   paired with overflow-y: visible on the same element forces the visible
-   axis to computed 'auto' too, per the CSS overflow spec, which was breaking
-   sticky headers here). */
-.hide-x-scrollbar::-webkit-scrollbar:horizontal {
-  display: none;
-  height: 0;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;

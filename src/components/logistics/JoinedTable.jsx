@@ -5,14 +5,18 @@ import { useEffect, useRef } from "react";
 // The table can be both very wide and very tall — a single overflow-x-auto
 // div puts the horizontal scrollbar at the *bottom* of the table, which for a
 // tall table means scrolling all the way down just to pan sideways. This
-// adds a slim "shadow" scrollbar pinned above the table that mirrors
-// horizontal scroll; the table's own horizontal scrollbar is hidden (via
-// .hide-x-scrollbar, WebKit-only — see globals.css) so it isn't duplicated,
-// while its vertical scrollbar stays untouched on the right. (Splitting the
-// two axes across nested elements was tried and reverted — pairing
-// overflow-x: auto with overflow-y: visible on the same element forces the
-// "visible" axis to computed 'auto' per the CSS spec, which broke sticky
-// header positioning.)
+// adds a slim "shadow" scrollbar pinned above the table that drives
+// horizontal scroll instead. The table body itself uses overflow-x: hidden
+// (not auto/scroll) so it never renders its own horizontal scrollbar at
+// all — `hidden` still permits programmatic `scrollLeft` per spec, it just
+// disables the native UI/wheel interaction, which is fine since the shadow
+// bar is the only intended horizontal control. Vertical scroll stays on the
+// same element via overflow-y: auto, scrollbar normally on the right.
+// (Earlier attempts — CSS-hiding just the horizontal scrollbar via
+// `::-webkit-scrollbar:horizontal`, and splitting the axes across nested
+// elements — either didn't actually hide it in a real browser or broke
+// sticky header positioning via a CSS overflow-pairing quirk. This is the
+// one that holds up.)
 function useSyncedScroll() {
   const topRef = useRef(null);
   const bodyRef = useRef(null);
@@ -75,7 +79,7 @@ export default function JoinedTable({ title, groups, rows, rowKey }) {
       <div
         ref={bodyRef}
         onScroll={handleBodyScroll}
-        className="hide-x-scrollbar overflow-x-auto overflow-y-auto max-h-150"
+        className="overflow-x-hidden overflow-y-auto max-h-150"
       >
         <table className="w-full">
           <thead>
