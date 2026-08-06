@@ -1,6 +1,6 @@
 import { parseFiBpExcel } from "@/utils/parseFiBpExcel";
 
-const FILE_NAME = "Д-т К-т 22.07.2026.xlsx";
+const FILE_NAME = "Д-т К-т 01.08.2026.xlsx";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
