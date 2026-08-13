@@ -262,6 +262,14 @@ export default function LogisticsPage() {
         if (batch.length < FETCH_PAGE_SIZE) break;
         skip += FETCH_PAGE_SIZE;
       }
+      // PM request: only keep ЗМЗ items whose "№ ЗМЗ" (PURCHASEREQUISITION) and
+      // "Позиция" (PurchaseRequisitionItem) both start with 2 — other prefixes
+      // aren't relevant to this report.
+      allRows = allRows.filter(
+        (r) =>
+          String(r.PURCHASEREQUISITION ?? "").startsWith("2") &&
+          String(r.PurchaseRequisitionItem ?? "").startsWith("2")
+      );
       setRows(allRows);
       setPage(1);
     } catch (e) {

@@ -1,5 +1,37 @@
+import fs from "fs";
 import path from "path";
 import XLSX from "xlsx";
+
+const FI_BP_FILE_RE = /^Д-т К-т (\d{2})\.(\d{2})\.(\d{4})\.xlsx$/i;
+
+// Scans public/files/ for "Д-т К-т DD.MM.YYYY.xlsx" snapshots and returns the
+// one with the latest date (parsed from the filename, not file mtime) — so
+// fi_bp_excel.js always serves whatever was most recently uploaded via the
+// admin upload page, with no manual filename edit needed.
+export function findLatestFiBpExcelFile() {
+  const dir = path.join(process.cwd(), "public", "files");
+  let entries;
+  try {
+    entries = fs.readdirSync(dir);
+  } catch {
+    return null;
+  }
+
+  let latestName = null;
+  let latestTime = -Infinity;
+  entries.forEach((name) => {
+    const match = FI_BP_FILE_RE.exec(name);
+    if (!match) return;
+    const [, dd, mm, yyyy] = match;
+    const time = new Date(`${yyyy}-${mm}-${dd}`).getTime();
+    if (time > latestTime) {
+      latestTime = time;
+      latestName = name;
+    }
+  });
+
+  return latestName;
+}
 
 // Column offsets of the 15 "шу жумладан" category columns, in CATEGORY_KEYS order,
 // relative to each debtor/creditor table's category header row.

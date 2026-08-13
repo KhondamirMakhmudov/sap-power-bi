@@ -18,8 +18,10 @@ import {
 //   2. Live operdtkt proxy (/api/dashboard/new_fi_bp), single date_to param —
 //      commented out below; do not delete new_fi_bp.js, we'll switch back to
 //      it later.
-//   3. Current: Excel snapshot (/api/dashboard/fi_bp_excel), file set to
-//      "Д-т К-т 01.08.2026.xlsx" (see fi_bp_excel.js).
+//   3. Current: Excel snapshot (/api/dashboard/fi_bp_excel), which auto-picks
+//      the newest "Д-т К-т ДД.ММ.ГГГГ.xlsx" file in public/files/ (see
+//      findLatestFiBpExcelFile in parseFiBpExcel.js). New snapshots can be
+//      dropped in via the hidden /admin/fi-excel-upload page.
 // ---------------------------------------------------------------------------
 
 export default function FinDebtorCreditorPage() {
